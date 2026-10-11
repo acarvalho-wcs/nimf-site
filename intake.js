@@ -1,5 +1,5 @@
-import {collection,query,where,orderBy,limit,getDocs,addDoc,doc,updateDoc,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-let db=null,user=null,admin=false,started=false;
+import {collection,query,where,orderBy,limit,getDocs,onSnapshot,addDoc,doc,updateDoc,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+let db=null,user=null,admin=false,started=false,unsubOwn=null,unsubAdmin=null;
 const $=id=>document.getElementById(id);
 const states=["received","triage","checking","investigating","resolved","closed"];
 const names={received:"Recebido",triage:"Em triagem",checking:"Em verificação",investigating:"Investigação iniciada",resolved:"Concluído",closed:"Encerrado"};
@@ -25,7 +25,7 @@ function summary(item,canEdit){
     const batch=writeBatch(db);
     batch.update(ref,{status:select.value,review_note:note.value.trim(),updated_at:serverTimestamp()});
     batch.set(doc(collection(db,"submissions",item.id,"history")),{status:select.value,note:note.value.trim(),created_at:serverTimestamp(),actor_uid:user.uid});
-    await batch.commit();await refresh();
+    await batch.commit();
    }catch(e){alert("Não foi possível atualizar. Confira as regras administrativas do Firestore.");}
    finally{save.disabled=false;}
   });
@@ -52,20 +52,37 @@ async function refresh(){
 }
 export async function openIntake(database,currentUser,isAdmin){
  db=database;user=currentUser;admin=isAdmin===true;
+ if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
  $("admin-review").hidden=!admin;
- try{await refresh();$("tip-feedback").textContent="";}
- catch(e){$("tip-feedback").textContent="Contribuições indisponíveis: publique primeiro as novas regras do Firestore."; }
+ const uid=user.uid;
+ unsubOwn=onSnapshot(query(collection(db,"submissions"),where("owner_uid","==",uid),limit(100)),snap=>{
+   if(!user||user.uid!==uid)return;
+   const target=$("my-tips");target.replaceChildren();
+   const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
+   if(!items.length)target.append(node("p","Nenhuma contribuição enviada ainda."));
+   for(const item of items)target.append(summary(item,false));
+ },()=>{$("tip-feedback").textContent="Não foi possível carregar suas contribuições. Confirme as regras de acesso.";});
+ if(admin)unsubAdmin=onSnapshot(query(collection(db,"submissions"),limit(150)),snap=>{
+   if(!user||user.uid!==uid)return;
+   const target=$("admin-tips");target.replaceChildren();
+   const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
+   if(!items.length)target.append(node("p","Nenhum envio para avaliação."));
+   for(const item of items)target.append(summary(item,true));
+ },()=>{$("tip-feedback").textContent="Não foi possível carregar a triagem administrativa.";});
  if(started)return;started=true;
  $("tip-form").addEventListener("submit",async ev=>{
   ev.preventDefault();if(!user)return;
   const send=$("tip-submit");send.disabled=true;$("tip-feedback").textContent="";
   try{
    const values={owner_uid:user.uid,type:$("tip-type").value,title:$("tip-title").value.trim(),url:$("tip-url").value.trim(),species:$("tip-species").value.trim(),location:$("tip-location").value.trim(),details:$("tip-details").value.trim(),status:"received",review_note:"",created_at:serverTimestamp(),updated_at:serverTimestamp()};
-   if(!/^https:\/\/[^\s]+$/i.test(values.url))throw new Error("invalid url");
+   if(!/^https:\\/\\/[^\\s]+$/i.test(values.url))throw new Error("invalid url");
    await addDoc(collection(db,"submissions"),values);
-   $("tip-form").reset();$("tip-feedback").textContent="Recebido para triagem.";await refresh();
+   $("tip-form").reset();$("tip-feedback").textContent="Recebido para triagem.";
   }catch(e){$("tip-feedback").textContent="Não foi possível enviar. Verifique o link e as permissões do Firestore.";}
   finally{send.disabled=false;}
  });
 }
-export function closeIntake(){user=null;db=null;admin=false;$("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-review").hidden=true;$("tip-feedback").textContent="";}
+export function closeIntake(){
+ if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
+ user=null;db=null;admin=false;$("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-review").hidden=true;$("tip-feedback").textContent="";
+}
