@@ -13,6 +13,23 @@ service cloud.firestore {
    allow get, list: if approved();
    allow create, update, delete: if false;
   }
+  // Separate per-user, per-report entitlement. No public catalog.
+  // Administrators provision grants via trusted Firebase Admin SDK only.
+  match /intelligence_reports/{reportId} {
+    allow get: if administrator() || (approved()
+      && exists(/databases/$(database)/documents/report_grants/$(request.auth.uid)/items/$(reportId))
+      && get(/databases/$(database)/documents/report_grants/$(request.auth.uid)/items/$(reportId)).data.allowed == true);
+    allow list, create, update, delete: if false;
+  }
+  match /report_grants/{uid} {
+    allow get: if approved() && request.auth.uid == uid;
+    allow list, create, update, delete: if false;
+    match /items/{reportId} {
+      allow get: if approved() && request.auth.uid == uid;
+      allow list: if approved() && request.auth.uid == uid;
+      allow create, update, delete: if false;
+    }
+  }
   // Only administrators may curate map points. Published points use approximate locations.
   match /map_points/{id} {
    function validPoint() {
