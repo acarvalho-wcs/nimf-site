@@ -19,7 +19,7 @@ Este código não está implantado em Cloud Functions. É necessário, por admin
 1. Configurar cobrança/plano compatível com Firebase Functions e habilitar as APIs pertinentes, quando necessário.
 2. Configurar credenciais de um SMTP autorizado a enviar mensagens, via Firebase Secrets (não salvar segredos no GitHub):
    `NIMF_SMTP_HOST`, `NIMF_SMTP_PORT`, `NIMF_SMTP_USER`, `NIMF_SMTP_PASSWORD`, `NIMF_SMTP_FROM`.
-3. Na máquina ou ambiente de deploy autorizado, executar `npm --prefix functions install` e `firebase deploy --only functions:nimf-access,firestore:rules --project <project-id>` **após verificar as opções de implantação e o project ID ativo**. Firebase CLI pode exigir escolher funções separadamente por nome; se necessário, utilizar `firebase deploy --only functions,firestore:rules`. Não colocar credenciais administrativas no navegador.
+3. Na máquina ou ambiente de deploy autorizado, executar `npm --prefix functions install` e `firebase deploy --only functions,firestore:rules --project <project-id>` **após verificar o project ID e conferir a configuração de permissões de cada função**. Não colocar credenciais administrativas no navegador.
 4. Testar as regras com o emulador, criar uma conta de teste e verificar que e-mail de administração chega ao destino, que links apenas abrem a página, que a decisão pede confirmação e que a aprovação do painel **não concede** acesso a relatórios.
 5. Configurar SPF/DKIM/DMARC no domínio de envio conforme orientação da equipe de TI, para entregabilidade.
 
