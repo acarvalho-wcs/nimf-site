@@ -105,3 +105,17 @@ body[data-theme="light"] .reports-method,body[data-theme="light"] .reports-folde
 .secure-side-contact .secure-contact-email span:last-child{min-width:0}
 .secure-side-contact .secure-contact-email:hover{filter:brightness(.94);transform:translateY(-1px)}
 .secure-side-contact .secure-contact-email:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+
+
+/* Access request form, administrative decisions, and responsive review cards. */
+.signup-details{display:flex;flex-direction:column;gap:11px;margin:8px 0 10px}
+.signup-details[hidden]{display:none!important}
+.signup-details label{font-weight:700;font-size:12px;color:var(--muted)}
+.signup-details input,.signup-details textarea{width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;background:var(--input);color:var(--text);font:inherit;padding:12px;font-size:13px}
+.signup-details textarea{resize:vertical;line-height:1.55}
+.admin-access-requests{margin-bottom:18px;width:100%}
+.admin-requests-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:12px;margin-top:16px}
+.access-request-card{padding:17px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);overflow-wrap:anywhere}
+.access-request-card p{font-size:12px;color:var(--muted);line-height:1.65}
+.access-request-card .secure-button{margin-top:9px}
+.access-request-highlight{outline:2px solid var(--accent);outline-offset:2px}
