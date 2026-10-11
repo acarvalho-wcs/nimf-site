@@ -197,3 +197,18 @@ body.nimf-map-fullscreen{overflow:hidden!important}
 .explorer-layers-panel{top:8px;right:8px;width:min(310px,calc(100% - 16px));max-height:calc(100% - 16px)}
 .explorer-map-wrap.is-fullscreen #explorer-map-notice{max-width:95%}
 }
+
+/* Observatory animals mark: pale plate only against the dark dashboard theme. */
+body[data-theme="dark"] .secure-observatory-logo{
+ background:#f7f8f3;
+ border:1px solid #edf2ed;
+ border-radius:9px;
+ box-sizing:border-box;
+ padding:4px;
+}
+body[data-theme="light"] .secure-observatory-logo{
+ background:transparent;
+ border-color:transparent;
+ border-radius:0;
+ padding:0;
+}
