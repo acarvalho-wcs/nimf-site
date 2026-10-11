@@ -58,6 +58,18 @@ try {
  await test("approved user may suggest physical trade without URL",addDoc(collection(alice.firestore(),"submissions"),physicalLead),true);
  await test("online listing still requires HTTPS source",addDoc(collection(alice.firestore(),"submissions"),{...valid,owner_uid:"alice",type:"advertisement",url:""}),false);
 
+ const applicant=env.authenticatedContext("applicant",{email_verified:true,email:"applicant@example.org"});
+ const applicantUnverified=env.authenticatedContext("unverified",{email_verified:false,email:"unverified@example.org"});
+ const requestPayload={email:"applicant@example.org",institution:"Research Institute",
+   justification:"Research and authorized conservation intelligence analysis.",status:"pending",
+   created_at:serverTimestamp(),updated_at:serverTimestamp()};
+ await test("verified applicant can create a request",setDoc(doc(applicant.firestore(),"access_requests","applicant"),requestPayload),true);
+ await test("unverified applicant cannot submit request",setDoc(doc(applicantUnverified.firestore(),"access_requests","unverified"),{...requestPayload,email:"unverified@example.org"}),false);
+ await test("requester cannot self-approve",updateDoc(doc(applicant.firestore(),"access_requests","applicant"),{status:"approved"}),false);
+ await test("other regular user cannot read application",getDoc(doc(alice.firestore(),"access_requests","applicant")),false);
+ await test("administrator can inspect application",getDoc(doc(admin.firestore(),"access_requests","applicant")),true);
+ await test("administrator browser cannot self-approve applicant",setDoc(doc(admin.firestore(),"access","applicant"),{approved:true}),false);
+ await test("anonymous cannot enumerate applications",getDocs(collection(anon.firestore(),"access_requests")),false);
  const point={layer_type:"physical_market",title:"Generic suspected market area in Manaus",
   scientific_name:"",country:"BR",state:"AM",municipality:"Manaus",
   latitude:-3.119,longitude:-60.0217,location_precision:"municipality",
