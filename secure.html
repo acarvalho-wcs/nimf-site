@@ -7,7 +7,7 @@
  <meta name="description" content="NIMF — área restrita com aprovação individual">
  <title>NIMF | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
- <link rel="stylesheet" href="./secure.css">
+ <link rel="stylesheet" href="./secure.css?v=20261011h">
  <script>
  // Ensure a broken remote module can never leave all panels invisible.
  setTimeout(function(){
@@ -24,7 +24,7 @@
 <body data-theme="dark">
  <div class="secure-layout">
   <aside class="secure-side">
-   <a class="secure-brand" href="https://wildlife-trafficking-dashboard.wcs-associa-6434.chatgpt.site/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Observatório Global de Tráfico de Animais" title="Observatório Global de Tráfico de Animais"><span class="secure-brandmark observatory-brandmark" aria-hidden="true">WT</span><span><b>NIMF</b><small>WILDLIFE INTELLIGENCE</small></span></a>
+   <a class="secure-brand" href="https://wildlife-trafficking-dashboard.wcs-associa-6434.chatgpt.site/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Observatório Global de Tráfico de Animais" title="Observatório Global de Tráfico de Animais"><img class="secure-observatory-logo" src="./assets/Logo_observat.png" width="58" height="58" alt="Logo do Observatório Global de Tráfico de Animais" loading="eager" decoding="async"><span><b>NIMF</b><small>WILDLIFE INTELLIGENCE</small></span></a>
    <div class="secure-side-content">
      <div class="secure-side-kicker">NIMF / RESTRICTED WORKSPACE</div>
      <h1 id="side-title">Inteligência de mercados de fauna silvestre</h1>
@@ -77,7 +77,7 @@
     </section>
     <section id="dashboard-panel" class="secure-dashboard" hidden>
       <div class="secure-dashboard-heading">
-       <div><span class="secure-label" id="private-kicker">NIMF / PAINEL RESTRITO</span><h2 id="private-title">Painel privado</h2><p id="private-description">Somente registros autorizados no banco privado são exibidos.</p></div>
+       <div><span class="secure-label" id="private-kicker">PAINEL RESTRITO - APENAS USUÁRIOS AUTORIZADOS</span><h2 id="private-title">Painel privado</h2><p id="private-description">Somente registros autorizados no banco privado são exibidos.</p></div>
        <button type="button" id="private-logout" class="secure-secondary">Sair</button>
       </div>
       <div class="private-stats">
@@ -99,14 +99,23 @@
         <div class="explorer-layout">
           <div class="explorer-map-wrap">
             <div class="explorer-map-toolbar">
-              <fieldset class="explorer-layer-picker" id="explorer-layers"><legend id="layers-title">Camadas</legend>
-                <label><input type="checkbox" value="advertisement" checked><span class="layer-swatch layer-advertisement"></span><span data-layer-title="advertisement">Anúncios</span></label>
-                <label><input type="checkbox" value="platform" checked><span class="layer-swatch layer-platform"></span><span data-layer-title="platform">Plataformas</span></label>
-                <label><input type="checkbox" value="fair" checked><span class="layer-swatch layer-fair"></span><span data-layer-title="fair">Feiras livres</span></label>
-                <label><input type="checkbox" value="physical_market" checked><span class="layer-swatch layer-physical-market"></span><span data-layer-title="physical_market">Comércio presencial sob investigação</span></label>
-              </fieldset>
-              <button id="explorer-fullscreen" type="button" class="secure-secondary" aria-pressed="false">Tela cheia</button>
+              <button id="layers-toggle" type="button" class="secure-secondary map-toolbar-button" aria-controls="explorer-layers" aria-expanded="false"><span class="layers-icon" aria-hidden="true">☷</span><span id="layers-toggle-label">Camadas</span></button>
+              <button id="explorer-fullscreen" type="button" class="secure-secondary map-toolbar-button" aria-pressed="false">Tela cheia</button>
             </div>
+            <aside id="explorer-layers" class="explorer-layers-panel" aria-hidden="true" aria-labelledby="layers-title" inert>
+              <div class="explorer-layers-head">
+                <div><strong id="layers-title">Camadas do mapa</strong><p id="layers-hint">Ative ou oculte categorias no mapa.</p></div>
+                <button id="layers-close" type="button" aria-label="Fechar camadas" title="Fechar">×</button>
+              </div>
+              <fieldset class="explorer-layer-picker">
+                <legend id="layers-legend">Tipos de registros</legend>
+                <label class="layer-row"><input type="checkbox" value="advertisement" checked><span class="layer-swatch layer-advertisement" aria-hidden="true"></span><span data-layer-title="advertisement">Anúncios</span></label>
+                <label class="layer-row"><input type="checkbox" value="platform" checked><span class="layer-swatch layer-platform" aria-hidden="true"></span><span data-layer-title="platform">Plataformas</span></label>
+                <label class="layer-row"><input type="checkbox" value="fair" checked><span class="layer-swatch layer-fair" aria-hidden="true"></span><span data-layer-title="fair">Feiras</span></label>
+                <label class="layer-row"><input type="checkbox" value="physical_market" checked><span class="layer-swatch layer-physical-market" aria-hidden="true"></span><span data-layer-title="physical_market">Vendedores físicos</span></label>
+              </fieldset>
+              <p id="layers-safety" class="layer-safety-note">Localização aproximada; informações revisadas, sem identificação pessoal.</p>
+            </aside>
             <div id="explorer-map" role="region" aria-label="Mapa dos anúncios filtrados"></div><p id="explorer-map-notice">Os marcadores representam localizações aproximadas. Nenhuma coordenada de vendedor é exibida.</p></div>
           <div class="explorer-results"><div class="explorer-results-head"><strong id="explorer-results-title">Resultados</strong></div><div id="explorer-cards" class="explorer-cards"></div></div>
         </div>
