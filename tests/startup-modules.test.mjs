@@ -7,7 +7,7 @@ function parseSource(name){
    .replace(/^export /gm,"");
  return new Function(code+";\nreturn typeof validHttps === 'function' ? validHttps : null;");
 }
-for(const name of ["secure.js","explorer.js","intake.js","firebase-config.js"]){
+for(const name of ["secure.js","explorer.js","intake.js","map-points.js","firebase-config.js"]){
  const compiled=parseSource(name);
  assert.equal(typeof compiled,"function");
  console.log("PASS: module compiles",name);

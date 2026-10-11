@@ -1,15 +1,15 @@
 import { collection, query, where, limit, onSnapshot, addDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { useLang } from "./record-locale.js";
 let db=null,user=null,admin=false,started=false,unsubOwn=null,unsubAdmin=null,language="pt";
-let ownItems=[],adminItems=[],feedbackKey="";
+let ownItems=[],adminItems=[],feedbackKey="",promote=null;
 const $=id=>document.getElementById(id);
 const states=["received","triage","checking","investigating","resolved","closed"];
 const I={
- pt:{kicker:"NIMF / RECEBIMENTO DE INFORMAÇÕES",heading:"Contribuições para investigação",intro:"Envie links e informações para triagem. Apenas você e administradores autorizados podem consultar sua contribuição. Não inclua dados pessoais desnecessários.",type:"Tipo de informação",types:["Plataforma / site","Anúncio de fauna","Grupo ou canal de comércio","Outro indício"],title:"Título / assunto",url:"Link de referência (HTTPS)",species:"Espécie (se conhecida)",location:"Localidade mencionada",details:"Descrição factual",send:"Enviar para triagem",mine:"Minhas contribuições",mineDesc:"Acompanhe o andamento de seus envios. As notas são destinadas ao autor.",admin:"Triagem administrativa",adminDesc:"Avalie os registros recebidos; decisões ficam visíveis ao autor.",none:"Nenhuma contribuição enviada ainda.",noneAdmin:"Nenhum envio para avaliação.",open:"Abrir referência ↗",update:"Atualização",note:"Nota de acompanhamento visível ao autor",save:"Registrar andamento",errUpdate:"Não foi possível atualizar. Confira as regras do Firestore.",invalid:"Não foi possível enviar. Verifique o link HTTPS e as permissões.",sent:"Recebido para triagem.",errOwn:"Não foi possível carregar suas contribuições. Confira as regras de acesso.",errAdmin:"Não foi possível carregar a triagem administrativa.",untitled:"Sem título",example:"Ex.: Oferta de espécie controlada",specPlaceholder:"Nome científico ou comum",locationPlaceholder:"País, estado, município",detailsPlaceholder:"Descreva o que a fonte mostra; indique incertezas e evite acusações não verificadas.",states:["Recebido","Em triagem","Em verificação","Investigação iniciada","Concluído","Encerrado"]},
- en:{kicker:"NIMF / INTELLIGENCE INTAKE",heading:"Investigation contributions",intro:"Submit links and source information for review. Only you and authorized administrators can access your submission. Do not include unnecessary personal information.",type:"Information type",types:["Platform / website","Wildlife listing","Trading group or channel","Other lead"],title:"Title / subject",url:"Reference link (HTTPS)",species:"Species (if known)",location:"Reported location",details:"Factual description",send:"Submit for review",mine:"My contributions",mineDesc:"Track the status of your submissions. Notes are intended for the contributor.",admin:"Administrative review",adminDesc:"Review submitted leads; decisions are visible to the contributor.",none:"No contributions submitted yet.",noneAdmin:"No submissions pending review.",open:"Open reference ↗",update:"Update",note:"Progress note visible to the contributor",save:"Record progress",errUpdate:"Could not update the status. Check Firestore permissions.",invalid:"Could not submit. Check the HTTPS link and access permissions.",sent:"Submitted for review.",errOwn:"Could not load your contributions. Check access rules.",errAdmin:"Could not load the administrative review queue.",untitled:"Untitled",example:"e.g. Offer involving a controlled species",specPlaceholder:"Scientific or common name",locationPlaceholder:"Country, state, municipality",detailsPlaceholder:"Describe what the source shows, indicate uncertainty and avoid unverified allegations.",states:["Received","In triage","Under verification","Investigation started","Resolved","Closed"]},
- es:{kicker:"NIMF / RECEPCIÓN DE INFORMACIÓN",heading:"Contribuciones para investigación",intro:"Envíe enlaces e información para evaluación. Solo usted y los administradores autorizados pueden consultar su contribución. No incluya datos personales innecesarios.",type:"Tipo de información",types:["Plataforma / sitio web","Anuncio de fauna","Grupo o canal de comercio","Otro indicio"],title:"Título / asunto",url:"Enlace de referencia (HTTPS)",species:"Especie (si se conoce)",location:"Localidad mencionada",details:"Descripción factual",send:"Enviar para evaluación",mine:"Mis contribuciones",mineDesc:"Siga el estado de sus envíos. Las notas están destinadas a su autor.",admin:"Evaluación administrativa",adminDesc:"Evalúe las informaciones recibidas; las decisiones serán visibles para el autor.",none:"Todavía no hay contribuciones.",noneAdmin:"No hay envíos para evaluación.",open:"Abrir referencia ↗",update:"Actualización",note:"Nota de seguimiento visible para el autor",save:"Registrar avance",errUpdate:"No se pudo actualizar. Compruebe los permisos de Firestore.",invalid:"No se pudo enviar. Compruebe el enlace HTTPS y los permisos.",sent:"Enviado para evaluación.",errOwn:"No fue posible cargar sus contribuciones. Compruebe las reglas de acceso.",errAdmin:"No fue posible cargar la evaluación administrativa.",untitled:"Sin título",example:"Ej.: Oferta de especie controlada",specPlaceholder:"Nombre científico o común",locationPlaceholder:"País, estado, municipio",detailsPlaceholder:"Describa lo que muestra la fuente; indique las incertidumbres y evite acusaciones no verificadas.",states:["Recibido","En evaluación","En verificación","Investigación iniciada","Resuelto","Cerrado"]}
+ pt:{kicker:"NIMF / RECEBIMENTO DE INFORMAÇÕES",heading:"Contribuições para investigação",intro:"Envie links e informações para triagem. Apenas você e administradores autorizados podem consultar sua contribuição. Não inclua dados pessoais desnecessários.",type:"Tipo de informação",types:["Plataforma / site","Anúncio de fauna","Grupo ou canal de comércio","Feira livre","Ponto de comércio presencial sob investigação","Outro indício"],promote:"Preparar ponto no cadastro do mapa",urlGuidance:"Link opcional para feiras, comércio presencial ou outros indícios; evite endereços particulares.",title:"Título / assunto",url:"Link de referência (HTTPS)",species:"Espécie (se conhecida)",location:"Localidade mencionada",details:"Descrição factual",send:"Enviar para triagem",mine:"Minhas contribuições",mineDesc:"Acompanhe o andamento de seus envios. As notas são destinadas ao autor.",admin:"Triagem administrativa",adminDesc:"Avalie os registros recebidos; decisões ficam visíveis ao autor.",none:"Nenhuma contribuição enviada ainda.",noneAdmin:"Nenhum envio para avaliação.",open:"Abrir referência ↗",update:"Atualização",note:"Nota de acompanhamento visível ao autor",save:"Registrar andamento",errUpdate:"Não foi possível atualizar. Confira as regras do Firestore.",invalid:"Não foi possível enviar. Verifique o link HTTPS e as permissões.",sent:"Recebido para triagem.",errOwn:"Não foi possível carregar suas contribuições. Confira as regras de acesso.",errAdmin:"Não foi possível carregar a triagem administrativa.",untitled:"Sem título",example:"Ex.: Oferta de espécie controlada",specPlaceholder:"Nome científico ou comum",locationPlaceholder:"País, estado, município",detailsPlaceholder:"Descreva o que a fonte mostra; indique incertezas e evite acusações não verificadas.",states:["Recebido","Em triagem","Em verificação","Investigação iniciada","Concluído","Encerrado"]},
+ en:{kicker:"NIMF / INTELLIGENCE INTAKE",heading:"Investigation contributions",intro:"Submit links and source information for review. Only you and authorized administrators can access your submission. Do not include unnecessary personal information.",type:"Information type",types:["Platform / website","Wildlife listing","Trading group or channel","Open-air market","Physical trading location under investigation","Other lead"],promote:"Prepare reviewed map point",urlGuidance:"Link optional for fairs, physical locations and other leads; avoid private addresses.",title:"Title / subject",url:"Reference link (HTTPS)",species:"Species (if known)",location:"Reported location",details:"Factual description",send:"Submit for review",mine:"My contributions",mineDesc:"Track the status of your submissions. Notes are intended for the contributor.",admin:"Administrative review",adminDesc:"Review submitted leads; decisions are visible to the contributor.",none:"No contributions submitted yet.",noneAdmin:"No submissions pending review.",open:"Open reference ↗",update:"Update",note:"Progress note visible to the contributor",save:"Record progress",errUpdate:"Could not update the status. Check Firestore permissions.",invalid:"Could not submit. Check the HTTPS link and access permissions.",sent:"Submitted for review.",errOwn:"Could not load your contributions. Check access rules.",errAdmin:"Could not load the administrative review queue.",untitled:"Untitled",example:"e.g. Offer involving a controlled species",specPlaceholder:"Scientific or common name",locationPlaceholder:"Country, state, municipality",detailsPlaceholder:"Describe what the source shows, indicate uncertainty and avoid unverified allegations.",states:["Received","In triage","Under verification","Investigation started","Resolved","Closed"]},
+ es:{kicker:"NIMF / RECEPCIÓN DE INFORMACIÓN",heading:"Contribuciones para investigación",intro:"Envíe enlaces e información para evaluación. Solo usted y los administradores autorizados pueden consultar su contribución. No incluya datos personales innecesarios.",type:"Tipo de información",types:["Plataforma / sitio web","Anuncio de fauna","Grupo o canal de comercio","Feria libre","Punto de comercio presencial bajo investigación","Otro indicio"],promote:"Preparar punto para el mapa",urlGuidance:"Enlace opcional para ferias, comercio presencial u otros indicios; evite direcciones privadas.",title:"Título / asunto",url:"Enlace de referencia (HTTPS)",species:"Especie (si se conoce)",location:"Localidad mencionada",details:"Descripción factual",send:"Enviar para evaluación",mine:"Mis contribuciones",mineDesc:"Siga el estado de sus envíos. Las notas están destinadas a su autor.",admin:"Evaluación administrativa",adminDesc:"Evalúe las informaciones recibidas; las decisiones serán visibles para el autor.",none:"Todavía no hay contribuciones.",noneAdmin:"No hay envíos para evaluación.",open:"Abrir referencia ↗",update:"Actualización",note:"Nota de seguimiento visible para el autor",save:"Registrar avance",errUpdate:"No se pudo actualizar. Compruebe los permisos de Firestore.",invalid:"No se pudo enviar. Compruebe el enlace HTTPS y los permisos.",sent:"Enviado para evaluación.",errOwn:"No fue posible cargar sus contribuciones. Compruebe las reglas de acceso.",errAdmin:"No fue posible cargar la evaluación administrativa.",untitled:"Sin título",example:"Ej.: Oferta de especie controlada",specPlaceholder:"Nombre científico o común",locationPlaceholder:"País, estado, municipio",detailsPlaceholder:"Describa lo que muestra la fuente; indique las incertidumbres y evite acusaciones no verificadas.",states:["Recibido","En evaluación","En verificación","Investigación iniciada","Resuelto","Cerrado"]}
 };
-const typeKeys=["platform","advertisement","group","other"];
+const typeKeys=["platform","advertisement","group","fair","physical_market","other"];
 const txt=()=>I[language];
 const node=(tag,content)=>{const n=document.createElement(tag);n.textContent=content??"";return n;};
 const validHttps=value=>{try{const u=new URL(String(value));return u.protocol==="https:"&&!!u.hostname&&!String(value).includes(" ");}catch{return false;}};
@@ -41,6 +41,10 @@ function summary(item,canEdit){
    finally{save.disabled=false;}
   });
   block.append(select,note,save);
+  if(typeof promote==="function"&&["platform","advertisement","fair","physical_market"].includes(item.type)){
+   const action=node("button",T.promote);action.type="button";action.className="secure-secondary";
+   action.addEventListener("click",()=>promote(item));block.append(action);
+  }
  }
  return block;
 }
@@ -62,13 +66,18 @@ export function setIntakeLanguage(lang){
  $("tip-title").placeholder=T.example;$("tip-species").placeholder=T.specPlaceholder;
  $("tip-location").placeholder=T.locationPlaceholder;$("tip-details").placeholder=T.detailsPlaceholder;
  $("tip-submit").textContent=T.send;
+ $("tip-url-note").textContent=T.urlGuidance;
+ updateLinkRequirement();
  const cols=sec.querySelectorAll(".contributions-columns > section");
  cols[0].querySelector("h3").textContent=T.mine;cols[0].querySelector("p.secure-small").textContent=T.mineDesc;
  cols[1].querySelector("h3").textContent=T.admin;cols[1].querySelector("p.secure-small").textContent=T.adminDesc;
  renderLists();if(feedbackKey)$("tip-feedback").textContent=T[feedbackKey]||"";
 }
-export async function openIntake(database,currentUser,isAdmin,lang="pt"){
- db=database;user=currentUser;admin=isAdmin===true;ownItems=[];adminItems=[];
+function updateLinkRequirement(){
+ $("tip-url").required=!["fair","physical_market","other"].includes($("tip-type").value);
+}
+export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromote=null){
+ db=database;user=currentUser;admin=isAdmin===true;promote=onPromote;ownItems=[];adminItems=[];
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
  $("admin-review").hidden=!admin;setIntakeLanguage(lang);
  const uid=user.uid;
@@ -81,12 +90,13 @@ export async function openIntake(database,currentUser,isAdmin,lang="pt"){
   adminItems=snap.docs.map(d=>({id:d.id,...d.data()}));renderLists();
  },()=>feedback("errAdmin"));
  if(started)return;started=true;
+ $("tip-type").addEventListener("change",updateLinkRequirement);
  $("tip-form").addEventListener("submit",async ev=>{
   ev.preventDefault();if(!user)return;
   const send=$("tip-submit");send.disabled=true;feedback("");
   try{
    const values={owner_uid:user.uid,type:$("tip-type").value,title:$("tip-title").value.trim(),url:$("tip-url").value.trim(),species:$("tip-species").value.trim(),location:$("tip-location").value.trim(),details:$("tip-details").value.trim(),status:"received",review_note:"",created_at:serverTimestamp(),updated_at:serverTimestamp()};
-   if(!validHttps(values.url))throw new Error("invalid url");
+   if(!validHttps(values.url) && !(["fair","physical_market","other"].includes(values.type)&&values.url===""))throw new Error("invalid url");
    await addDoc(collection(db,"submissions"),values);
    $("tip-form").reset();feedback("sent");
   }catch(e){feedback("invalid");}finally{send.disabled=false;}
@@ -94,6 +104,6 @@ export async function openIntake(database,currentUser,isAdmin,lang="pt"){
 }
 export function closeIntake(){
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
- user=null;db=null;admin=false;ownItems=[];adminItems=[];
+ user=null;db=null;admin=false;promote=null;ownItems=[];adminItems=[];
  $("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-review").hidden=true;feedback("");
 }

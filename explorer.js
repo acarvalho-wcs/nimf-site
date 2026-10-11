@@ -1,13 +1,26 @@
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
-let dataset=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
+let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null;
 const el=id=>document.getElementById(id);
 const trans={
- pt:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa e filtros",desc:"Mapeamento aproximado, não a localização de vendedores. Combine os filtros para explorar anúncios.",reset:"Limpar filtros",search:"Busca livre",species:"Espécie",state:"Estado / região",city:"Município",source:"Fonte",status:"Verificação",product:"Produto",matches:"registros correspondentes",map:"no mapa",unmapped:"sem localização mapeável",results:"Resultados",notice:"Marcadores indicam posições aproximadas, nunca endereços de vendedores.",searchPlaceholder:"Espécie, fonte, cidade, produto...",fallbackLabel:"Texto disponível em outro idioma",resetMap:"Centralizar registros",mapUnavailable:"O mapa está parcialmente indisponível. O restante do painel permanece acessível.",empty:"Nenhum registro corresponde aos filtros.",all:"Todos",more:"Detalhes",close:"Fechar",link:"Fonte original",precision:"Precisão geográfica",price:"Preço anunciado",quantity:"Quantidade",review:"Situação",observation:"Contexto da observação",noDate:"Data não informada"},
- en:{k:"GEOGRAPHIC EXPLORER",title:"Wildlife markets: map and filters",desc:"Approximate mapping, not seller locations. Combine filters to explore listings.",reset:"Clear filters",search:"Free search",species:"Species",state:"State / region",city:"Municipality",source:"Source",status:"Verification",product:"Product",matches:"matching records",map:"on map",unmapped:"without mappable location",results:"Results",notice:"Markers show approximate locations, never seller addresses.",searchPlaceholder:"Species, source, city, product...",fallbackLabel:"Text available in another language",resetMap:"Center on records",mapUnavailable:"Part of the map is unavailable. The rest of the dashboard remains accessible.",empty:"No records match these filters.",all:"All",more:"Details",close:"Close",link:"Original source",precision:"Spatial accuracy",price:"Advertised price",quantity:"Quantity",review:"Status",observation:"Observation context",noDate:"Date not available"},
- es:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa y filtros",desc:"Georreferenciación aproximada, no ubicaciones de vendedores. Combine filtros para explorar anuncios.",reset:"Limpiar filtros",search:"Búsqueda",species:"Especie",state:"Estado / región",city:"Municipio",source:"Fuente",status:"Verificación",product:"Producto",matches:"registros coincidentes",map:"en el mapa",unmapped:"sin ubicación cartografiable",results:"Resultados",notice:"Los marcadores indican posiciones aproximadas, nunca direcciones de vendedores.",searchPlaceholder:"Especie, fuente, ciudad, producto...",fallbackLabel:"Texto disponible en otro idioma",resetMap:"Centrar registros",mapUnavailable:"Una parte del mapa no está disponible. El resto del panel sigue accesible.",empty:"Ningún registro coincide con los filtros.",all:"Todos",more:"Detalles",close:"Cerrar",link:"Fuente original",precision:"Precisión geográfica",price:"Precio anunciado",quantity:"Cantidad",review:"Estado",observation:"Contexto de observación",noDate:"Fecha no disponible"}
+ pt:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa e filtros",desc:"Mapeamento aproximado, não a localização de vendedores. Combine os filtros para explorar anúncios.",reset:"Limpar filtros",search:"Busca livre",species:"Espécie",state:"Estado / região",city:"Município",source:"Fonte",status:"Verificação",product:"Produto",matches:"registros correspondentes",map:"no mapa",unmapped:"sem localização mapeável",results:"Resultados",notice:"Marcadores indicam posições aproximadas, nunca endereços de vendedores.",searchPlaceholder:"Espécie, fonte, cidade, produto...",fallbackLabel:"Texto disponível em outro idioma",resetMap:"Centralizar registros",mapUnavailable:"O mapa está parcialmente indisponível. O restante do painel permanece acessível.",empty:"Nenhum registro corresponde aos filtros.",all:"Todos",more:"Detalhes",close:"Fechar",link:"Fonte original",precision:"Precisão geográfica",price:"Preço anunciado",quantity:"Quantidade",review:"Situação",observation:"Contexto da observação",noDate:"Data não informada",layers:"Camadas",fullscreen:"Tela cheia",exitFullscreen:"Sair da tela cheia",layerNames:{advertisement:"Anúncios",platform:"Plataformas",fair:"Feiras livres",physical_market:"Comércio presencial sob investigação"},evidence:"Evidência",corroborated:"Corroborada",sourceDraft:"Registro administrativo revisado"},
+ en:{k:"GEOGRAPHIC EXPLORER",title:"Wildlife markets: map and filters",desc:"Approximate mapping, not seller locations. Combine filters to explore listings.",reset:"Clear filters",search:"Free search",species:"Species",state:"State / region",city:"Municipality",source:"Source",status:"Verification",product:"Product",matches:"matching records",map:"on map",unmapped:"without mappable location",results:"Results",notice:"Markers show approximate locations, never seller addresses.",searchPlaceholder:"Species, source, city, product...",fallbackLabel:"Text available in another language",resetMap:"Center on records",mapUnavailable:"Part of the map is unavailable. The rest of the dashboard remains accessible.",empty:"No records match these filters.",all:"All",more:"Details",close:"Close",link:"Original source",precision:"Spatial accuracy",price:"Advertised price",quantity:"Quantity",review:"Status",observation:"Observation context",noDate:"Date not available",layers:"Layers",fullscreen:"Fullscreen",exitFullscreen:"Exit fullscreen",layerNames:{advertisement:"Listings",platform:"Platforms",fair:"Open-air markets",physical_market:"Physical trading locations under investigation"},evidence:"Evidence",corroborated:"Corroborated",sourceDraft:"Reviewed administrative record"},
+ es:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa y filtros",desc:"Georreferenciación aproximada, no ubicaciones de vendedores. Combine filtros para explorar anuncios.",reset:"Limpiar filtros",search:"Búsqueda",species:"Especie",state:"Estado / región",city:"Municipio",source:"Fuente",status:"Verificación",product:"Producto",matches:"registros coincidentes",map:"en el mapa",unmapped:"sin ubicación cartografiable",results:"Resultados",notice:"Los marcadores indican posiciones aproximadas, nunca direcciones de vendedores.",searchPlaceholder:"Especie, fuente, ciudad, producto...",fallbackLabel:"Texto disponible en otro idioma",resetMap:"Centrar registros",mapUnavailable:"Una parte del mapa no está disponible. El resto del panel sigue accesible.",empty:"Ningún registro coincide con los filtros.",all:"Todos",more:"Detalles",close:"Cerrar",link:"Fuente original",precision:"Precisión geográfica",price:"Precio anunciado",quantity:"Cantidad",review:"Estado",observation:"Contexto de observación",noDate:"Fecha no disponible",layers:"Capas",fullscreen:"Pantalla completa",exitFullscreen:"Salir de pantalla completa",layerNames:{advertisement:"Anuncios",platform:"Plataformas",fair:"Ferias libres",physical_market:"Comercio presencial bajo investigación"},evidence:"Evidencia",corroborated:"Corroborada",sourceDraft:"Registro administrativo revisado"}
 };
+const layerNames=["advertisement","platform","fair","physical_market"];
+const activeLayers=()=>new Set([...document.querySelectorAll("#explorer-layers input:checked")].map(e=>e.value));
+function rebuildDataset(){
+ const canonical=canonicalRecords.map(r=>({...r,layer_type:"advertisement"}));
+ const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(r=>({
+  ...r,id:"point-"+r.id,source:trans[language].sourceDraft,
+  scientific_name:r.scientific_name||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
+  product_type:r.layer_type,
+  description_pt:r.notes||"", // Administrative source note is labelled if no translation is present.
+  description_en:"",description_es:""
+ }));
+ dataset=[...canonical,...points];
+}
 const controls={species:"scientific_name",state:"state",city:"municipality",source:"source",status:"status",product:"product_type"};
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
 const safe=r=>r && typeof r==="object"&&!Array.isArray(r);
@@ -69,6 +82,7 @@ function setupSpeciesPicker(){
  });
 }
 function matches(r){
+ if(!activeLayers().has(r.layer_type||"advertisement"))return false;
  const term=normalize(el("explorer-search").value);
  if(term && !["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es"].some(k=>normalize(r[k]).includes(term)))return false;
  return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||r[key]===el("explorer-"+id).value);
@@ -78,10 +92,11 @@ function addField(wrap,label,value){if(value===null||value===undefined||value===
 function showDetail(r){
  activeId=r.id;const d=el("explorer-detail");d.replaceChildren();
  const header=document.createElement("div");header.className="explorer-detail-head";
- header.append(appendScientific(document.createElement("h3"),localizedTitle(r,language)||r.id,r.scientific_name));
+ header.append(appendScientific(document.createElement("h3"),r.layer_type && r.layer_type!=="advertisement" ? r.title : (localizedTitle(r,language)||r.id),r.scientific_name));
  const close=textNode("button",trans[language].close);close.type="button";close.className="secure-secondary";close.addEventListener("click",()=>{activeId=null;d.hidden=true;});header.append(close);d.append(header);
  const info=document.createElement("div");info.className="explorer-detail-grid";
  for(const [key,label] of [["scientific_name",trans[language].species],["source",trans[language].source],["state",trans[language].state],["municipality",trans[language].city],["product_type",trans[language].product],["status",trans[language].review],["location_precision",trans[language].precision]])addField(info,label,localizedField(r,key,language));
+ if(r.layer_type)addField(info,trans[language].layers,trans[language].layerNames[r.layer_type]);
  if(Number.isFinite(r.advertised_price))addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency||"BRL"}).format(r.advertised_price));
  if(Number.isFinite(r.advertised_quantity))addField(info,trans[language].quantity,r.advertised_quantity);
  d.append(info);
@@ -211,7 +226,7 @@ function renderRasterMarkers(rows,fit=true){
   const pin=document.createElement("button");pin.type="button";pin.className="nimf-raster-pin";
   pin.style.left=sx+"px";pin.style.top=sy+"px";
   pin.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
-  pin.setAttribute("aria-label",pin.title);
+  pin.setAttribute("aria-label",pin.title);pin.dataset.layer=r.layer_type||"advertisement";
   pin.addEventListener("click",()=>showDetail(r));fallbackPins.append(pin);
  }
  fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"° · Z"+fallbackZoom;
@@ -261,7 +276,7 @@ function drawMarkers(rows){
  for(const r of rows){
   const [lat,lng]=coords(r);
   const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";
-  dot.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  dot.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");dot.dataset.layer=r.layer_type||"advertisement";
   dot.style.cssText="background:#9ad6a1;border:2px solid #245e4c;border-radius:100%;width:17px;height:17px;cursor:pointer;box-shadow:0 1px 9px #0006";
   dot.addEventListener("click",()=>showDetail(r));
   pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
@@ -280,7 +295,7 @@ function render(){
  if(!f.length)list.append(textNode("p",T.empty,"secure-small"));
  for(const r of f){
    const card=document.createElement("button");card.type="button";card.className="explorer-card";
-   card.append(appendScientific(document.createElement("strong"),localizedTitle(r,language)||r.id,r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[r.source,localizedField(r,"status",language)].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
+   card.append(appendScientific(document.createElement("strong"),r.layer_type && r.layer_type!=="advertisement" ? r.title : (localizedTitle(r,language)||r.id),r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[trans[language].layerNames[r.layer_type||"advertisement"],r.source,localizedField(r,"status",language)].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
    card.addEventListener("click",()=>{showDetail(r);if(mapReady&&coords(r))map.flyTo({center:[coords(r)[1],coords(r)[0]],zoom:Math.max(map.getZoom(),7),speed:1.2});});
    list.append(card);
  }
@@ -292,13 +307,21 @@ function render(){
 }
 export function initExplorer(rows,lang="pt"){
  language=trans[lang]?lang:"pt";
- dataset=(Array.isArray(rows)?rows:[]).filter(safe).map((r,i)=>({...r,id:r.id||r.record_id||String(i)}));
+ canonicalRecords=(Array.isArray(rows)?rows:[]).filter(safe).map((r,i)=>({...r,id:r.id||r.record_id||String(i)}));rebuildDataset();
  for(const id of Object.keys(controls))el("explorer-"+id).value="";
  el("explorer-search").value="";activeId=null;el("explorer-detail").hidden=true;
  setupSpeciesPicker();options();setExplorerLanguage(language);render();
 }
+export function setMapPoints(rows){
+ reviewedPoints=(Array.isArray(rows)?rows:[]).filter(safe).filter(r=>r.published===true);
+ rebuildDataset();options();render();
+}
 export function setExplorerLanguage(lang){
- language=trans[lang]?lang:"pt";const t=trans[language];
+ language=trans[lang]?lang:"pt";const t=trans[language];rebuildDataset();
+ el("layers-title").textContent=t.layers;
+ for(const el of document.querySelectorAll("[data-layer-title]"))el.textContent=t.layerNames[el.dataset.layerTitle];
+ const expanded=el("explorer-map-wrap")?.classList.contains("is-fullscreen")||document.querySelector(".explorer-map-wrap")?.classList.contains("is-fullscreen");
+ el("explorer-fullscreen").textContent=expanded?t.exitFullscreen:t.fullscreen;
  el("explorer-search").placeholder=t.searchPlaceholder;
  el("explorer-map").setAttribute("aria-label",t.title);
  el("explorer-reset").setAttribute("aria-label",t.reset);
@@ -307,8 +330,28 @@ export function setExplorerLanguage(lang){
  options();render();
 }
 export function clearExplorer(){
- dataset=[];activeId=null;el("explorer-detail").hidden=true;el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
+ dataset=[];canonicalRecords=[];reviewedPoints=[];activeId=null;el("explorer-detail").hidden=true;el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
 }
+function resizeDisplayedMap(){
+ const visible=dataset.filter(matches).filter(r=>coords(r));
+ if(fallbackLayer)renderRasterMarkers(visible,false);
+ if(mapReady)requestAnimationFrame(()=>map.resize());
+}
+function toggleFullScreen(force){
+ const wrap=document.querySelector(".explorer-map-wrap");
+ const expanded=force===undefined?!wrap.classList.contains("is-fullscreen"):!!force;
+ wrap.classList.toggle("is-fullscreen",expanded);
+ document.body.classList.toggle("nimf-map-fullscreen",expanded);
+ el("explorer-fullscreen").setAttribute("aria-pressed",String(expanded));
+ el("explorer-fullscreen").textContent=expanded?trans[language].exitFullscreen:trans[language].fullscreen;
+ requestAnimationFrame(()=>{resizeDisplayedMap();setTimeout(resizeDisplayedMap,120);});
+}
+el("explorer-fullscreen").addEventListener("click",()=>toggleFullScreen());
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape"&&document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);});
+for(const input of document.querySelectorAll("#explorer-layers input"))input.addEventListener("change",()=>{
+ const value=[...document.querySelectorAll("#explorer-layers input:checked")];
+ options(dataset.filter(r=>activeLayers().has(r.layer_type||"advertisement")));render();
+});
 for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",render);
 el("explorer-search").addEventListener("input",render);
 el("explorer-reset").addEventListener("click",()=>{el("explorer-search").value="";for(const id of Object.keys(controls))el("explorer-"+id).value="";render();});
