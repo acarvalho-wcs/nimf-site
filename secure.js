@@ -42,6 +42,7 @@ function translate(){
  items["private-kicker"]="privateKicker";
  Object.assign(items,{"side-brand-name":"brand","side-kicker":"sideKicker","dashboard-nav-label":"dashboardNav","reports-nav-label":"reportsNav","contact-label":"contact","program-name":"program","reports-page-kicker":"reportsKicker","reports-page-title":"reportsTitle","reports-page-description":"reportsDesc","reports-empty-title":"reportsEmptyTitle","reports-empty-description":"reportsEmptyDesc","auth-kicker":"authKicker","intake-kicker":"intakeKicker","admin-map-kicker":"mapKicker"});
  for(const [id,key] of Object.entries(items))$(id).textContent=t(key);
+ renderLegalProtection();
  $("record-search").placeholder=t("searchPlaceholder");
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  if(intakeModule)intakeModule.setIntakeLanguage(locale);
@@ -66,6 +67,23 @@ function displayWaiting(user,unverified,denied=false){
 function docCell(row,field){
  if(["title","category","status"].includes(field))return localizedField(row,field,locale);
  const val=row[field];return typeof val==="string" ? val : "";
+}
+function renderLegalProtection(){
+ const lang=locale, words={
+ pt:["ENQUADRAMENTO LEGAL","Proteção legal e restrições ao comércio","Espécies ameaçadas, CITES, CMS e regras brasileiras para criação e comércio.","Lista nacional / ICMBio","Não verificado","Resolução CONAMA 496/2020: verificar autorização, origem e criação fora da distribuição natural.","Anúncio fora da distribuição natural exige análise de autorização; não comprova delito."],
+ en:["LEGAL FRAMEWORK","Legal protection and trade restrictions","Threatened species, CITES, CMS and Brazilian breeding and trade rules.","Brazilian national red list","Not verified","CONAMA Resolution 496/2020: check permits, provenance and breeding outside natural distribution.","An offer outside the natural range requires permit review; it does not prove wrongdoing."],
+ es:["MARCO LEGAL","Protección legal y restricciones comerciales","Especies amenazadas, CITES, CMS y normas brasileñas de cría y comercio.","Lista nacional de Brasil","No verificado","Resolución CONAMA 496/2020: verificar permisos, procedencia y cría fuera de distribución natural.","Una oferta fuera del área natural requiere revisar permisos; no demuestra delito."]
+ }[lang]||[];
+ for(const [id,n] of [["legal-kicker",0],["legal-heading",1],["legal-intro",2],["legal-caution",6]])$(id).textContent=words[n];
+ const panel=$("legal-profiles");panel.replaceChildren();
+ for(const name of ["Melipona capixaba","Melipona scutellaris","Melipona rufiventris"]){
+  const box=document.createElement("article");box.className="legal-profile";
+  const title=document.createElement("h4");const italic=document.createElement("i");italic.textContent=name;title.append(italic);box.append(title);
+  for(const [label,value] of [[words[3],"EN"],["CITES",words[4]],["CMS",words[4]]]){
+   const p=document.createElement("p");const strong=document.createElement("strong");strong.textContent=label+": ";p.append(strong,document.createTextNode(value));box.append(p);
+  }
+  const note=document.createElement("p");note.textContent=words[5];box.append(note);panel.append(box);
+ }
 }
 function drawRecords(){
  const search=$("record-search").value.trim().toLocaleLowerCase(locale);
