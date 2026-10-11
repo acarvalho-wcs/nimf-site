@@ -214,7 +214,12 @@ function renderRasterMarkers(rows,fit=true){
   pin.setAttribute("aria-label",pin.title);
   pin.addEventListener("click",()=>showDetail(r));fallbackPins.append(pin);
  }
- fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"°";
+ fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"° · Z"+fallbackZoom;
+ host.dataset.centerLongitude=String(fallbackCenter[0]);host.dataset.centerLatitude=String(fallbackCenter[1]);
+ host.dataset.zoom=String(fallbackZoom);
+ host.dataset.centerTile=fallbackZoom+"/"+Math.floor(cx/256)+"/"+Math.floor(cy/256);
+ host.dataset.tileCount=String(cells.length);
+ host.dataset.mappedCount=String(rows.length);
 }
 function setupMap(){
  if(!fallbackLayer)initializeRasterFallback();
