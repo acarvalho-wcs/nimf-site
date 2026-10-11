@@ -1,5 +1,5 @@
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
-import { appendScientific } from "./scientific-format.js";
+function appendScientific(parent,value,taxon=""){const text=String(value??"");parent.replaceChildren();const name=String(taxon||"").trim();let at=name?text.indexOf(name):-1;if(at<0){const m=text.match(/(?:\b(?:de|do|da|of)\s+)([A-Z][a-z]{2,}\s+[a-z][a-z-]{2,})/u);if(m){at=m.index+m[0].length-m[1].length;}}if(at<0){parent.textContent=text;return parent;}if(at>0)parent.append(document.createTextNode(text.slice(0,at)));const el=document.createElement("i");el.className="scientific-name";el.textContent=name&&text.includes(name)?name:text.slice(at).match(/^[A-Z][a-z]{2,}\s+[a-z][a-z-]{2,}/u)?.[0]||"";parent.append(el);const end=at+el.textContent.length;if(end<text.length)parent.append(document.createTextNode(text.slice(end)));return parent;}
 
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null;
