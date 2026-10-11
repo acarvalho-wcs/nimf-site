@@ -5,9 +5,9 @@
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="robots" content="noindex,nofollow,noarchive">
  <meta name="description" content="NIMF — área restrita com aprovação individual">
- <title>NIMF | Área restrita</title>
+ <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
- <link rel="stylesheet" href="./secure.css?v=20261011i">
+ <link rel="stylesheet" href="./secure.css?v=20261011k">
  <script>
  // Ensure a broken remote module can never leave all panels invisible.
  setTimeout(function(){
@@ -19,7 +19,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=20261011j"></script>
+ <script type="module" src="./secure.js?v=20261011k"></script>
 </head>
 <body data-theme="dark">
  <div class="secure-layout">
@@ -35,7 +35,7 @@
   </aside>
   <div class="secure-main">
    <header class="secure-top">
-    <a href="./index.html" id="back-public">← Voltar à demonstração pública</a>
+    <a href="https://wildlife-trafficking-dashboard.wcs-associa-6434.chatgpt.site/" id="back-public" rel="noopener noreferrer" target="_blank">Retorne ao Observatório Global de Tráfico de Animais</a>
     <div class="secure-top-right"><select id="secure-language" aria-label="Language"><option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option></select><button id="secure-theme" type="button" aria-label="Toggle dark/light">☼</button></div>
    </header>
    <main class="secure-content">
@@ -116,7 +116,9 @@
               </fieldset>
               <p id="layers-safety" class="layer-safety-note">Localização aproximada; informações revisadas, sem identificação pessoal.</p>
             </aside>
-            <div id="explorer-map" role="region" aria-label="Mapa dos anúncios filtrados"></div><p id="explorer-map-notice">Os marcadores representam localizações aproximadas. Nenhuma coordenada de vendedor é exibida.</p></div>
+            <div id="explorer-map" role="region" aria-label="Mapa dos anúncios filtrados"></div>
+            <aside id="explorer-map-card" class="explorer-map-card" hidden aria-live="polite" role="region" aria-labelledby="explorer-map-card-title"></aside>
+            <p id="explorer-map-notice">Os marcadores representam localizações aproximadas. Nenhuma coordenada de vendedor é exibida.</p></div>
           <div class="explorer-results"><div class="explorer-results-head"><strong id="explorer-results-title">Resultados</strong></div><div id="explorer-cards" class="explorer-cards"></div></div>
         </div>
         <section id="explorer-detail" class="explorer-detail" hidden aria-live="polite"></section>
