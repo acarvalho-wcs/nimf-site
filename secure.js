@@ -86,7 +86,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=20261011h");
+   const mod=await import("./explorer.js?v=20261011i");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
@@ -104,7 +104,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./map-points.js?v=20261011h");
+   const mod=await import("./map-points.js?v=20261011i");
    if(!valid())return;
    mapModule=mod;
    mod.startMapPoints(db,user,approvalAdmin,items=>{
@@ -116,7 +116,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./intake.js?v=20261011h");
+   const mod=await import("./intake.js?v=20261011i");
    if(!valid())return;
    intakeModule=mod;
    await mod.openIntake(db,user,approvalAdmin,locale,tip=>mapModule?.promoteTip(tip));
@@ -141,7 +141,7 @@ async function evaluateUser(user,epoch){
   const approval=await getDoc(doc(db,"access",user.uid));
   if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
   if(approval.exists() && approval.data().approved===true){
-    approvalAdmin=approval.data().admin===true;
+    approvalAdmin=approval.data().admin===true && user.email?.trim().toLowerCase()==="acarvalho@wcs.org";
    try{await loadPrivateRecords(user,epoch);}
    catch(e){if(epoch===authEpoch){displayWaiting(user,false,true);message("waiting-error",t("failedRead"));}}
   }else{displayWaiting(user,false,!approval.exists());}
