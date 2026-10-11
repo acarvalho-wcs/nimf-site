@@ -139,45 +139,61 @@
 .nimf-raster-coordinates{position:absolute;left:12px;bottom:12px;color:#36534b;background:#ffffffdd;padding:5px 8px;border-radius:4px;font-size:11px;pointer-events:none}
 #explorer-map .nimf-gl-map{position:absolute;inset:0;z-index:2}
 
-/* Link brand to the existing Global Wildlife Trafficking Observatory.
-   Match the Observatory's WT / fluorescent lime lettermark; no image asset or new service. */
-.secure-brandmark.observatory-brandmark{
-  width:44px;height:44px;transform:none;border-radius:9px;
-  border:1px solid #dbff60;background:#dbff60;color:#172715;
-  font-size:15px;font-weight:900;line-height:1;letter-spacing:-.6px;
-  box-shadow:0 0 0 1px rgba(24,54,20,.15);
-}
-.secure-brand:hover .observatory-brandmark,
-.secure-brand:focus-visible .observatory-brandmark{background:#edff9c;border-color:#edff9c}
-.secure-brand:focus-visible{outline:2px solid var(--accent);outline-offset:5px;border-radius:7px}
 
-/* Intelligence layer chooser and fullscreen map, preserving existing responsive dashboard. */
-.explorer-map-wrap{isolation:isolate;position:relative}
-.explorer-map-toolbar{position:absolute;top:12px;left:12px;right:55px;z-index:10;display:flex;gap:8px;align-items:flex-start;justify-content:space-between;pointer-events:none}
+/* User-provided Observatory animals logo, used as the sidebar navigation mark. */
+.secure-brand:focus-visible{outline:2px solid var(--accent);outline-offset:5px;border-radius:7px}
+.secure-observatory-logo{display:block;flex-shrink:0;width:58px;height:58px;object-fit:contain;object-position:center;filter:drop-shadow(0 2px 6px #0003);transition:transform .18s ease}
+.secure-brand:hover .secure-observatory-logo,.secure-brand:focus-visible .secure-observatory-logo{transform:scale(1.06)}
+@media(max-width:760px){.secure-observatory-logo{width:48px;height:48px}}
+
+/* Floating layer catalogue follows the Amazon environmental crimes Observatory:
+   compact map toolbar, sliding panel, and X close control even in fullscreen. */
+.explorer-map-wrap{position:relative;isolation:isolate;--layer-advertisement:#80c995;--layer-platform:#5aa6ec;--layer-fair:#e9b457;--layer-physical-market:#df7c9a}
+.explorer-map-toolbar{position:absolute;top:12px;left:12px;right:auto;z-index:20;display:flex;gap:7px;align-items:flex-start;pointer-events:none}
 .explorer-map-toolbar>*{pointer-events:auto}
-.explorer-layer-picker{margin:0;border:1px solid #326253;border-radius:9px;background:rgba(9,31,26,.94);padding:10px 12px;box-shadow:0 7px 28px #0005;color:#e3f0e9;max-width:290px;display:grid;gap:5px}
-.explorer-layer-picker legend{font-size:11px;letter-spacing:.06em;font-weight:800;background:#0a231d;border-radius:5px;padding:2px 5px}
-.explorer-layer-picker label{font-size:11px;display:flex;align-items:center;gap:7px;cursor:pointer;line-height:1.4}
-.explorer-layer-picker input{accent-color:#cbff7a}
-.layer-swatch{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #d0eee5;flex-shrink:0}
-.layer-advertisement{background:#a6dea9}.layer-platform{background:#73a8f8}.layer-fair{background:#f2bb5f}.layer-physical-market{background:#de8da7}
-#explorer-fullscreen{background:#0a241eea;color:#ecfae7;border:1px solid #679f83;white-space:nowrap;font-size:12px;font-weight:700}
+.map-toolbar-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#0d2923ed!important;color:#f0faef!important;border:1px solid #74a68e!important;border-radius:9px!important;box-shadow:0 5px 18px #0005;padding:9px 12px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;min-height:38px}
+.map-toolbar-button:hover,.map-toolbar-button:focus-visible{background:#234b3e!important;border-color:#b1e3bc!important}
+.layers-icon{font-size:17px;line-height:1}
+.explorer-layers-panel{position:absolute;z-index:40;top:12px;right:12px;width:min(338px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);box-shadow:0 18px 55px #0008;transform:translateX(calc(100% + 28px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .21s ease,opacity .21s ease,visibility .21s ease}
+.explorer-layers-panel.open{transform:translateX(0);opacity:1;visibility:visible;pointer-events:auto}
+.explorer-layers-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:15px 16px 10px;border-bottom:1px solid var(--line)}
+.explorer-layers-head strong{font-size:13px;font-weight:800;color:var(--text)}
+.explorer-layers-head p{font-size:11px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+#layers-close{display:grid;place-items:center;width:30px;height:30px;min-width:30px;padding:0;background:transparent;border:1px solid var(--line);border-radius:7px;color:var(--text);font-size:22px;line-height:1;cursor:pointer}
+#layers-close:hover,#layers-close:focus-visible{background:var(--surface2);border-color:var(--accent)}
+.explorer-layers-panel .explorer-layer-picker{margin:0;border:0;background:transparent;padding:12px 14px;box-shadow:none;color:var(--text);display:grid;gap:3px;max-width:none}
+.explorer-layers-panel .explorer-layer-picker legend{font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;color:var(--muted);padding:0 3px;background:transparent}
+.explorer-layers-panel .layer-row{display:grid;grid-template-columns:17px 14px minmax(0,1fr);align-items:center;gap:10px;min-height:39px;padding:7px 8px;font-size:12px;color:var(--text);cursor:pointer;border-radius:8px;line-height:1.35}
+.explorer-layers-panel .layer-row:hover{background:var(--surface2)}
+.explorer-layers-panel .layer-row input{width:15px;height:15px;margin:0;accent-color:#83be9a;cursor:pointer}
+.explorer-layers-panel .layer-swatch{width:12px;height:12px;border-radius:100%;border:2px solid #ffffff9c;box-shadow:0 0 0 1px #0004;display:block}
+.explorer-map-wrap .layer-advertisement{background:var(--layer-advertisement)}
+.explorer-map-wrap .layer-platform{background:var(--layer-platform)}
+.explorer-map-wrap .layer-fair{background:var(--layer-fair)}
+.explorer-map-wrap .layer-physical-market{background:var(--layer-physical-market)}
+.layer-safety-note{font-size:10px;color:var(--muted);line-height:1.5;padding:0 17px 16px;margin:0}
 .explorer-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100dvh!important;max-height:none!important;overflow:hidden!important;border-radius:0!important;background:#112923}
 .explorer-map-wrap.is-fullscreen #explorer-map{position:absolute;inset:0;width:100%;height:100%!important;min-height:100%!important;max-height:none!important}
-.explorer-map-wrap.is-fullscreen .explorer-map-toolbar{right:75px;top:14px}
+.explorer-map-wrap.is-fullscreen .explorer-map-toolbar{left:14px;top:14px;right:auto}
+.explorer-map-wrap.is-fullscreen .explorer-layers-panel{top:14px;right:14px;max-height:calc(100dvh - 28px)}
 .explorer-map-wrap.is-fullscreen #explorer-map-notice{position:absolute;z-index:5;bottom:0;left:0;max-width:65%;background:#0a211eda;border-radius:5px;color:#e0efe6}
 body.nimf-map-fullscreen{overflow:hidden!important}
 .explorer-map-wrap.is-fullscreen .nimf-raster-layer{height:100%;width:100%}
-.nimf-raster-pin[data-layer="platform"],.nimf-map-dot[data-layer="platform"]{background:#73a8f8!important;border-color:#21487c!important}
-.nimf-raster-pin[data-layer="fair"],.nimf-map-dot[data-layer="fair"]{background:#f2bb5f!important;border-color:#7e4a18!important}
-.nimf-raster-pin[data-layer="physical_market"],.nimf-map-dot[data-layer="physical_market"]{background:#de8da7!important;border-color:#74354e!important}
+/* 30% smaller markers: 21px → 14.7px raster; 17px → 11.9px MapLibre. */
+.nimf-raster-pin{box-sizing:border-box!important;padding:0!important;min-width:0!important;min-height:0!important;width:15px!important;height:15px!important;border-width:2px!important;background:var(--layer-advertisement)!important;border-color:#245b40!important;position:absolute}
+.nimf-map-dot{box-sizing:border-box!important;padding:0!important;min-width:0!important;min-height:0!important;width:12px!important;height:12px!important;border:1.5px solid #245b40!important;position:relative}
+.nimf-raster-pin::after,.nimf-map-dot::after{content:"";position:absolute;inset:-7px}
+.nimf-raster-pin[data-layer="advertisement"],.nimf-map-dot[data-layer="advertisement"]{background:var(--layer-advertisement)!important;border-color:#245b40!important}
+.nimf-raster-pin[data-layer="platform"],.nimf-map-dot[data-layer="platform"]{background:var(--layer-platform)!important;border-color:#22567f!important}
+.nimf-raster-pin[data-layer="fair"],.nimf-map-dot[data-layer="fair"]{background:var(--layer-fair)!important;border-color:#7c5220!important}
+.nimf-raster-pin[data-layer="physical_market"],.nimf-map-dot[data-layer="physical_market"]{background:var(--layer-physical-market)!important;border-color:#823e5c!important}
 .admin-map-panel{margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
 .admin-map-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 #admin-map-feedback{grid-column:1/-1;color:var(--muted);font-size:12px}
 .tip-guidance{font-size:11px;color:var(--muted);grid-column:1/-1;line-height:1.65;margin:0}
 @media(max-width:560px){
-.explorer-map-toolbar{right:50px;flex-direction:column}
-.explorer-layer-picker{max-width:210px;padding:7px 9px}
-.explorer-map-toolbar #explorer-fullscreen{font-size:11px;padding:7px}
+.explorer-map-toolbar{top:9px;left:9px;gap:5px}
+.map-toolbar-button{font-size:11px;padding:7px 9px;min-height:35px}
+.explorer-layers-panel{top:8px;right:8px;width:min(310px,calc(100% - 16px));max-height:calc(100% - 16px)}
 .explorer-map-wrap.is-fullscreen #explorer-map-notice{max-width:95%}
 }
