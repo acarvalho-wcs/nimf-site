@@ -20,7 +20,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=20261011q"></script>
+ <script type="module" src="./secure.js?v=20261011legal1"></script>
 </head>
 <body data-theme="dark">
  <div class="secure-layout">
@@ -99,6 +99,13 @@
        <div><span id="records-label">Registros disponíveis</span><strong id="records-count">—</strong></div>
        <div><span id="account-label">Conta</span><strong id="account-status">Autorizada</strong><small id="account-email" class="account-identity"></small><small id="account-role" class="account-identity"></small></div>
       </div>
+      <section class="private-panel legal-protection" id="legal-protection" aria-labelledby="legal-heading">
+        <span class="secure-label" id="legal-kicker">ENQUADRAMENTO LEGAL</span>
+        <h3 id="legal-heading">Proteção legal e restrições ao comércio</h3>
+        <p id="legal-intro">Lista nacional de espécies ameaçadas, CITES, CMS e regras aplicáveis ao comércio. A presença em um anúncio não comprova irregularidade.</p>
+        <div id="legal-profiles" class="legal-profiles"></div>
+        <p class="secure-small" id="legal-caution">Fora da distribuição natural: verificar autorização, procedência e normas aplicáveis; não presumir delito. CITES/CMS: situação ainda não verificada nesta base.</p>
+      </section>
       <section class="explorer" aria-label="Market intelligence explorer">
         <div class="explorer-head"><div><span class="secure-label" id="explorer-kicker">EXPLORADOR GEOGRÁFICO</span><h3 id="explorer-title">Mercados de fauna: mapa e filtros</h3><p id="explorer-desc">Mapeamento aproximado, não a localização de vendedores. Use os filtros combinados para explorar os anúncios.</p></div><button type="button" id="explorer-reset" class="secure-secondary">Limpar filtros</button></div>
         <div class="explorer-filters">
