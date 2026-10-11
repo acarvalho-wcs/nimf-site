@@ -98,6 +98,21 @@ function closeMapCard(){
  if(d){d.hidden=true;d.replaceChildren();}
  const legacy=el("explorer-detail");if(legacy)legacy.hidden=true;
 }
+function appendLegalCard(d,r){
+ if(r.record_kind==="platform"||!r.scientific_name)return;
+ if(!["national_red_list_status","cites_appendix","cms_appendix","legal_trade_framework"].some(k=>r[k]))return;
+ const tr={pt:["Proteção legal e restrições ao comércio","Lista nacional / ICMBio","Não verificado","Ponto da loja: não representa origem dos animais"],en:["Legal protection and trade restrictions","Brazilian national red list","Not verified","Store point: not the origin of animals"],es:["Protección legal y restricciones comerciales","Lista nacional de Brasil","No verificado","Punto comercial: no representa el origen de los animales"]}[language];
+ const block=document.createElement("section");block.className="explorer-legal-context";block.append(textNode("h4",tr[0]));
+ for(const [label,value] of [[tr[1],r.national_red_list_status],["CITES",r.cites_appendix],["CMS",r.cms_appendix]]){
+  const row=document.createElement("p"),key=document.createElement("strong");key.textContent=label+": ";row.append(key,document.createTextNode(value||tr[2]));block.append(row);
+ }
+ if(r.legal_trade_framework)block.append(textNode("p",r.legal_trade_framework));
+ if(r["legal_note_"+language])block.append(textNode("p",r["legal_note_"+language]));
+ for(const url of [r.national_red_list_source_url,r.legal_trade_source_url]){
+  if(typeof url==="string"&&url.startsWith("https://")){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=tr[1]+" ↗";block.append(a,document.createTextNode(" "));}
+ }
+ d.append(block);
+}
 function showDetail(r){
  activeId=r.id;
  const d=el("explorer-map-card");d.replaceChildren();
@@ -132,6 +147,11 @@ function showDetail(r){
   d.append(textNode("h4",trans[language].observation));
   if(context.sourceLanguage!==language)d.append(textNode("small",trans[language].fallbackLabel+" ("+context.sourceLanguage.toUpperCase()+")"));
   d.append(appendScientific(document.createElement("p"),context.text,r.scientific_name));
+ }
+ appendLegalCard(d,r);
+ if(r.location_basis==="platform_store_municipality"){
+  const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
+  d.append(textNode("p",labels[language],"explorer-map-no-location"));
  }
  if(!coords(r))d.append(textNode("p",trans[language].unlocated,"explorer-map-no-location"));
  if(typeof r.source_url==="string"&&/^https:\/\/[^/]+/.test(r.source_url)){
