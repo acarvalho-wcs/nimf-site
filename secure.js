@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, limit, query, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import {localizedField, localizedTitle} from "./record-locale.js";
 function appendScientific(parent,value,taxon=""){const text=String(value??"");parent.replaceChildren();const name=String(taxon||"").trim();let at=name?text.indexOf(name):-1;if(at<0){const m=text.match(/(?:\b(?:de|do|da|of)\s+)([A-Z][a-z]{2,}\s+[a-z][a-z-]{2,})/u);if(m){at=m.index+m[0].length-m[1].length;}}if(at<0){parent.textContent=text;return parent;}if(at>0)parent.append(document.createTextNode(text.slice(0,at)));const el=document.createElement("i");el.className="scientific-name";el.textContent=name&&text.includes(name)?name:text.slice(at).match(/^[A-Z][a-z]{2,}\s+[a-z][a-z-]{2,}/u)?.[0]||"";parent.append(el);const end=at+el.textContent.length;if(end<text.length)parent.append(document.createTextNode(text.slice(end)));return parent;}
@@ -36,6 +36,11 @@ const reportStrings={
  pt:{methodTitle:"Como são construídos",methodBody:"Relatórios de inteligência organizam evidências de fontes abertas, documentos e registros verificados, confrontando informações, registrando incertezas e distinguindo observação de comprovação de comércio ou ilícito. Informações sensíveis são tratadas sob controles adicionais de acesso.",none:"Nenhum relatório foi disponibilizado para sua conta.",open:"Consultar relatório"},
  en:{methodTitle:"How reports are prepared",methodBody:"Intelligence reports organize evidence from open sources, documents and verified records, cross-check facts, record uncertainty and distinguish observation from proven trade or wrongdoing. Sensitive information is handled under additional access controls.",none:"No intelligence reports are available to your account.",open:"View report"},
  es:{methodTitle:"Cómo se elaboran",methodBody:"Los informes de inteligencia organizan evidencias de fuentes abiertas, documentos y registros verificados, contrastan información, registran incertidumbres y distinguen observaciones de comercio o infracciones comprobadas. La información sensible está sujeta a controles adicionales.",none:"No hay informes disponibles para su cuenta.",open:"Consultar informe"}
+};
+const accessStrings={
+pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação"},
+en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request"},
+es:{institution:"Institución / organización",justification:"Motivo de la solicitud de acceso",privacy:"Esta información se utiliza únicamente para evaluar su solicitud.",retry:"Complete su solicitud para la evaluación administrativa.",send:"Enviar solicitud",adminTitle:"Solicitudes de nuevos usuarios",adminDescription:"Revise institución y justificación. El acceso a informes requiere autorización independiente.",approve:"Aprobar acceso",emailVerified:"Correo verificado",confirm:"¿Aprueba el acceso de este usuario al panel? Esto no autoriza informes de inteligencia.",pending:"Pendiente de aprobación",submitted:"Solicitud registrada. Espere la evaluación administrativa.",error:"No fue posible registrar la solicitud. Inténtelo nuevamente.",approved:"Acceso aprobado.",review:"Abrir solicitud"}
 };
 const t=k=>txt[locale][k]||k;
 function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("dashboard-nav").disabled=!allowed;document.body.dataset.privateReady=allowed?"true":"false";if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;}}
@@ -87,7 +92,7 @@ async function loadReportGrants(user,epoch){
 function switchMode(next){
  mode=next;$("login-tab").classList.toggle("active",next==="login");$("signup-tab").classList.toggle("active",next==="signup");
  $("login-tab").setAttribute("aria-selected",String(next==="login"));$("signup-tab").setAttribute("aria-selected",String(next==="signup"));
- $("password-confirm-wrap").hidden=next!=="signup";$("auth-confirm").required=next==="signup";
+ $("password-confirm-wrap").hidden=next!=="signup";$("signup-details").hidden=next!=="signup";$("auth-confirm").required=next==="signup";
  message("auth-error","");$("auth-password").value="";$("auth-confirm").value="";translate();
 }
 function displayWaiting(user,unverified,denied=false){
@@ -187,7 +192,53 @@ async function loadPrivateRecords(user,epoch){
  records=snap.docs.filter(d=>d.id!=="abelhas-org-30683").map(d=>({id:d.id,...d.data()}));
  $("account-email").textContent=user.email||"";
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
- $("record-search").value="";show("dashboard-panel");switchWorkspace("dashboard");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);void loadReportGrants(user,epoch);
+ $("record-search").value="";show("dashboard-panel");switchWorkspace("dashboard");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);void loadReportGrants(user,epoch);void loadAdminApplications(user,epoch);
+}
+async function ensureApplication(user){
+ try{
+  const requestRef=doc(db,"access_requests",user.uid);
+  const existing=await getDoc(requestRef);
+  if(existing.exists()){$("access-request-retry").hidden=true;sessionStorage.removeItem("nimf-pending-request-"+user.uid);return;}
+  const stored=sessionStorage.getItem("nimf-pending-request-"+user.uid);
+  if(stored){
+   const values=JSON.parse(stored);
+   await setDoc(requestRef,{email:user.email,institution:values.institution,justification:values.justification,status:"pending",created_at:serverTimestamp(),updated_at:serverTimestamp()});
+   sessionStorage.removeItem("nimf-pending-request-"+user.uid);
+   $("access-request-retry").hidden=true;return;
+  }
+  $("access-request-retry").hidden=false;
+ }catch(e){console.warn("Application registration not yet available",e?.code||e);$("access-request-retry").hidden=false;}
+}
+$("access-request-retry").addEventListener("submit",async e=>{
+ e.preventDefault();const user=auth?.currentUser;if(!user||!user.emailVerified)return;
+ const institution=$("retry-institution").value.trim(),justification=$("retry-justification").value.trim();
+ if(institution.length<3||justification.length<20){message("waiting-error",accessStrings[locale].error);return;}
+ try{
+  await setDoc(doc(db,"access_requests",user.uid),{email:user.email,institution,justification,status:"pending",created_at:serverTimestamp(),updated_at:serverTimestamp()});
+  $("access-request-retry").hidden=true;message("waiting-error",accessStrings[locale].submitted);
+ }catch(err){message("waiting-error",accessStrings[locale].error);}
+});
+async function loadAdminApplications(user,epoch){
+ if(!approvalAdmin)return;
+ $("admin-access-requests").hidden=false;
+ const container=$("admin-requests-list");container.replaceChildren();
+ try{
+  const snap=await getDocs(query(collection(db,"access_requests"),limit(100)));
+  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
+  const deepLink=new URLSearchParams(location.search).get("request");
+  for(const d of snap.docs.filter(x=>x.data().status==="pending")){
+   const data=d.data();const article=document.createElement("article");article.className="access-request-card";
+   if(d.id===deepLink)article.classList.add("access-request-highlight");
+   const heading=document.createElement("strong");heading.textContent=data.email||d.id;article.append(heading);
+   const organization=document.createElement("p");organization.textContent=accessStrings[locale].institution+": "+(data.institution||"");article.append(organization);
+   const purpose=document.createElement("p");purpose.textContent=accessStrings[locale].justification+": "+(data.justification||"");article.append(purpose);
+   const button=document.createElement("button");button.type="button";button.className="secure-button";button.textContent=accessStrings[locale].approve;
+   // A link never approves a user. Explicit administrator confirmation and a trusted backend are required.
+   button.onclick=()=>{$("admin-requests-feedback").textContent="A aprovação requer o serviço administrativo seguro do Firebase; o formulário não altera permissões diretamente.";};
+   article.append(button);container.append(article);
+   if(d.id===deepLink)article.scrollIntoView({block:"center"});
+  }
+ }catch(err){$("admin-requests-feedback").textContent=accessStrings[locale].error;}
 }
 async function evaluateUser(user,epoch){
  activeUser=user;records=[];reportGrants=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];
