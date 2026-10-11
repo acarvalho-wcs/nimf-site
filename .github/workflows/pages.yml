@@ -62,6 +62,8 @@ jobs:
           test -f assets/Logo_observat.png
           mkdir -p public/assets
           cp assets/Logo_observat.png public/assets/Logo_observat.png
+          cp assets/wcs-brasil-institucional.png public/assets/wcs-brasil-institucional.png
+          test -s public/assets/wcs-brasil-institucional.png
           test -s public/assets/Logo_observat.png
       - uses: actions/configure-pages@v5
         with:
