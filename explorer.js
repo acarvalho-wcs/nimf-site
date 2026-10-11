@@ -1,5 +1,5 @@
 
-let dataset=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null;
+let dataset=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const el=id=>document.getElementById(id);
 const trans={
  pt:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa e filtros",desc:"Mapeamento aproximado, não a localização de vendedores. Combine os filtros para explorar anúncios.",reset:"Limpar filtros",search:"Busca livre",species:"Espécie",state:"Estado / região",city:"Município",source:"Fonte",status:"Verificação",product:"Produto",matches:"registros correspondentes",map:"no mapa",unmapped:"sem localização mapeável",results:"Resultados",notice:"Marcadores indicam posições aproximadas, nunca endereços de vendedores.",empty:"Nenhum registro corresponde aos filtros.",all:"Todos",more:"Detalhes",close:"Fechar",link:"Fonte original",precision:"Precisão geográfica",price:"Preço anunciado",quantity:"Quantidade",review:"Situação",observation:"Contexto da observação",noDate:"Data não informada"},
@@ -26,6 +26,45 @@ function options(filtered=dataset){
   for(const value of values)element.add(new Option(value.replaceAll("_"," "),value));
   element.value=values.includes(old)?old:"";
  }
+ refreshSpeciesPicker();
+}
+
+function refreshSpeciesPicker(){
+ const select=el("explorer-species"),trigger=el("species-trigger"),menu=el("species-menu");
+ if(!select||!trigger||!menu)return;
+ const active=select.value,selected=select.options[select.selectedIndex];
+ trigger.replaceChildren();
+ if(active)trigger.append(textNode("i",selected?.textContent||active,"scientific-name"));
+ else trigger.append(document.createTextNode(trans[language].all));
+ menu.replaceChildren();
+ for(const choice of select.options){
+  const btn=document.createElement("button");btn.type="button";btn.role="option";
+  btn.setAttribute("aria-selected",String(choice.value===active));
+  if(choice.value)btn.append(textNode("i",choice.textContent,"scientific-name"));
+  else btn.textContent=trans[language].all;
+  btn.addEventListener("click",()=>{
+    select.value=choice.value;menu.hidden=true;trigger.setAttribute("aria-expanded","false");
+    refreshSpeciesPicker();select.dispatchEvent(new Event("change",{bubbles:true}));
+    trigger.focus();
+  });
+  menu.append(btn);
+ }
+}
+function setupSpeciesPicker(){
+ const trigger=el("species-trigger"),menu=el("species-menu");
+ if(!trigger||!menu||trigger.dataset.wired)return;
+ trigger.dataset.wired="1";
+ trigger.addEventListener("click",()=>{menu.hidden=!menu.hidden;trigger.setAttribute("aria-expanded",String(!menu.hidden));});
+ trigger.addEventListener("keydown",event=>{
+  if(event.key==="Escape"){menu.hidden=true;trigger.setAttribute("aria-expanded","false");}
+  if(event.key==="ArrowDown"){event.preventDefault();menu.hidden=false;trigger.setAttribute("aria-expanded","true");menu.querySelector("button")?.focus();}
+ });
+ menu.addEventListener("keydown",event=>{
+  if(event.key==="Escape"){menu.hidden=true;trigger.setAttribute("aria-expanded","false");trigger.focus();}
+ });
+ document.addEventListener("click",event=>{
+  if(!event.target.closest(".species-filter")){menu.hidden=true;trigger.setAttribute("aria-expanded","false");}
+ });
 }
 function matches(r){
  const term=normalize(el("explorer-search").value);
@@ -49,43 +88,148 @@ function showDetail(r){
  if(typeof r.source_url==="string"&&/^https:\/\/[^/]+/.test(r.source_url)){const link=textNode("a",trans[language].link+" ↗");link.href=r.source_url;link.target="_blank";link.rel="noopener noreferrer";d.append(link);}
  d.hidden=false;
 }
-function setupMap(){
- if(mapReady)return;
- if(!window.maplibregl || !window.maplibregl.supported()){
-  el("explorer-map-notice").textContent=trans[language].notice+" · Mapa WebGL indisponível neste navegador.";
-  return;
+
+const latLimit=latitude=>Math.max(-85.05112878,Math.min(85.05112878,latitude));
+function projection(lon,lat,zoom){
+ const scale=256*Math.pow(2,zoom),p=latLimit(lat)*Math.PI/180;
+ return [((lon+180)/360)*scale,(1-Math.log(Math.tan(p)+1/Math.cos(p))/Math.PI)*scale/2];
+}
+function inverseProjection(x,y,zoom){
+ const scale=256*Math.pow(2,zoom);
+ const yy=Math.max(0,Math.min(scale,y)),n=Math.PI*(1-2*yy/scale);
+ return [(x/scale*360-180+540)%360-180,Math.atan(Math.sinh(n))*180/Math.PI];
+}
+function initializeRasterFallback(){
+ if(fallbackLayer)return;
+ const host=el("explorer-map");host.replaceChildren();
+ const layer=document.createElement("div");layer.className="nimf-raster-layer";
+ const tiles=document.createElement("div");tiles.className="nimf-raster-tiles";
+ const pinsLayer=document.createElement("div");pinsLayer.className="nimf-raster-pins";
+ const controls=document.createElement("div");controls.className="nimf-raster-controls";
+ for(const [symbol,change] of [["+",1],["−",-1]]){
+  const button=document.createElement("button");button.type="button";button.textContent=symbol;
+  button.setAttribute("aria-label",change===1?"Ampliar mapa":"Reduzir mapa");
+  button.addEventListener("click",()=>{
+   fallbackZoom=Math.max(2,Math.min(11,fallbackZoom+change));
+   renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),false);
+  });
+  controls.append(button);
  }
+ const credit=textNode("div","© OpenStreetMap contributors","nimf-raster-attribution");
+ const at=textNode("div","","nimf-raster-coordinates");
+ layer.append(tiles,pinsLayer,controls,credit,at);host.append(layer);
+ fallbackLayer=layer;fallbackTiles=tiles;fallbackPins=pinsLayer;
+ let gesture=null;
+ layer.addEventListener("pointerdown",event=>{
+  if(event.target.closest("button"))return;
+  gesture={x:event.clientX,y:event.clientY,centre:projection(fallbackCenter[0],fallbackCenter[1],fallbackZoom)};
+  layer.setPointerCapture(event.pointerId);
+ });
+ layer.addEventListener("pointermove",event=>{
+  if(!gesture)return;
+  const lonlat=inverseProjection(gesture.centre[0]-(event.clientX-gesture.x),gesture.centre[1]-(event.clientY-gesture.y),fallbackZoom);
+  fallbackCenter=lonlat;renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),false);
+ });
+ const stop=()=>{gesture=null;};
+ layer.addEventListener("pointerup",stop);layer.addEventListener("pointercancel",stop);
+ layer.addEventListener("wheel",event=>{
+  if(event.ctrlKey)return;event.preventDefault();
+  fallbackZoom=Math.max(2,Math.min(11,fallbackZoom+(event.deltaY<0?1:-1)));
+  renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),false);
+ },{passive:false});
+ if(typeof ResizeObserver!=="undefined"){
+  const observer=new ResizeObserver(()=>{if(fallbackLayer)renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),false);});
+  observer.observe(host);
+ }
+}
+function renderRasterMarkers(rows,fit=true){
+ if(!fallbackLayer)return;
+ if(fit){
+  if(rows.length===1){fallbackCenter=[rows[0].longitude,rows[0].latitude];fallbackZoom=7;}
+  else if(rows.length>1){
+   const average=rows.reduce((s,r)=>[s[0]+r.longitude,s[1]+r.latitude],[0,0]);
+   fallbackCenter=[average[0]/rows.length,average[1]/rows.length];fallbackZoom=3;
+  }else{fallbackCenter=[-53,-12];fallbackZoom=3;}
+ }
+ const host=el("explorer-map"),width=Math.max(320,host.clientWidth),height=Math.max(420,host.clientHeight);
+ const maxTile=2**fallbackZoom,scale=256*maxTile;
+ const [cx,cy]=projection(fallbackCenter[0],fallbackCenter[1],fallbackZoom),left=cx-width/2,top=cy-height/2;
+ const startX=Math.floor(left/256),endX=Math.ceil((left+width)/256),startY=Math.floor(top/256),endY=Math.ceil((top+height)/256);
+ const images=document.createDocumentFragment();
+ for(let y=startY;y<endY;y++){
+  if(y<0||y>=maxTile)continue;
+  for(let x=startX;x<endX;x++){
+   const tile=document.createElement("img");tile.alt="";tile.loading="eager";tile.decoding="async";
+   tile.src="https://tile.openstreetmap.org/"+fallbackZoom+"/"+((x%maxTile+maxTile)%maxTile)+"/"+y+".png";
+   tile.style.left=(x*256-left)+"px";tile.style.top=(y*256-top)+"px";
+   images.append(tile);
+  }
+ }
+ fallbackTiles.replaceChildren(images);
+ fallbackPins.replaceChildren();
+ for(const r of rows){
+  const [px,py]=projection(r.longitude,r.latitude,fallbackZoom);
+  let sx=px-left;const dx=sx-width/2;
+  if(dx>scale/2)sx-=scale;
+  if(dx<-scale/2)sx+=scale;
+  const sy=py-top;
+  if(sx < -20 || sx>width+20 || sy< -20 || sy>height+20)continue;
+  const pin=document.createElement("button");pin.type="button";pin.className="nimf-raster-pin";
+  pin.style.left=sx+"px";pin.style.top=sy+"px";
+  pin.title=[r.scientific_name||r.title,r.municipality||r.state].filter(Boolean).join(" · ");
+  pin.setAttribute("aria-label",pin.title);
+  pin.addEventListener("click",()=>showDetail(r));fallbackPins.append(pin);
+ }
+ fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"°";
+}
+function setupMap(){
+ if(!fallbackLayer)initializeRasterFallback();
+ if(mapReady||mapAttempted||!window.maplibregl||!window.maplibregl.supported())return;
+ mapAttempted=true;
+ const host=el("explorer-map"),glHost=document.createElement("div");
+ glHost.className="nimf-gl-map";glHost.style.opacity="0";glHost.setAttribute("aria-hidden","true");
+ host.append(glHost);
+ let loadTimedOut=false;
+ const fail=()=>{
+  if(mapLoaded || loadTimedOut)return;
+  loadTimedOut=true;
+  if(map){try{map.remove();}catch(e){}map=null;}
+  glHost.remove();fallbackLayer.style.display="";
+ };
  try{
   map=new window.maplibregl.Map({
-   container:"explorer-map",
-   style:{
-    version:8,
-    sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},
-    layers:[{id:"osm",type:"raster",source:"osm"}]
-   },
-   center:[-53,-12],zoom:3,attributionControl:true,cooperativeGestures:true
+   container:glHost,
+   style:{version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm",type:"raster",source:"osm"}]},
+   center:[fallbackCenter[0],fallbackCenter[1]],zoom:fallbackZoom,
+   attributionControl:true,cooperativeGestures:true
   });
   map.addControl(new window.maplibregl.NavigationControl({showCompass:false}),"top-right");
-  map.on("load",()=>{mapLoaded=true;drawMarkers(dataset.filter(matches).filter(r=>coords(r)));map.resize();});
-  map.on("error",()=>{el("explorer-map-notice").textContent=trans[language].notice+" · Não foi possível carregar algumas camadas do mapa.";});
-  mapReady=true;
- }catch(e){mapReady=false;el("explorer-map-notice").textContent=trans[language].notice+" · Erro ao iniciar mapa; consulte o navegador.";}
+  map.on("load",()=>{
+   if(loadTimedOut)return;mapLoaded=true;mapReady=true;
+   glHost.style.opacity="1";glHost.removeAttribute("aria-hidden");
+   fallbackLayer.style.display="none";
+   drawMarkers(dataset.filter(matches).filter(r=>coords(r)));
+   requestAnimationFrame(()=>map.resize());
+  });
+  map.on("error",()=>{if(!mapLoaded)fail();});
+  setTimeout(()=>{if(!mapLoaded)fail();},10000);
+ }catch(e){fail();}
 }
 function drawMarkers(rows){
  if(!mapReady||!mapLoaded)return;
- for(const p of pins)p.remove();
- pins=[];const bounds=new window.maplibregl.LngLatBounds();
+ for(const p of pins)p.remove();pins=[];
+ const bounds=new window.maplibregl.LngLatBounds();
  for(const r of rows){
   const [lat,lng]=coords(r);
-  const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";dot.title=[r.scientific_name||r.title,r.municipality||r.state].filter(Boolean).join(" · ");
+  const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";
+  dot.title=[r.scientific_name||r.title,r.municipality||r.state].filter(Boolean).join(" · ");
   dot.style.cssText="background:#9ad6a1;border:2px solid #245e4c;border-radius:100%;width:17px;height:17px;cursor:pointer;box-shadow:0 1px 9px #0006";
   dot.addEventListener("click",()=>showDetail(r));
-  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));
-  bounds.extend([lng,lat]);
+  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
  }
- if(rows.length===1)map.easeTo({center:bounds.getCenter(),zoom:7,duration:400});
- else if(rows.length>1)map.fitBounds(bounds,{padding:55,maxZoom:8,duration:400});
- else map.easeTo({center:[-53,-12],zoom:3,duration:400});
+ if(rows.length===1)map.easeTo({center:bounds.getCenter(),zoom:7,duration:300});
+ else if(rows.length>1)map.fitBounds(bounds,{padding:50,maxZoom:8,duration:300});
+ else map.easeTo({center:[-53,-12],zoom:3,duration:300});
  requestAnimationFrame(()=>map.resize());
 }
 function render(){
@@ -103,7 +247,8 @@ function render(){
  }
  if(activeId&&!f.some(r=>r.id===activeId)){activeId=null;el("explorer-detail").hidden=true;}
  if(activeId){const item=f.find(r=>r.id===activeId);if(item)showDetail(item);}
- if(!mapReady)setupMap();
+ setupMap();
+ if(fallbackLayer)renderRasterMarkers(m);
  if(mapReady)drawMarkers(m);
 }
 export function initExplorer(rows,lang="pt"){
@@ -111,7 +256,7 @@ export function initExplorer(rows,lang="pt"){
  dataset=(Array.isArray(rows)?rows:[]).filter(safe).map((r,i)=>({...r,id:r.id||r.record_id||String(i)}));
  for(const id of Object.keys(controls))el("explorer-"+id).value="";
  el("explorer-search").value="";activeId=null;el("explorer-detail").hidden=true;
- options();setExplorerLanguage(language);render();
+ setupSpeciesPicker();options();setExplorerLanguage(language);render();
 }
 export function setExplorerLanguage(lang){
  language=trans[lang]?lang:"pt";const t=trans[language];
@@ -119,7 +264,7 @@ export function setExplorerLanguage(lang){
  options();render();
 }
 export function clearExplorer(){
- dataset=[];activeId=null;el("explorer-detail").hidden=true;el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];
+ dataset=[];activeId=null;el("explorer-detail").hidden=true;el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
 }
 for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",render);
 el("explorer-search").addEventListener("input",render);
