@@ -6,6 +6,7 @@ on:
       - 'secure.css'
       - 'secure.js'
       - 'explorer.js'
+      - 'intake.js'
       - 'firebase-config.js'
       - 'firestore.rules'
       - 'docs/PRIVATE_ACCESS.md'
@@ -26,12 +27,13 @@ jobs:
         run: |
           node --check secure.js
           node --check explorer.js
+          node --check intake.js
           node --check firebase-config.js
       - name: Reject privileged credential material
         shell: bash
         run: |
           set -eu
-          if grep -Ein 'PRIVATE KEY-----|service_account|serviceRoleKey|firebase-admin|allow read, write: if true' secure.js explorer.js secure.html firebase-config.js firestore.rules; then
+          if grep -Ein 'PRIVATE KEY-----|service_account|serviceRoleKey|firebase-admin|allow read, write: if true' secure.js explorer.js intake.js secure.html firebase-config.js firestore.rules; then
             echo 'Potential privileged credential or unsafe rule' >&2
             exit 1
           fi

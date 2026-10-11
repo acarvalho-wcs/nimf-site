@@ -1,33 +1,55 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-    function verified() {
-      return request.auth != null &&
-        request.auth.token.email_verified == true;
-    }
-    function approved() {
-      return verified() &&
-        exists(/databases/$(database)/documents/access/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/access/$(request.auth.uid)).data.approved == true;
-    }
-
-    // Approval is done manually in Firebase console by the project owner.
-    // No browser client can create, approve, alter or enumerate accounts.
-    match /access/{uid} {
-      allow get: if verified() && request.auth.uid == uid;
-      allow list, create, update, delete: if false;
-    }
-
-    // All approved users can see the full record documents in this collection.
-    // Client-side CRUD remains disabled until an independently reviewed policy is ready.
-    match /records/{recordId} {
-      allow get, list: if approved();
-      allow create, update, delete: if false;
-    }
-
-    // Everything else, including nested data, remains inaccessible.
-    match /{document=**} {
-      allow read, write: if false;
-    }
+ match /databases/{database}/documents {
+  function verified(){return request.auth != null && request.auth.token.email_verified == true;}
+  function accessPath(){return /databases/$(database)/documents/access/$(request.auth.uid);}
+  function approved(){return verified() && exists(accessPath()) && get(accessPath()).data.approved == true;}
+  function administrator(){return approved() && get(accessPath()).data.admin == true;}
+  match /access/{uid} {
+   allow get: if verified() && request.auth.uid == uid;
+   allow list, create, update, delete: if false;
   }
+  match /records/{id} {
+   allow get, list: if approved();
+   allow create, update, delete: if false;
+  }
+  match /submissions/{id} {
+   allow get: if approved() && (resource.data.owner_uid == request.auth.uid || administrator());
+   allow list: if approved() && (administrator() || resource.data.owner_uid == request.auth.uid);
+   allow create: if approved()
+     && request.resource.data.keys().hasOnly(['owner_uid','type','title','url','species','location','details','status','review_note','created_at','updated_at'])
+     && request.resource.data.keys().hasAll(['owner_uid','type','title','url','species','location','details','status','review_note','created_at','updated_at'])
+     && request.resource.data.owner_uid == request.auth.uid
+     && request.resource.data.type in ['platform','advertisement','group','other']
+     && request.resource.data.title is string && request.resource.data.title.size() > 2 && request.resource.data.title.size() <= 180
+     && request.resource.data.url is string && request.resource.data.url.size() <= 1500
+     && request.resource.data.url.matches('^https://[^ ]+$')
+     && request.resource.data.species is string && request.resource.data.species.size() <= 180
+     && request.resource.data.location is string && request.resource.data.location.size() <= 180
+     && request.resource.data.details is string && request.resource.data.details.size() <= 3000
+     && request.resource.data.status == 'received'
+     && request.resource.data.review_note == ''
+     && request.resource.data.created_at == request.time
+     && request.resource.data.updated_at == request.time;
+   allow update: if administrator()
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','review_note','updated_at'])
+     && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
+     && request.resource.data.review_note is string && request.resource.data.review_note.size() <= 1500
+     && request.resource.data.updated_at == request.time;
+   allow delete: if false;
+   match /history/{entryId} {
+     allow get, list: if approved() &&
+       (get(/databases/$(database)/documents/submissions/$(id)).data.owner_uid == request.auth.uid || administrator());
+     allow create: if administrator()
+       && request.resource.data.keys().hasOnly(['status','note','created_at','actor_uid'])
+       && request.resource.data.keys().hasAll(['status','note','created_at','actor_uid'])
+       && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
+       && request.resource.data.note is string && request.resource.data.note.size() <= 1500
+       && request.resource.data.actor_uid == request.auth.uid
+       && request.resource.data.created_at == request.time;
+     allow update, delete: if false;
+   }
+  }
+  match /{document=**}{allow read,write: if false;}
+ }
 }

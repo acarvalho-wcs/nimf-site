@@ -46,3 +46,22 @@ O frontend reconhece estes campos, todos opcionais: `title`, `category`, `source
 
 ## Limites
 As credenciais são geridas pelo Firebase. O site estático não tem servidor próprio nem pode autenticar diretamente GitHub privado com segurança. Firestore constitui uma **base privada independente** e não Google Sheets. As consultas atuais carregam até 200 registros por página; paginação, logs/auditoria, escalabilidade, proteção contra abuso e MFA devem ser avaliados antes de produção.
+
+
+## Proposta em PR #3 — contribuições privadas e mapa MapLibre
+
+**Antes de fazer merge da PR:** publicar o conteúdo revisado de `firestore.rules` no console do projeto `fir-console-61443` (Firestore > Rules), após testar regras com usuário não aprovado, usuário aprovado (autor), outro usuário aprovado (não autor) e administrador. O frontend não publica regras automaticamente.
+
+### Administrador de triagem
+
+Em Firestore > Data > `access/{UID_DO_ADMINISTRADOR}`, acrescentar campo booleano `admin: true`, mantendo `approved: true`. Apenas quem administra o projeto pode alterar essa autorização. Sem o campo, a conta continua com acesso aos registros públicos do painel restrito, mas não terá permissão para revisar contribuições de terceiros.
+
+### Segurança e privacidade
+
+- Submissão em `submissions/{id}`, com `owner_uid` fixado pelo Firebase Authentication. Somente o autor e um administrador aprovado podem ler o registro; novos usuários não podem ver contribuições de terceiros.
+- O usuário pode criar uma submissão, mas não editar `status`, `review_note`, `owner_uid` nem eliminar um registro.
+- Administrador pode atualizar apenas `status`, `review_note` e `updated_at`, podendo anexar eventos em `submissions/{id}/history`. A criação de eventos não substitui a necessidade de auditoria externa para preservação de provas.
+- Os campos aceitam apenas URLs HTTPS e textos limitados. Não incluir nomes, telefones, imagens privadas, credenciais, dados pessoais ou alegações não verificadas; endereços de grupos podem conter tokens de convite e devem ser tratados como informação restrita.
+- Firestore Rules devem ser testadas no emulador antes de uso com denúncias sensíveis. A lista atual traz no máximo 100 registros ao autor e 150 ao administrador; paginação é necessária para escalabilidade.
+- Atualizações de status chegam em tempo real ao autor pela escuta Firestore. O histórico completo ainda não é exibido no frontend, embora eventos de atualização estejam previstos no banco.
+- Para um canal formal de denúncias sigilosas, será necessária política de retenção, triagem de riscos, remoção de dados pessoais, rate limiting e definição do acesso administrativo. A conta técnica do GitHub possui direitos amplos no projeto apesar das regras de cliente; proteja a chave e a branch main.

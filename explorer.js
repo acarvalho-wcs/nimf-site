@@ -1,5 +1,5 @@
 
-let dataset=[], language="pt", map=null, pins=null, mapReady=false, activeId=null;
+let dataset=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null;
 const el=id=>document.getElementById(id);
 const trans={
  pt:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa e filtros",desc:"Mapeamento aproximado, não a localização de vendedores. Combine os filtros para explorar anúncios.",reset:"Limpar filtros",search:"Busca livre",species:"Espécie",state:"Estado / região",city:"Município",source:"Fonte",status:"Verificação",product:"Produto",matches:"registros correspondentes",map:"no mapa",unmapped:"sem localização mapeável",results:"Resultados",notice:"Marcadores indicam posições aproximadas, nunca endereços de vendedores.",empty:"Nenhum registro corresponde aos filtros.",all:"Todos",more:"Detalhes",close:"Fechar",link:"Fonte original",precision:"Precisão geográfica",price:"Preço anunciado",quantity:"Quantidade",review:"Situação",observation:"Contexto da observação",noDate:"Data não informada"},
@@ -10,6 +10,13 @@ const controls={species:"scientific_name",state:"state",city:"municipality",sour
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
 const safe=r=>r && typeof r==="object"&&!Array.isArray(r);
 function textNode(tag,value,cls){const n=document.createElement(tag);n.textContent=value??"";if(cls)n.className=cls;return n;}
+function appendScientific(parent,title,taxon){
+ const value=String(title||"");const name=String(taxon||"");
+ const at=name?value.indexOf(name):-1;
+ if(at>=0){parent.append(document.createTextNode(value.slice(0,at)));parent.append(textNode("i",name,"scientific-name"));parent.append(document.createTextNode(value.slice(at+name.length)));}
+ else{parent.textContent=value;}
+ return parent;
+}
 function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitude)&&r.latitude>=-90&&r.latitude<=90&&r.longitude>=-180&&r.longitude<=180&&["municipality","state","country","regional"].includes(r.location_precision)?[r.latitude,r.longitude]:null;}
 function options(filtered=dataset){
  for(const [id,key] of Object.entries(controls)){
@@ -25,11 +32,12 @@ function matches(r){
  if(term && !["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es"].some(k=>normalize(r[k]).includes(term)))return false;
  return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||r[key]===el("explorer-"+id).value);
 }
-function addField(wrap,label,value){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");d.append(textNode("span",label),textNode("strong",String(value)));wrap.append(d);}
+function keyAsScientific(label){return label===trans[language].species;}
+function addField(wrap,label,value){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");d.append(textNode("span",label),keyAsScientific(label)?appendScientific(document.createElement("strong"),String(value),String(value)):textNode("strong",String(value)));wrap.append(d);}
 function showDetail(r){
  activeId=r.id;const d=el("explorer-detail");d.replaceChildren();
  const header=document.createElement("div");header.className="explorer-detail-head";
- header.append(textNode("h3",r.title||r.scientific_name||r.id));
+ header.append(appendScientific(document.createElement("h3"),r.title||r.scientific_name||r.id,r.scientific_name));
  const close=textNode("button",trans[language].close);close.type="button";close.className="secure-secondary";close.addEventListener("click",()=>{activeId=null;d.hidden=true;});header.append(close);d.append(header);
  const info=document.createElement("div");info.className="explorer-detail-grid";
  for(const [key,label] of [["scientific_name",trans[language].species],["source",trans[language].source],["state",trans[language].state],["municipality",trans[language].city],["product_type",trans[language].product],["status",trans[language].review],["location_precision",trans[language].precision]])addField(info,label,r[key]);
@@ -43,10 +51,42 @@ function showDetail(r){
 }
 function setupMap(){
  if(mapReady)return;
- if(!window.L){el("explorer-map-notice").textContent=trans[language].notice+" (Mapa indisponível neste momento.)";return;}
- const L=window.L; map=L.map("explorer-map",{worldCopyJump:true,scrollWheelZoom:false,attributionControl:true}).setView([-12,-53],3);
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; OpenStreetMap contributors',maxZoom:18}).addTo(map);
- pins=L.layerGroup().addTo(map);mapReady=true;
+ if(!window.maplibregl || !window.maplibregl.supported()){
+  el("explorer-map-notice").textContent=trans[language].notice+" · Mapa WebGL indisponível neste navegador.";
+  return;
+ }
+ try{
+  map=new window.maplibregl.Map({
+   container:"explorer-map",
+   style:{
+    version:8,
+    sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},
+    layers:[{id:"osm",type:"raster",source:"osm"}]
+   },
+   center:[-53,-12],zoom:3,attributionControl:true,cooperativeGestures:true
+  });
+  map.addControl(new window.maplibregl.NavigationControl({showCompass:false}),"top-right");
+  map.on("load",()=>{mapLoaded=true;drawMarkers(dataset.filter(matches).filter(r=>coords(r)));map.resize();});
+  map.on("error",()=>{el("explorer-map-notice").textContent=trans[language].notice+" · Não foi possível carregar algumas camadas do mapa.";});
+  mapReady=true;
+ }catch(e){mapReady=false;el("explorer-map-notice").textContent=trans[language].notice+" · Erro ao iniciar mapa; consulte o navegador.";}
+}
+function drawMarkers(rows){
+ if(!mapReady||!mapLoaded)return;
+ for(const p of pins)p.remove();
+ pins=[];const bounds=new window.maplibregl.LngLatBounds();
+ for(const r of rows){
+  const [lat,lng]=coords(r);
+  const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";dot.title=[r.scientific_name||r.title,r.municipality||r.state].filter(Boolean).join(" · ");
+  dot.style.cssText="background:#9ad6a1;border:2px solid #245e4c;border-radius:100%;width:17px;height:17px;cursor:pointer;box-shadow:0 1px 9px #0006";
+  dot.addEventListener("click",()=>showDetail(r));
+  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));
+  bounds.extend([lng,lat]);
+ }
+ if(rows.length===1)map.easeTo({center:bounds.getCenter(),zoom:7,duration:400});
+ else if(rows.length>1)map.fitBounds(bounds,{padding:55,maxZoom:8,duration:400});
+ else map.easeTo({center:[-53,-12],zoom:3,duration:400});
+ requestAnimationFrame(()=>map.resize());
 }
 function render(){
  const f=dataset.filter(matches),m=f.filter(r=>coords(r)),T=trans[language];
@@ -57,25 +97,14 @@ function render(){
  if(!f.length)list.append(textNode("p",T.empty,"secure-small"));
  for(const r of f){
    const card=document.createElement("button");card.type="button";card.className="explorer-card";
-   card.append(textNode("strong",r.scientific_name||r.title||r.id),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[r.source,r.status].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
-   card.addEventListener("click",()=>{showDetail(r);if(mapReady&&coords(r))map.flyTo(coords(r),Math.max(map.getZoom(),6),{duration:.45});});
+   card.append(appendScientific(document.createElement("strong"),r.scientific_name||r.title||r.id,r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[r.source,r.status].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
+   card.addEventListener("click",()=>{showDetail(r);if(mapReady&&coords(r))map.flyTo({center:[coords(r)[1],coords(r)[0]],zoom:Math.max(map.getZoom(),7),speed:1.2});});
    list.append(card);
  }
  if(activeId&&!f.some(r=>r.id===activeId)){activeId=null;el("explorer-detail").hidden=true;}
  if(activeId){const item=f.find(r=>r.id===activeId);if(item)showDetail(item);}
  if(!mapReady)setupMap();
- if(mapReady){
-  pins.clearLayers();let marks=[];
-  for(const r of m){const point=coords(r);
-   const marker=window.L.circleMarker(point,{radius:8,color:"#245e4c",weight:2,fillColor:"#9ad6a1",fillOpacity:.9});
-   marker.bindTooltip([r.scientific_name||r.title,r.municipality||r.state||r.country].filter(Boolean).join(" · "));
-   marker.on("click",()=>showDetail(r));pins.addLayer(marker);marks.push(point);
-  }
-  if(marks.length===1)map.setView(marks[0],6);
-  else if(marks.length>1)map.fitBounds(window.L.latLngBounds(marks).pad(.28),{maxZoom:7});
-  else map.setView([-12,-53],3);
-  requestAnimationFrame(()=>map.invalidateSize());
- }
+ if(mapReady)drawMarkers(m);
 }
 export function initExplorer(rows,lang="pt"){
  language=trans[lang]?lang:"pt";
@@ -90,7 +119,7 @@ export function setExplorerLanguage(lang){
  options();render();
 }
 export function clearExplorer(){
- dataset=[];activeId=null;el("explorer-detail").hidden=true;el("explorer-cards").replaceChildren();if(pins)pins.clearLayers();
+ dataset=[];activeId=null;el("explorer-detail").hidden=true;el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];
 }
 for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",render);
 el("explorer-search").addEventListener("input",render);
