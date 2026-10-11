@@ -4,7 +4,7 @@ service cloud.firestore {
   function verified(){return request.auth != null && request.auth.token.email_verified == true;}
   function accessPath(){return /databases/$(database)/documents/access/$(request.auth.uid);}
   function approved(){return verified() && exists(accessPath()) && get(accessPath()).data.approved == true;}
-  function administrator(){return approved() && get(accessPath()).data.admin == true;}
+  function administrator(){return approved() && request.auth.token.email == 'acarvalho@wcs.org' && get(accessPath()).data.admin == true;}
   match /access/{uid} {
    allow get: if verified() && request.auth.uid == uid;
    allow list, create, update, delete: if false;
