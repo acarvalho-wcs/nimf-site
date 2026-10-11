@@ -13,7 +13,7 @@ const txt={
  es:{sideTitle:"Inteligencia de mercados de fauna silvestre",sideCopy:"Acceso individual, correo verificado y aprobación administrativa antes de consultar datos privados.",sideFooter:"Solo usuarios autorizados",back:"← Volver a la vista pública",authTitle:"Ingresar a NIMF",authSubtitle:"El correo y la contraseña son administrados por el servicio de autenticación, nunca por GitHub Pages.",login:"Ingresar",signup:"Solicitar acceso",email:"Correo",password:"Contraseña",confirm:"Confirmar contraseña",forgot:"¿Olvidó su contraseña?",note:"Crear una cuenta no otorga acceso. Se requiere aprobación del administrador.",configTitle:"Área restringida sin configurar",configBody:"El administrador debe configurar Firebase y publicar las reglas de seguridad. No hay datos privados disponibles todavía.",unverifiedTitle:"Verifique su correo",unverifiedText:"Enviamos un enlace de confirmación. Verifique su dirección e inténtelo de nuevo.",pendingTitle:"Esperando aprobación",pendingText:"Su correo fue verificado, pero el administrador debe aprobar la cuenta.",blockedTitle:"Acceso no autorizado",blockedText:"Esta cuenta no tiene autorización válida para acceder a los datos.",refresh:"Verificar nuevamente",resend:"Reenviar confirmación",logout:"Salir",privateTitle:"Panel privado",privateDescription:"Los datos se cargan solamente tras autenticación, verificación del correo y autorización en Firestore.",recordsLabel:"Registros disponibles",account:"Cuenta",approved:"Autorizada",recordsTitle:"Registros privados",recordsSubtitle:"Registros accesibles únicamente tras verificación en la base.",search:"Buscar",colTitle:"Título",colType:"Categoría",colSource:"Fuente",colStatus:"Verificación",empty:"No hay registros privados todavía.",footer:"Datos internos. No redistribuir sin autorización.",searchPlaceholder:"Buscar en los registros cargados",privateKicker:"NIMF / PANEL RESTRINGIDO",mapError:"Una parte del servicio cartográfico no está disponible. Los filtros y registros siguen accesibles.",explorerError:"No fue posible abrir el explorador geográfico. Los registros siguen accesibles en la tabla.",intakeError:"Las contribuciones no están disponibles temporalmente. Los demás datos siguen accesibles.",genericError:"No se pudo completar la acción. Revise los datos o inténtelo nuevamente.",mismatch:"Las contraseñas no coinciden.",weak:"Utilice por lo menos 8 caracteres.",resetSent:"Si el correo está registrado, recibirá instrucciones para cambiar la contraseña.",resent:"Si es elegible, se enviará otra verificación.",created:"Cuenta creada. Verifique su correo y espere aprobación.",failedRead:"No fue posible consultar los registros. Revise las reglas de seguridad."}
 };
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false;
-let explorerModule=null,intakeModule=null;
+let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[];
 const t=k=>txt[locale][k]||k;
 function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;}
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
@@ -24,6 +24,7 @@ function translate(){
  for(const [id,key] of Object.entries(items))$(id).textContent=t(key);
  $("record-search").placeholder=t("searchPlaceholder");
  if(intakeModule)intakeModule.setIntakeLanguage(locale);
+  if(mapModule)mapModule.setMapPointLanguage(locale);
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
@@ -85,10 +86,10 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=20261011e");
+   const mod=await import("./explorer.js?v=20261011g");
    if(!valid())return;
    explorerModule=mod;
-   mod.initExplorer(records,locale);
+   mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
    try{
     await loadMapEngine();
     if(valid())mod.setExplorerLanguage(locale);
@@ -103,10 +104,22 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./intake.js?v=20261011e");
+   const mod=await import("./map-points.js?v=20261011g");
+   if(!valid())return;
+   mapModule=mod;
+   mod.startMapPoints(db,user,approvalAdmin,items=>{
+    if(!valid())return;
+    pointsBuffer=items;
+    if(explorerModule)explorerModule.setMapPoints(items);
+   },locale);
+  }catch(e){console.warn("Map point review module unavailable",e?.code||e);}
+ })();
+ void (async()=>{
+  try{
+   const mod=await import("./intake.js?v=20261011g");
    if(!valid())return;
    intakeModule=mod;
-   await mod.openIntake(db,user,approvalAdmin,locale);
+   await mod.openIntake(db,user,approvalAdmin,locale,tip=>mapModule?.promoteTip(tip));
   }catch(e){
    if(valid())$("tip-feedback").textContent=t("intakeError");
    console.error("NIMF intake initialization error",e);
@@ -121,7 +134,7 @@ async function loadPrivateRecords(user,epoch){
  $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);
 }
 async function evaluateUser(user,epoch){
- activeUser=user;records=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();
+ activeUser=user;records=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
  try{
