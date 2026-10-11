@@ -6,6 +6,10 @@ on:
       - 'index.html'
       - 'styles.css'
       - 'app.js'
+      - 'secure.html'
+      - 'secure.css'
+      - 'secure.js'
+      - 'firebase-config.js'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
@@ -35,7 +39,13 @@ jobs:
             exit 1
           fi
           mkdir -p public
-          cp index.html styles.css app.js public/
+          node --check secure.js
+          node --check firebase-config.js
+          test -f secure.html
+          test -f secure.css
+          test -f firestore.rules
+          grep -q 'allow create, update, delete: if false;' firestore.rules
+          cp index.html styles.css app.js secure.html secure.css secure.js firebase-config.js public/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
