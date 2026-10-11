@@ -1,89 +1,99 @@
-import {collection,query,where,orderBy,limit,getDocs,onSnapshot,addDoc,doc,updateDoc,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-let db=null,user=null,admin=false,started=false,unsubOwn=null,unsubAdmin=null;
+import { collection, query, where, limit, onSnapshot, addDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { useLang } from "./record-locale.js";
+let db=null,user=null,admin=false,started=false,unsubOwn=null,unsubAdmin=null,language="pt";
+let ownItems=[],adminItems=[],feedbackKey="";
 const $=id=>document.getElementById(id);
-function validHttps(value){try{const u=new URL(String(value));return u.protocol==="https:"&&!!u.hostname&&!String(value).includes(" ");}catch{return false;}}
 const states=["received","triage","checking","investigating","resolved","closed"];
-const names={received:"Recebido",triage:"Em triagem",checking:"Em verificação",investigating:"Investigação iniciada",resolved:"Concluído",closed:"Encerrado"};
+const I={
+ pt:{kicker:"NIMF / RECEBIMENTO DE INFORMAÇÕES",heading:"Contribuições para investigação",intro:"Envie links e informações para triagem. Apenas você e administradores autorizados podem consultar sua contribuição. Não inclua dados pessoais desnecessários.",type:"Tipo de informação",types:["Plataforma / site","Anúncio de fauna","Grupo ou canal de comércio","Outro indício"],title:"Título / assunto",url:"Link de referência (HTTPS)",species:"Espécie (se conhecida)",location:"Localidade mencionada",details:"Descrição factual",send:"Enviar para triagem",mine:"Minhas contribuições",mineDesc:"Acompanhe o andamento de seus envios. As notas são destinadas ao autor.",admin:"Triagem administrativa",adminDesc:"Avalie os registros recebidos; decisões ficam visíveis ao autor.",none:"Nenhuma contribuição enviada ainda.",noneAdmin:"Nenhum envio para avaliação.",open:"Abrir referência ↗",update:"Atualização",note:"Nota de acompanhamento visível ao autor",save:"Registrar andamento",errUpdate:"Não foi possível atualizar. Confira as regras do Firestore.",invalid:"Não foi possível enviar. Verifique o link HTTPS e as permissões.",sent:"Recebido para triagem.",errOwn:"Não foi possível carregar suas contribuições. Confira as regras de acesso.",errAdmin:"Não foi possível carregar a triagem administrativa.",untitled:"Sem título",example:"Ex.: Oferta de espécie controlada",specPlaceholder:"Nome científico ou comum",locationPlaceholder:"País, estado, município",detailsPlaceholder:"Descreva o que a fonte mostra; indique incertezas e evite acusações não verificadas.",states:["Recebido","Em triagem","Em verificação","Investigação iniciada","Concluído","Encerrado"]},
+ en:{kicker:"NIMF / INTELLIGENCE INTAKE",heading:"Investigation contributions",intro:"Submit links and source information for review. Only you and authorized administrators can access your submission. Do not include unnecessary personal information.",type:"Information type",types:["Platform / website","Wildlife listing","Trading group or channel","Other lead"],title:"Title / subject",url:"Reference link (HTTPS)",species:"Species (if known)",location:"Reported location",details:"Factual description",send:"Submit for review",mine:"My contributions",mineDesc:"Track the status of your submissions. Notes are intended for the contributor.",admin:"Administrative review",adminDesc:"Review submitted leads; decisions are visible to the contributor.",none:"No contributions submitted yet.",noneAdmin:"No submissions pending review.",open:"Open reference ↗",update:"Update",note:"Progress note visible to the contributor",save:"Record progress",errUpdate:"Could not update the status. Check Firestore permissions.",invalid:"Could not submit. Check the HTTPS link and access permissions.",sent:"Submitted for review.",errOwn:"Could not load your contributions. Check access rules.",errAdmin:"Could not load the administrative review queue.",untitled:"Untitled",example:"e.g. Offer involving a controlled species",specPlaceholder:"Scientific or common name",locationPlaceholder:"Country, state, municipality",detailsPlaceholder:"Describe what the source shows, indicate uncertainty and avoid unverified allegations.",states:["Received","In triage","Under verification","Investigation started","Resolved","Closed"]},
+ es:{kicker:"NIMF / RECEPCIÓN DE INFORMACIÓN",heading:"Contribuciones para investigación",intro:"Envíe enlaces e información para evaluación. Solo usted y los administradores autorizados pueden consultar su contribución. No incluya datos personales innecesarios.",type:"Tipo de información",types:["Plataforma / sitio web","Anuncio de fauna","Grupo o canal de comercio","Otro indicio"],title:"Título / asunto",url:"Enlace de referencia (HTTPS)",species:"Especie (si se conoce)",location:"Localidad mencionada",details:"Descripción factual",send:"Enviar para evaluación",mine:"Mis contribuciones",mineDesc:"Siga el estado de sus envíos. Las notas están destinadas a su autor.",admin:"Evaluación administrativa",adminDesc:"Evalúe las informaciones recibidas; las decisiones serán visibles para el autor.",none:"Todavía no hay contribuciones.",noneAdmin:"No hay envíos para evaluación.",open:"Abrir referencia ↗",update:"Actualización",note:"Nota de seguimiento visible para el autor",save:"Registrar avance",errUpdate:"No se pudo actualizar. Compruebe los permisos de Firestore.",invalid:"No se pudo enviar. Compruebe el enlace HTTPS y los permisos.",sent:"Enviado para evaluación.",errOwn:"No fue posible cargar sus contribuciones. Compruebe las reglas de acceso.",errAdmin:"No fue posible cargar la evaluación administrativa.",untitled:"Sin título",example:"Ej.: Oferta de especie controlada",specPlaceholder:"Nombre científico o común",locationPlaceholder:"País, estado, municipio",detailsPlaceholder:"Describa lo que muestra la fuente; indique las incertidumbres y evite acusaciones no verificadas.",states:["Recibido","En evaluación","En verificación","Investigación iniciada","Resuelto","Cerrado"]}
+};
+const typeKeys=["platform","advertisement","group","other"];
+const txt=()=>I[language];
 const node=(tag,content)=>{const n=document.createElement(tag);n.textContent=content??"";return n;};
+const validHttps=value=>{try{const u=new URL(String(value));return u.protocol==="https:"&&!!u.hostname&&!String(value).includes(" ");}catch{return false;}};
+const stateLabel=state=>txt().states[Math.max(0,states.indexOf(state))]||state;
+function feedback(key){feedbackKey=key;$("tip-feedback").textContent=key?txt()[key]||"":"";}
+function setLabel(selector,value){const label=document.querySelector(selector)?.closest("label");if(!label)return;const first=label.firstChild;if(first&&first.nodeType===Node.TEXT_NODE)first.nodeValue=value;else label.prepend(document.createTextNode(value));}
 function summary(item,canEdit){
- const block=document.createElement("article");block.className="tip-item";
- const top=node("strong",item.title||"Sem título");block.append(top);
- block.append(node("small",[(item.type||""),item.species||"",item.location||""].filter(Boolean).join(" · ")));
- const status=node("span",names[item.status]||item.status);status.className="tip-status";block.append(status);
- if(validHttps(item.url)){const a=node("a","Abrir referência ↗");a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";block.append(a);}
- if(item.details)block.append(node("p",item.details));
- if(item.review_note)block.append(node("p","Atualização: "+item.review_note));
+ const T=txt(),block=document.createElement("article");block.className="tip-item";
+ block.append(node("strong",item.title||T.untitled));
+ const small=node("small",[T.types[Math.max(0,typeKeys.indexOf(item.type))],item.species||"",item.location||""].filter(Boolean).join(" · "));block.append(small);
+ const status=node("span",stateLabel(item.status));status.className="tip-status";block.append(status);
+ if(validHttps(item.url)){const a=node("a",T.open);a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";block.append(a);}
+ if(item.details)block.append(node("p",item.details)); // User-authored evidence remains verbatim.
+ if(item.review_note)block.append(node("p",T.update+": "+item.review_note));
  if(canEdit){
   const select=document.createElement("select");
-  for(const k of states){const o=new Option(names[k],k);select.add(o);}
+  for(const k of states)select.add(new Option(stateLabel(k),k));
   select.value=item.status;
-  const note=document.createElement("textarea");note.rows=2;note.maxLength=1500;note.value=item.review_note||"";note.placeholder="Nota de acompanhamento visível ao autor";
-  const save=node("button","Registrar andamento");save.type="button";save.className="secure-secondary";
+  const note=document.createElement("textarea");note.rows=2;note.maxLength=1500;note.value=item.review_note||"";note.placeholder=T.note;
+  const save=node("button",T.save);save.type="button";save.className="secure-secondary";
   save.addEventListener("click",async()=>{
    save.disabled=true;
    try{
-    const ref=doc(db,"submissions",item.id);
     const batch=writeBatch(db);
-    batch.update(ref,{status:select.value,review_note:note.value.trim(),updated_at:serverTimestamp()});
+    batch.update(doc(db,"submissions",item.id),{status:select.value,review_note:note.value.trim(),updated_at:serverTimestamp()});
     batch.set(doc(collection(db,"submissions",item.id,"history")),{status:select.value,note:note.value.trim(),created_at:serverTimestamp(),actor_uid:user.uid});
     await batch.commit();
-   }catch(e){alert("Não foi possível atualizar. Confira as regras administrativas do Firestore.");}
+   }catch(e){feedback("errUpdate");}
    finally{save.disabled=false;}
   });
   block.append(select,note,save);
  }
  return block;
 }
-async function refresh(){
- if(!db||!user)return;
- const own=await getDocs(query(collection(db,"submissions"),where("owner_uid","==",user.uid),limit(100)));
- if(!user)return;
- const target=$("my-tips");target.replaceChildren();
- const my=own.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
- if(!my.length)target.append(node("p","Nenhuma contribuição enviada ainda."));
- for(const item of my)target.append(summary(item,false));
- if(admin){
-  const box=$("admin-review");box.hidden=false;
-  const all=await getDocs(query(collection(db,"submissions"),limit(150)));
-  const adminBox=$("admin-tips");adminBox.replaceChildren();
-  const items=all.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
-  if(!items.length)adminBox.append(node("p","Nenhum envio para avaliação."));
-  for(const item of items)adminBox.append(summary(item,true));
- }else{$("admin-review").hidden=true;$("admin-tips").replaceChildren();}
+function renderLists(){
+ const mine=$("my-tips"),other=$("admin-tips");mine.replaceChildren();other.replaceChildren();
+ const sorted=a=>[...a].sort((x,y)=>(y.created_at?.seconds||0)-(x.created_at?.seconds||0));
+ if(!ownItems.length)mine.append(node("p",txt().none));else for(const item of sorted(ownItems))mine.append(summary(item,false));
+ if(admin){if(!adminItems.length)other.append(node("p",txt().noneAdmin));else for(const item of sorted(adminItems))other.append(summary(item,true));}
 }
-export async function openIntake(database,currentUser,isAdmin){
- db=database;user=currentUser;admin=isAdmin===true;
+export function setIntakeLanguage(lang){
+ language=useLang(lang);const T=txt(),sec=document.querySelector(".private-contributions");
+ if(!sec)return;
+ sec.querySelector(".explorer-head .secure-label").textContent=T.kicker;
+ sec.querySelector(".explorer-head h3").textContent=T.heading;
+ sec.querySelector(".explorer-head p").textContent=T.intro;
+ for(const [sel,key] of [["#tip-type","type"],["#tip-title","title"],["#tip-url","url"],["#tip-species","species"],["#tip-location","location"],["#tip-details","details"]])setLabel(sel,T[key]);
+ const select=$("tip-type");
+ for(let i=0;i<select.options.length;i++)select.options[i].textContent=T.types[i];
+ $("tip-title").placeholder=T.example;$("tip-species").placeholder=T.specPlaceholder;
+ $("tip-location").placeholder=T.locationPlaceholder;$("tip-details").placeholder=T.detailsPlaceholder;
+ $("tip-submit").textContent=T.send;
+ const cols=sec.querySelectorAll(".contributions-columns > section");
+ cols[0].querySelector("h3").textContent=T.mine;cols[0].querySelector("p.secure-small").textContent=T.mineDesc;
+ cols[1].querySelector("h3").textContent=T.admin;cols[1].querySelector("p.secure-small").textContent=T.adminDesc;
+ renderLists();if(feedbackKey)$("tip-feedback").textContent=T[feedbackKey]||"";
+}
+export async function openIntake(database,currentUser,isAdmin,lang="pt"){
+ db=database;user=currentUser;admin=isAdmin===true;ownItems=[];adminItems=[];
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
- $("admin-review").hidden=!admin;
+ $("admin-review").hidden=!admin;setIntakeLanguage(lang);
  const uid=user.uid;
  unsubOwn=onSnapshot(query(collection(db,"submissions"),where("owner_uid","==",uid),limit(100)),snap=>{
-   if(!user||user.uid!==uid)return;
-   const target=$("my-tips");target.replaceChildren();
-   const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
-   if(!items.length)target.append(node("p","Nenhuma contribuição enviada ainda."));
-   for(const item of items)target.append(summary(item,false));
- },()=>{$("tip-feedback").textContent="Não foi possível carregar suas contribuições. Confirme as regras de acesso.";});
+  if(!user||user.uid!==uid)return;
+  ownItems=snap.docs.map(d=>({id:d.id,...d.data()}));renderLists();
+ },()=>feedback("errOwn"));
  if(admin)unsubAdmin=onSnapshot(query(collection(db,"submissions"),limit(150)),snap=>{
-   if(!user||user.uid!==uid)return;
-   const target=$("admin-tips");target.replaceChildren();
-   const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
-   if(!items.length)target.append(node("p","Nenhum envio para avaliação."));
-   for(const item of items)target.append(summary(item,true));
- },()=>{$("tip-feedback").textContent="Não foi possível carregar a triagem administrativa.";});
+  if(!user||user.uid!==uid)return;
+  adminItems=snap.docs.map(d=>({id:d.id,...d.data()}));renderLists();
+ },()=>feedback("errAdmin"));
  if(started)return;started=true;
  $("tip-form").addEventListener("submit",async ev=>{
   ev.preventDefault();if(!user)return;
-  const send=$("tip-submit");send.disabled=true;$("tip-feedback").textContent="";
+  const send=$("tip-submit");send.disabled=true;feedback("");
   try{
    const values={owner_uid:user.uid,type:$("tip-type").value,title:$("tip-title").value.trim(),url:$("tip-url").value.trim(),species:$("tip-species").value.trim(),location:$("tip-location").value.trim(),details:$("tip-details").value.trim(),status:"received",review_note:"",created_at:serverTimestamp(),updated_at:serverTimestamp()};
    if(!validHttps(values.url))throw new Error("invalid url");
    await addDoc(collection(db,"submissions"),values);
-   $("tip-form").reset();$("tip-feedback").textContent="Recebido para triagem.";
-  }catch(e){$("tip-feedback").textContent="Não foi possível enviar. Verifique o link e as permissões do Firestore.";}
-  finally{send.disabled=false;}
+   $("tip-form").reset();feedback("sent");
+  }catch(e){feedback("invalid");}finally{send.disabled=false;}
  });
 }
 export function closeIntake(){
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
- user=null;db=null;admin=false;$("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-review").hidden=true;$("tip-feedback").textContent="";
+ user=null;db=null;admin=false;ownItems=[];adminItems=[];
+ $("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-review").hidden=true;feedback("");
 }
