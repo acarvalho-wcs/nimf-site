@@ -38,7 +38,7 @@ const reportStrings={
  es:{methodTitle:"Cómo se elaboran",methodBody:"Los informes de inteligencia organizan evidencias de fuentes abiertas, documentos y registros verificados, contrastan información, registran incertidumbres y distinguen observaciones de comercio o infracciones comprobadas. La información sensible está sujeta a controles adicionales.",none:"No hay informes disponibles para su cuenta.",open:"Consultar informe"}
 };
 const t=k=>txt[locale][k]||k;
-function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("reports-nav").hidden=!allowed;$("dashboard-nav").disabled=!allowed;$("dashboard-nav").hidden=!allowed;$("side-navigation").hidden=!allowed;if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;}}
+function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("dashboard-nav").disabled=!allowed;document.body.dataset.privateReady=allowed?"true":"false";if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;}}
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
 function translate(){
  document.documentElement.lang=locale==="pt"?"pt-BR":locale;
