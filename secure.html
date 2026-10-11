@@ -97,7 +97,17 @@
         </div>
         <div class="explorer-summary"><strong id="explorer-count">0</strong><span id="explorer-count-label">registros correspondentes</span><span id="explorer-map-count">0 no mapa</span><span id="explorer-unmapped-count">0 sem localização mapeável</span></div>
         <div class="explorer-layout">
-          <div class="explorer-map-wrap"><div id="explorer-map" role="region" aria-label="Mapa dos anúncios filtrados"></div><p id="explorer-map-notice">Os marcadores representam localizações aproximadas. Nenhuma coordenada de vendedor é exibida.</p></div>
+          <div class="explorer-map-wrap">
+            <div class="explorer-map-toolbar">
+              <fieldset class="explorer-layer-picker" id="explorer-layers"><legend id="layers-title">Camadas</legend>
+                <label><input type="checkbox" value="advertisement" checked><span class="layer-swatch layer-advertisement"></span><span data-layer-title="advertisement">Anúncios</span></label>
+                <label><input type="checkbox" value="platform" checked><span class="layer-swatch layer-platform"></span><span data-layer-title="platform">Plataformas</span></label>
+                <label><input type="checkbox" value="fair" checked><span class="layer-swatch layer-fair"></span><span data-layer-title="fair">Feiras livres</span></label>
+                <label><input type="checkbox" value="physical_market" checked><span class="layer-swatch layer-physical-market"></span><span data-layer-title="physical_market">Comércio presencial sob investigação</span></label>
+              </fieldset>
+              <button id="explorer-fullscreen" type="button" class="secure-secondary" aria-pressed="false">Tela cheia</button>
+            </div>
+            <div id="explorer-map" role="region" aria-label="Mapa dos anúncios filtrados"></div><p id="explorer-map-notice">Os marcadores representam localizações aproximadas. Nenhuma coordenada de vendedor é exibida.</p></div>
           <div class="explorer-results"><div class="explorer-results-head"><strong id="explorer-results-title">Resultados</strong></div><div id="explorer-cards" class="explorer-cards"></div></div>
         </div>
         <section id="explorer-detail" class="explorer-detail" hidden aria-live="polite"></section>
@@ -105,18 +115,39 @@
       <section class="private-contributions" aria-label="Contribuições e acompanhamento">
        <div class="explorer-head"><div><span class="secure-label">NIMF / INTELLIGENCE INTAKE</span><h3>Contribuições para investigação</h3><p>Envie links e informações para triagem. Só você e administradores autorizados acessam a submissão. Não insira dados pessoais desnecessários.</p></div></div>
        <form id="tip-form" class="tip-form">
-        <label>Tipo de informação<select id="tip-type" required><option value="platform">Plataforma / site</option><option value="advertisement">Anúncio de fauna</option><option value="group">Grupo ou canal de comércio</option><option value="other">Outro indício</option></select></label>
+        <label>Tipo de informação<select id="tip-type" required><option value="platform">Plataforma / site</option><option value="advertisement">Anúncio de fauna</option><option value="group">Grupo ou canal de comércio</option><option value="fair">Feira livre</option><option value="physical_market">Ponto de comércio presencial sob investigação</option><option value="other">Outro indício</option></select></label>
         <label>Título / assunto<input id="tip-title" type="text" required maxlength="180" placeholder="Ex.: Oferta de espécie controlada"></label>
-        <label>Link de referência (HTTPS)<input id="tip-url" type="url" required maxlength="1500" placeholder="https://..."></label>
+        <label>Link de referência (HTTPS)<input id="tip-url" type="url" maxlength="1500" placeholder="https://..."></label>
         <label>Espécie (se conhecida)<input id="tip-species" type="text" maxlength="180" placeholder="Nome científico ou comum"></label>
         <label>Localidade mencionada<input id="tip-location" type="text" maxlength="180" placeholder="País, estado, município"></label>
-        <label class="tip-wide">Descrição factual<textarea id="tip-details" rows="3" maxlength="3000" placeholder="Descreva o que a fonte mostra; indique incertezas e evite acusações não verificadas."></textarea></label>
+        <p id="tip-url-note" class="tip-guidance">Para feiras ou pontos presenciais, o link é opcional. Evite dados pessoais ou endereços particulares.</p><label class="tip-wide">Descrição factual<textarea id="tip-details" rows="3" maxlength="3000" placeholder="Descreva o que a fonte mostra; indique incertezas e evite acusações não verificadas."></textarea></label>
         <button id="tip-submit" class="secure-button" type="submit">Enviar para triagem</button><p id="tip-feedback" role="status"></p>
        </form>
        <div class="contributions-columns">
         <section><h3>Minhas contribuições</h3><p class="secure-small">Acompanhe o status de cada envio. As notas exibidas aqui são destinadas ao autor.</p><div id="my-tips" class="tip-list"></div></section>
         <section id="admin-review" hidden><h3>Triagem administrativa</h3><p class="secure-small">Avalie os registros recebidos; ações serão comunicadas ao autor.</p><div id="admin-tips" class="tip-list"></div></section>
        </div>
+        <section id="admin-map-panel" class="admin-map-panel" hidden>
+          <div class="explorer-head"><div><span class="secure-label">NIMF / MAPA REVISADO</span><h3 id="admin-map-title">Cadastro administrativo de camadas</h3><p id="admin-map-help">Publique apenas informações corroboradas. Não inclua nomes ou endereços particulares. Pontos publicados serão visíveis aos usuários autorizados.</p></div></div>
+          <form id="admin-map-form" class="tip-form">
+           <label><span data-map-field="layer">Camada</span><select id="map-layer" required><option value="advertisement">Anúncios</option><option value="platform">Plataformas</option><option value="fair">Feiras livres</option><option value="physical_market">Comércio presencial sob investigação</option></select></label>
+           <label><span data-map-field="title">Título genérico, sem identificar pessoas</span><input id="map-title" maxlength="180" required placeholder="Ex.: Ponto sob avaliação — Manaus"></label>
+           <label><span data-map-field="species">Espécie (se conhecida)</span><input id="map-species" maxlength="180"></label>
+           <label><span data-map-field="country">País</span><input id="map-country" maxlength="100"></label>
+           <label><span data-map-field="state">Estado / região</span><input id="map-state" maxlength="120"></label>
+           <label><span data-map-field="city">Município</span><input id="map-city" maxlength="120"></label>
+           <label><span data-map-field="latitude">Latitude aproximada (centro municipal)</span><input id="map-latitude" inputmode="decimal" type="number" step="any" min="-85" max="85" required></label>
+           <label><span data-map-field="longitude">Longitude aproximada (centro municipal)</span><input id="map-longitude" inputmode="decimal" type="number" step="any" min="-180" max="180" required></label>
+           <label><span data-map-field="precision">Precisão espacial</span><select id="map-precision"><option value="municipality">Município</option><option value="regional">Região</option><option value="state">Estado</option><option value="country">País</option></select></label>
+           <label><span data-map-field="evidence">Evidência</span><select id="map-evidence"><option value="reported">Relato a verificar</option><option value="corroborated">Corroborada</option></select></label>
+           <label><span data-map-field="url">Link de referência (opcional)</span><input id="map-url" maxlength="1500" type="url" placeholder="https://..."></label>
+           <label><span data-map-field="published">Visibilidade</span><select id="map-published"><option value="false">Rascunho — somente administrador</option><option value="true">Publicar para usuários autorizados</option></select></label>
+           <label class="tip-wide"><span data-map-field="notes">Contexto verificável, sem dados pessoais</span><textarea id="map-notes" maxlength="1500" rows="3"></textarea></label>
+           <div class="admin-map-actions"><button id="map-save" class="secure-button" type="submit">Salvar ponto</button><button id="map-cancel" class="secure-secondary" type="button">Cancelar edição</button></div>
+           <p id="admin-map-feedback" role="status"></p>
+          </form>
+          <div id="admin-map-list" class="tip-list" aria-live="polite"></div>
+        </section>
       </section>
       <article class="private-panel">
        <h3 id="records-title">Registros privados</h3>
