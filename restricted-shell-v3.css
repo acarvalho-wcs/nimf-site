@@ -37,3 +37,15 @@ body[data-theme="dark"]{--bg:#071310;--sidebar:#091611;--surface:#0d1b17;--surfa
  .secure-side-contact{padding:10px 0}
  .secure-side-bottom{margin-top:0;padding-top:10px}
 }
+
+/* Protected legal status reference profiles. */
+.legal-protection{margin:0 0 18px;padding:23px}
+.legal-protection h3{font-size:20px;margin:10px 0}
+.legal-protection>p{color:var(--muted);font-size:12px;line-height:1.7}
+.legal-profiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.legal-profile{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.legal-profile h4{font-size:15px;margin:0 0 12px;color:var(--text)}
+.legal-profile p{font-size:11px;line-height:1.65;color:var(--muted);margin:7px 0}
+.legal-profile strong{color:var(--text)}
+.legal-profile i{font-style:italic}
+@media(max-width:1050px){.legal-profiles{grid-template-columns:1fr}}
