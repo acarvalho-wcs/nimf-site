@@ -104,7 +104,7 @@ function appendLegalCard(d,r){
  const tr={pt:["Proteção legal e restrições ao comércio","Lista nacional / ICMBio","Não verificado","Ponto da loja: não representa origem dos animais"],en:["Legal protection and trade restrictions","Brazilian national red list","Not verified","Store point: not the origin of animals"],es:["Protección legal y restricciones comerciales","Lista nacional de Brasil","No verificado","Punto comercial: no representa el origen de los animales"]}[language];
  const block=document.createElement("section");block.className="explorer-legal-context";block.append(textNode("h4",tr[0]));
  for(const [label,value] of [[tr[1],r.national_red_list_status],["CITES",r.cites_appendix],["CMS",r.cms_appendix]]){
-  const row=document.createElement("p"),key=document.createElement("strong");key.textContent=label+": ";row.append(key,document.createTextNode(value||tr[2]));block.append(row);
+  const row=document.createElement("p"),key=document.createElement("strong");key.textContent=label+": ";row.append(key,document.createTextNode(value||((label==="CITES"||label==="CMS")&&r[label==="CITES"?"cites_listing_status":"cms_listing_status"]==="not_listed"?({pt:"Não incluída nos apêndices de 2026",en:"Not listed in the 2026 appendices",es:"No incluida en los apéndices de 2026"}[language]):tr[2])));block.append(row);
  }
  if(language==="pt" && r.legal_trade_framework)block.append(textNode("p",r.legal_trade_framework));
  if(r["legal_note_"+language])block.append(textNode("p",r["legal_note_"+language]));
@@ -149,7 +149,7 @@ function showDetail(r){
   d.append(appendScientific(document.createElement("p"),context.text,r.scientific_name));
  }
  appendLegalCard(d,r);
- if(r.location_basis==="platform_store_municipality"){
+ if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
   d.append(textNode("p",labels[language],"explorer-map-no-location"));
  }
