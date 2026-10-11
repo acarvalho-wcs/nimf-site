@@ -81,6 +81,7 @@ try{
  assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"false");
  assert.equal(await page.locator("#explorer-layers").getAttribute("aria-hidden"),"true");
  await page.locator("#layers-toggle").click();
+ await page.locator("#explorer-layers").waitFor({state:"visible",timeout:4000});
  assert.ok(await page.locator("#explorer-layers").isVisible(),"The color-coded category drawer should overlay the map");
  assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"true");
  assert.equal(await page.locator("#explorer-layers .layer-swatch").count(),4);
