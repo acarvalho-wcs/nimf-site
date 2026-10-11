@@ -70,3 +70,6 @@ body[data-theme="dark"]{--bg:#071310;--sidebar:#091611;--surface:#0d1b17;--surfa
 .explorer-map-card .explorer-legal-context p{margin:5px 0;font-size:11px;line-height:1.6}
 .explorer-map-card .explorer-legal-context strong{color:var(--text)}
 .explorer-map-card .explorer-legal-context a{display:inline-block;font-size:10px;margin:5px 9px 0 0}
+
+/* Coincident stores/listings: compact count badge, enlarged interaction area. */
+.nimf-raster-pin.nimf-group-pin,.nimf-map-dot.nimf-group-pin{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;border-radius:50%!important;display:grid!important;place-items:center!important;font-size:10px!important;font-weight:800!important;color:#0b2219!important;background:#d3ff54!important;border:1.5px solid #1f4e3c!important;box-shadow:0 1px 5px #0008!important}
