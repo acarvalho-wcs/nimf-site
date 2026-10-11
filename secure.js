@@ -87,7 +87,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=20261011i");
+   const mod=await import("./explorer.js?v=20261011j");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
@@ -105,7 +105,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./map-points.js?v=20261011i");
+   const mod=await import("./map-points.js?v=20261011j");
    if(!valid())return;
    mapModule=mod;
    mod.startMapPoints(db,user,approvalAdmin,items=>{
@@ -117,7 +117,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./intake.js?v=20261011i");
+   const mod=await import("./intake.js?v=20261011j");
    if(!valid())return;
    intakeModule=mod;
    await mod.openIntake(db,user,approvalAdmin,locale,tip=>mapModule?.promoteTip(tip));
