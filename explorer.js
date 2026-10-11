@@ -106,7 +106,7 @@ function appendLegalCard(d,r){
  for(const [label,value] of [[tr[1],r.national_red_list_status],["CITES",r.cites_appendix],["CMS",r.cms_appendix]]){
   const row=document.createElement("p"),key=document.createElement("strong");key.textContent=label+": ";row.append(key,document.createTextNode(value||tr[2]));block.append(row);
  }
- if(r.legal_trade_framework)block.append(textNode("p",r.legal_trade_framework));
+ if(language==="pt" && r.legal_trade_framework)block.append(textNode("p",r.legal_trade_framework));
  if(r["legal_note_"+language])block.append(textNode("p",r["legal_note_"+language]));
  for(const url of [r.national_red_list_source_url,r.legal_trade_source_url]){
   if(typeof url==="string"&&url.startsWith("https://")){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=tr[1]+" ↗";block.append(a,document.createTextNode(" "));}
