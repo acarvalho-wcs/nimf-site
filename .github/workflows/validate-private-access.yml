@@ -1,0 +1,39 @@
+name: Validate NIMF private access
+on:
+  pull_request:
+    paths:
+      - 'secure.html'
+      - 'secure.css'
+      - 'secure.js'
+      - 'firebase-config.js'
+      - 'firestore.rules'
+      - 'docs/PRIVATE_ACCESS.md'
+      - '.github/workflows/validate-private-access.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JS module syntax
+        run: |
+          node --check secure.js
+          node --check firebase-config.js
+      - name: Reject privileged credential material
+        shell: bash
+        run: |
+          set -eu
+          if grep -Ein 'PRIVATE KEY-----|service_account|serviceRoleKey|firebase-admin|allow read, write: if true' secure.js secure.html firebase-config.js firestore.rules; then
+            echo 'Potential privileged credential or unsafe rule' >&2
+            exit 1
+          fi
+      - name: Inspect denied writes in rules
+        run: |
+          grep -q 'allow list, create, update, delete: if false;' firestore.rules
+          grep -q 'allow create, update, delete: if false;' firestore.rules

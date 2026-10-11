@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="robots" content="noindex,nofollow,noarchive">
+ <meta name="description" content="NIMF — área restrita com aprovação individual">
+ <title>NIMF | Área restrita</title>
+ <link rel="stylesheet" href="./styles.css">
+ <link rel="stylesheet" href="./secure.css">
+ <script type="module" src="./secure.js"></script>
+</head>
+<body data-theme="dark">
+ <div class="secure-layout">
+  <aside class="secure-side">
+   <a class="secure-brand" href="./index.html" aria-label="NIMF"><span class="secure-brandmark">N</span><span><b>NIMF</b><small>WILDLIFE INTELLIGENCE</small></span></a>
+   <div class="secure-side-content">
+     <div class="secure-side-kicker">NIMF / RESTRICTED WORKSPACE</div>
+     <h1 id="side-title">Inteligência de mercados de fauna silvestre</h1>
+     <p id="side-copy">Acesso individual, verificação de e-mail e autorização administrativa. Os dados só são consultados após validação da conta.</p>
+     <div class="secure-side-decoration" aria-hidden="true">◎</div>
+   </div>
+   <div class="secure-side-bottom"><span class="secure-online">◆</span> <span id="side-footer">Acesso exclusivo a usuários autorizados</span></div>
+  </aside>
+  <div class="secure-main">
+   <header class="secure-top">
+    <a href="./index.html" id="back-public">← Voltar à demonstração pública</a>
+    <div class="secure-top-right"><select id="secure-language" aria-label="Language"><option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option></select><button id="secure-theme" type="button" aria-label="Toggle dark/light">☼</button></div>
+   </header>
+   <main class="secure-content">
+    <div id="config-panel" class="secure-card" hidden><span class="secure-label">SETUP</span><h2 id="config-title">Área restrita em configuração</h2><p id="config-body">O administrador precisa conectar o Firebase e aplicar as regras de segurança. Nenhuma informação privada está disponível neste momento.</p></div>
+    <section id="auth-panel" class="secure-card" hidden>
+      <span class="secure-label">NIMF / ACCESS</span>
+      <h2 id="auth-title">Acessar o NIMF</h2>
+      <p id="auth-subtitle">Seu e-mail e sua senha são administrados pelo serviço de autenticação, nunca pelo GitHub Pages.</p>
+      <div class="secure-tabs" role="tablist">
+        <button type="button" id="login-tab" class="active" aria-selected="true">Entrar</button>
+        <button type="button" id="signup-tab" aria-selected="false">Solicitar acesso</button>
+      </div>
+      <form id="auth-form" autocomplete="on">
+        <label for="auth-email" id="email-label">E-mail</label>
+        <input id="auth-email" type="email" required autocomplete="email" placeholder="usuario@instituicao.org" spellcheck="false">
+        <label for="auth-password" id="password-label">Senha</label>
+        <input id="auth-password" type="password" required minlength="8" autocomplete="current-password" placeholder="••••••••">
+        <div id="password-confirm-wrap" hidden>
+          <label for="auth-confirm" id="confirm-label">Confirmar senha</label>
+          <input id="auth-confirm" type="password" minlength="8" autocomplete="new-password">
+        </div>
+        <p id="auth-error" role="alert" class="secure-error" hidden></p>
+        <button id="submit-button" type="submit" class="secure-button">Entrar</button>
+      </form>
+      <button type="button" id="forgot-password" class="secure-link">Esqueceu sua senha?</button>
+      <p id="auth-note" class="secure-small">Criar uma conta não concede acesso aos dados. É necessária aprovação do administrador.</p>
+    </section>
+    <section id="waiting-panel" class="secure-card" hidden>
+      <span class="secure-label">ACCESS CONTROL</span><div class="waiting-symbol">◇</div>
+      <h2 id="waiting-title">Verificação pendente</h2>
+      <p id="waiting-text">Confirme seu endereço pelo e-mail recebido. Depois, o administrador poderá aprovar o acesso.</p>
+      <p id="waiting-address" class="secure-email"></p>
+      <p id="waiting-error" role="alert" class="secure-error" hidden></p>
+      <div class="waiting-actions">
+       <button type="button" id="refresh-access" class="secure-button">Verificar novamente</button>
+       <button type="button" id="resend-verification" class="secure-secondary">Reenviar verificação</button>
+       <button type="button" id="waiting-logout" class="secure-link">Sair</button>
+      </div>
+    </section>
+    <section id="dashboard-panel" class="secure-dashboard" hidden>
+      <div class="secure-dashboard-heading">
+       <div><span class="secure-label" id="private-kicker">NIMF / PAINEL RESTRITO</span><h2 id="private-title">Painel privado</h2><p id="private-description">Somente registros autorizados no banco privado são exibidos.</p></div>
+       <button type="button" id="private-logout" class="secure-secondary">Sair</button>
+      </div>
+      <div class="private-stats">
+       <div><span id="records-label">Registros disponíveis</span><strong id="records-count">—</strong></div>
+       <div><span id="account-label">Conta</span><strong id="account-status">Autorizada</strong></div>
+      </div>
+      <article class="private-panel">
+       <h3 id="records-title">Registros privados</h3>
+       <p id="records-subtitle">Dados obtidos exclusivamente após autenticação e checagem de autorização no Firestore.</p>
+       <div class="private-search"><label for="record-search" id="search-label">Pesquisar</label><input type="search" id="record-search" placeholder="Buscar nos registros carregados"></div>
+       <div class="table-wrap"><table><thead><tr><th id="col-title">Título</th><th id="col-type">Categoria</th><th id="col-source">Fonte</th><th id="col-status">Verificação</th></tr></thead><tbody id="record-rows"></tbody></table></div>
+       <p id="records-empty" class="secure-small">Nenhum registro privado disponível ainda.</p>
+       <p id="records-error" class="secure-error" role="alert" hidden></p>
+      </article>
+      <p id="privacy-footer" class="privacy-footer">Dados internos. Não redistribua sem autorização.</p>
+    </section>
+   </main>
+  </div>
+ </div>
+</body>
+</html>

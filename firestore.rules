@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function verified() {
+      return request.auth != null &&
+        request.auth.token.email_verified == true;
+    }
+    function approved() {
+      return verified() &&
+        exists(/databases/$(database)/documents/access/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/access/$(request.auth.uid)).data.approved == true;
+    }
+
+    // Approval is done manually in Firebase console by the project owner.
+    // No browser client can create, approve, alter or enumerate accounts.
+    match /access/{uid} {
+      allow get: if verified() && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
+    // All approved users can see the full record documents in this collection.
+    // Client-side CRUD remains disabled until an independently reviewed policy is ready.
+    match /records/{recordId} {
+      allow get, list: if approved();
+      allow create, update, delete: if false;
+    }
+
+    // Everything else, including nested data, remains inaccessible.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
