@@ -1,0 +1,46 @@
+name: Publish NIMF public demo
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'app.js'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate public payload
+        shell: bash
+        run: |
+          set -eu
+          node --check app.js
+          test -f index.html
+          test -f styles.css
+          if grep -Ein 'raw.githubusercontent.com/acarvalho-wcs/wildlife-market-intelligence|data/intake/|supabase|service_role' index.html styles.css app.js; then
+            echo 'Forbidden private data references' >&2
+            exit 1
+          fi
+          mkdir -p public
+          cp index.html styles.css app.js public/
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v4
