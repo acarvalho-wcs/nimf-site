@@ -21,13 +21,16 @@
 <section id="explorer-detail" hidden></section>
 </section>
 <script type="module">
-import {initExplorer} from "../explorer.js";
+import {initExplorer,setExplorerLanguage} from "../explorer.js";
+import {localizedField, localizedTitle} from "../record-locale.js";
 initExplorer([{
 id:"synthetic-demo",title:"Colônia anunciada de Testudo ficticia",scientific_name:"Testudo ficticia",
 source:"Synthetic demo",state:"Amazonas",municipality:"Manaus",country:"BR",
 latitude:-3.119,longitude:-60.0217,location_precision:"municipality",
-status:"Em revisão",product_type:"teste_sintetico"
+status:"Em revisão",category:"Anúncio comercial",product_type:"colonia_abelhas_sem_ferrao",description_pt:"Observação em português.",description_en:"Source description in English.",description_es:"Descripción de la fuente en español."
 }], "pt");
+window.__demoSetLanguage=setExplorerLanguage;
+window.__demoLocalized=(field,lang)=>localizedField({title:"Colônia anunciada de Testudo ficticia",scientific_name:"Testudo ficticia",status:"Em revisão",category:"Anúncio comercial",product_type:"colonia_abelhas_sem_ferrao"},field,lang);
 window.__demoReady=true;
 </script>
 </body></html>
