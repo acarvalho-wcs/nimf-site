@@ -100,8 +100,8 @@ try{
  await page.locator('#explorer-layers input[value="advertisement"]').check();
  assert.equal(await page.locator(".nimf-raster-pin").count(),4);
 
- assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"false");
- assert.equal(await page.locator("#explorer-layers").getAttribute("aria-hidden"),"true");
+ assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"true");
+ assert.equal(await page.locator("#explorer-layers").getAttribute("aria-hidden"),"false");
  assert.ok(await page.locator("#explorer-layers").isVisible());
  assert.ok(await page.locator("#explorer-layers").isVisible(),"The color-coded category drawer should overlay the map");
  assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"true");
