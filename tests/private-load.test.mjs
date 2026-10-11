@@ -27,6 +27,7 @@ try{
  assert.ok(await page.locator("canvas.nimf-raster-tiles").count()===1,"Raster tiles must compose into a single canvas");
  await page.waitForFunction(()=>Number(document.getElementById("explorer-map").dataset.loadedTiles)>0,{timeout:14000});
  const camera=await page.locator("#explorer-map").evaluate(el=>({lat:Number(el.dataset.centerLatitude),lon:Number(el.dataset.centerLongitude),zoom:Number(el.dataset.zoom),count:Number(el.dataset.mappedCount),tile:el.dataset.centerTile}));
+ console.log("MAP_CAMERA: "+JSON.stringify(camera));
  assert.ok(Math.abs(camera.lat+3.119)<0.005 && Math.abs(camera.lon+60.0217)<0.005,"Map must center on Manaus, not another continent");
  assert.equal(camera.zoom,7,"Single municipality must be shown at regional zoom");
  assert.equal(camera.count,1);
