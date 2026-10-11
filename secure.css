@@ -150,3 +150,34 @@
 .secure-brand:hover .observatory-brandmark,
 .secure-brand:focus-visible .observatory-brandmark{background:#edff9c;border-color:#edff9c}
 .secure-brand:focus-visible{outline:2px solid var(--accent);outline-offset:5px;border-radius:7px}
+
+/* Intelligence layer chooser and fullscreen map, preserving existing responsive dashboard. */
+.explorer-map-wrap{isolation:isolate;position:relative}
+.explorer-map-toolbar{position:absolute;top:12px;left:12px;right:55px;z-index:10;display:flex;gap:8px;align-items:flex-start;justify-content:space-between;pointer-events:none}
+.explorer-map-toolbar>*{pointer-events:auto}
+.explorer-layer-picker{margin:0;border:1px solid #326253;border-radius:9px;background:rgba(9,31,26,.94);padding:10px 12px;box-shadow:0 7px 28px #0005;color:#e3f0e9;max-width:290px;display:grid;gap:5px}
+.explorer-layer-picker legend{font-size:11px;letter-spacing:.06em;font-weight:800;background:#0a231d;border-radius:5px;padding:2px 5px}
+.explorer-layer-picker label{font-size:11px;display:flex;align-items:center;gap:7px;cursor:pointer;line-height:1.4}
+.explorer-layer-picker input{accent-color:#cbff7a}
+.layer-swatch{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #d0eee5;flex-shrink:0}
+.layer-advertisement{background:#a6dea9}.layer-platform{background:#73a8f8}.layer-fair{background:#f2bb5f}.layer-physical-market{background:#de8da7}
+#explorer-fullscreen{background:#0a241eea;color:#ecfae7;border:1px solid #679f83;white-space:nowrap;font-size:12px;font-weight:700}
+.explorer-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100dvh!important;max-height:none!important;overflow:hidden!important;border-radius:0!important;background:#112923}
+.explorer-map-wrap.is-fullscreen #explorer-map{position:absolute;inset:0;width:100%;height:100%!important;min-height:100%!important;max-height:none!important}
+.explorer-map-wrap.is-fullscreen .explorer-map-toolbar{right:75px;top:14px}
+.explorer-map-wrap.is-fullscreen #explorer-map-notice{position:absolute;z-index:5;bottom:0;left:0;max-width:65%;background:#0a211eda;border-radius:5px;color:#e0efe6}
+body.nimf-map-fullscreen{overflow:hidden!important}
+.explorer-map-wrap.is-fullscreen .nimf-raster-layer{height:100%;width:100%}
+.nimf-raster-pin[data-layer="platform"],.nimf-map-dot[data-layer="platform"]{background:#73a8f8!important;border-color:#21487c!important}
+.nimf-raster-pin[data-layer="fair"],.nimf-map-dot[data-layer="fair"]{background:#f2bb5f!important;border-color:#7e4a18!important}
+.nimf-raster-pin[data-layer="physical_market"],.nimf-map-dot[data-layer="physical_market"]{background:#de8da7!important;border-color:#74354e!important}
+.admin-map-panel{margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
+.admin-map-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#admin-map-feedback{grid-column:1/-1;color:var(--muted);font-size:12px}
+.tip-guidance{font-size:11px;color:var(--muted);grid-column:1/-1;line-height:1.65;margin:0}
+@media(max-width:560px){
+.explorer-map-toolbar{right:50px;flex-direction:column}
+.explorer-layer-picker{max-width:210px;padding:7px 9px}
+.explorer-map-toolbar #explorer-fullscreen{font-size:11px;padding:7px}
+.explorer-map-wrap.is-fullscreen #explorer-map-notice{max-width:95%}
+}
