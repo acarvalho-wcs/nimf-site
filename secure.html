@@ -73,6 +73,24 @@
        <div><span id="records-label">Registros disponíveis</span><strong id="records-count">—</strong></div>
        <div><span id="account-label">Conta</span><strong id="account-status">Autorizada</strong></div>
       </div>
+      <section class="explorer" aria-label="Market intelligence explorer">
+        <div class="explorer-head"><div><span class="secure-label" id="explorer-kicker">EXPLORADOR GEOGRÁFICO</span><h3 id="explorer-title">Mercados de fauna: mapa e filtros</h3><p id="explorer-desc">Mapeamento aproximado, não a localização de vendedores. Use os filtros combinados para explorar os anúncios.</p></div><button type="button" id="explorer-reset" class="secure-secondary">Limpar filtros</button></div>
+        <div class="explorer-filters">
+          <label><span id="explorer-search-label">Busca livre</span><input type="search" id="explorer-search" placeholder="Espécie, fonte, cidade, produto..."></label>
+          <label><span id="explorer-species-label">Espécie</span><select id="explorer-species"><option value="">Todas</option></select></label>
+          <label><span id="explorer-state-label">Estado / região</span><select id="explorer-state"><option value="">Todos</option></select></label>
+          <label><span id="explorer-city-label">Município</span><select id="explorer-city"><option value="">Todos</option></select></label>
+          <label><span id="explorer-source-label">Fonte</span><select id="explorer-source"><option value="">Todas</option></select></label>
+          <label><span id="explorer-status-label">Verificação</span><select id="explorer-status"><option value="">Todas</option></select></label>
+          <label><span id="explorer-product-label">Produto</span><select id="explorer-product"><option value="">Todos</option></select></label>
+        </div>
+        <div class="explorer-summary"><strong id="explorer-count">0</strong><span id="explorer-count-label">registros correspondentes</span><span id="explorer-map-count">0 no mapa</span><span id="explorer-unmapped-count">0 sem localização mapeável</span></div>
+        <div class="explorer-layout">
+          <div class="explorer-map-wrap"><div id="explorer-map" role="region" aria-label="Mapa dos anúncios filtrados"></div><p id="explorer-map-notice">Os marcadores representam localizações aproximadas. Nenhuma coordenada de vendedor é exibida.</p></div>
+          <div class="explorer-results"><div class="explorer-results-head"><strong id="explorer-results-title">Resultados</strong></div><div id="explorer-cards" class="explorer-cards"></div></div>
+        </div>
+        <section id="explorer-detail" class="explorer-detail" hidden aria-live="polite"></section>
+      </section>
       <article class="private-panel">
        <h3 id="records-title">Registros privados</h3>
        <p id="records-subtitle">Dados obtidos exclusivamente após autenticação e checagem de autorização no Firestore.</p>
