@@ -113,6 +113,23 @@ try{
  assert.equal(await countFor("fair"),1);
  assert.equal(await countFor("physical_market"),1);
  assert.equal(await page.locator(".nimf-raster-pin").count(),4,"All four categories should render four map points");
+ // Filters must automatically reframe the live map to matching coordinates.
+ await page.locator("#explorer-search").fill("Reviewed public market");
+ assert.equal(await page.locator("#explorer-count").textContent(),"1");
+ assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"1");
+ let filteredCamera=await page.locator("#explorer-map").evaluate(el=>[Number(el.dataset.centerLatitude),Number(el.dataset.centerLongitude),Number(el.dataset.zoom)]);
+ assert.ok(Math.abs(filteredCamera[0]+1.46)<0.01&&Math.abs(filteredCamera[1]+48.5)<0.01&&filteredCamera[2]>=7,
+  "Typing in free search must automatically pan/zoom to Belém");
+ await page.locator("#explorer-search").fill("");
+ await page.locator("#explorer-state").selectOption("SP");
+ assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"1");
+ filteredCamera=await page.locator("#explorer-map").evaluate(el=>[Number(el.dataset.centerLatitude),Number(el.dataset.centerLongitude),Number(el.dataset.zoom)]);
+ assert.ok(Math.abs(filteredCamera[0]+23.55)<0.01&&Math.abs(filteredCamera[1]+46.63)<0.01,
+  "Changing a geographic facet must automatically pan to São Paulo");
+ await page.locator("#explorer-state").selectOption("");
+ assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"4");
+ console.log("PASS: "+browserName+" search and geographic filters automatically pan and zoom without map interaction");
+
  await page.locator("#explorer-cards .explorer-card").filter({hasText:"Reviewed internet platform"}).click();
  assert.equal(await page.locator("#explorer-map-card").getAttribute("data-record-id"),"point-point-platform");
  const recentered=await page.locator("#explorer-map").evaluate(el=>({
