@@ -83,3 +83,20 @@
 @media(max-width:1100px){.explorer-layout{grid-template-columns:minmax(0,1fr) 210px}}
 @media(max-width:800px){.explorer-layout{grid-template-columns:1fr}.explorer-results{max-height:290px}.explorer-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.explorer-filters label:first-child{grid-column:span 2}.explorer-detail-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:470px){.explorer{padding:13px}.explorer-head{flex-direction:column}.explorer-filters{grid-template-columns:1fr}.explorer-filters label:first-child{grid-column:span 1}.explorer-detail-grid{grid-template-columns:1fr}}
+
+/* Compact intelligence workspace: 75% reduction from previous 36% lateral panel. */
+@media(min-width:921px){
+ .secure-layout{grid-template-columns:minmax(86px,9%) minmax(0,1fr)}
+ .secure-side{padding:24px 12px;align-items:center}
+ .secure-side-content,.secure-side-bottom{display:none}
+ .secure-brand{display:flex;flex-direction:column;gap:8px}
+ .secure-brand>span:last-child{display:none}
+ .secure-main{min-width:0}
+ .secure-content{padding:26px 20px;align-items:flex-start}
+ .secure-dashboard{width:100%;max-width:1800px}
+}
+#explorer-map{min-height:465px;background:var(--surface2)}
+#explorer-map .maplibregl-control-container{font-size:11px}
+.explorer-map-wrap{position:relative}
+.map-feedback{color:var(--muted);font-size:12px}
+.scientific-name{font-style:italic}
