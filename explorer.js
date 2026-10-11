@@ -158,6 +158,7 @@ function drawRasterFrame(){
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,width,height);
  ctx.fillStyle="#b9d8de";ctx.fillRect(0,0,width,height);
+ let loaded=0;
  for(const cell of cells){
   let entry=rasterCache.get(cell.key);
   if(!entry){
@@ -170,9 +171,10 @@ function drawRasterFrame(){
    image.onerror=()=>{entry.failed=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
    image.src="https://tile.openstreetmap.org/"+cell.key+".png";
   }
-  if(entry.ready)ctx.drawImage(entry.image,Math.round(cell.left),Math.round(cell.top),257,257);
+  if(entry.ready){loaded++;ctx.drawImage(entry.image,Math.round(cell.left),Math.round(cell.top),257,257);}
   else{ctx.fillStyle="#e5e7e0";ctx.fillRect(cell.left,cell.top,256,256);}
  }
+ el("explorer-map").dataset.loadedTiles=String(loaded);
 }
 function renderRasterMarkers(rows,fit=true){
  if(!fallbackLayer)return;
