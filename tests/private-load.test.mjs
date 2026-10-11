@@ -53,6 +53,25 @@ try{
  }
 
  console.log("PASS: "+browserName+" OSM composite map and PT EN ES filters");
+ // Test the actual intake form, with a browser-side stub for the Firebase import.
+ await page.route("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js",route=>route.fulfill({
+  status:200,contentType:"application/javascript",headers:{"access-control-allow-origin":"*"},
+  body:"export const collection=()=>null,query=()=>null,where=()=>null,limit=()=>null,onSnapshot=()=>null,addDoc=()=>null,doc=()=>null,serverTimestamp=()=>null,writeBatch=()=>null;"
+ }));
+ await page.goto("http://127.0.0.1:8751/tests/intake-languages.html",{waitUntil:"domcontentloaded",timeout:30000});
+ await page.waitForFunction(()=>window.__intakeTestReady===true,{timeout:15000});
+ for(const [lang,title,button,placeholder] of [
+  ["en","Investigation contributions","Submit for review","Scientific or common name"],
+  ["es","Contribuciones para investigación","Enviar para evaluación","Nombre científico o común"],
+  ["pt","Contribuições para investigação","Enviar para triagem","Nome científico ou comum"]
+ ]){
+  await page.evaluate(l=>window.__setIntakeLanguage(l),lang);
+  assert.equal((await page.locator(".private-contributions .explorer-head h3").textContent()).trim(),title);
+  assert.equal((await page.locator("#tip-submit").textContent()).trim(),button);
+  assert.equal(await page.locator("#tip-species").getAttribute("placeholder"),placeholder);
+ }
+ console.log("PASS: "+browserName+" investigation intake changes fully across three languages");
+
 
 }finally{await browser.close();}
 }
