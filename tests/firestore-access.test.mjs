@@ -47,6 +47,31 @@ try {
  await test("approved user can submit source for review",addDoc(collection(bob.firestore(),"submissions"),valid),true);
  await test("author cannot impersonate other user",addDoc(collection(bob.firestore(),"submissions"),{...valid,owner_uid:"alice"}),false);
  await test("pending user cannot submit",addDoc(collection(pending.firestore(),"submissions"),{...valid,owner_uid:"pending"}),false);
+
+ const fairLead={...valid,type:"fair",owner_uid:"alice",url:"",title:"Fictitious open-air market"};
+ const physicalLead={...valid,type:"physical_market",owner_uid:"alice",url:"",title:"Reported market location"};
+ await test("approved user may suggest a fair without URL",addDoc(collection(alice.firestore(),"submissions"),fairLead),true);
+ await test("approved user may suggest physical trade without URL",addDoc(collection(alice.firestore(),"submissions"),physicalLead),true);
+ await test("online listing still requires HTTPS source",addDoc(collection(alice.firestore(),"submissions"),{...valid,owner_uid:"alice",type:"advertisement",url:""}),false);
+
+ const point={layer_type:"physical_market",title:"Generic suspected market area in Manaus",
+  scientific_name:"",country:"BR",state:"AM",municipality:"Manaus",
+  latitude:-3.119,longitude:-60.0217,location_precision:"municipality",
+  evidence_status:"reported",source_url:"",notes:"Aggregate location; no personal information.",
+  published:false,created_at:serverTimestamp(),created_by:"admin",
+  updated_at:serverTimestamp(),updated_by:"admin"};
+ await test("non-admin may not create a geographic point",addDoc(collection(alice.firestore(),"map_points"),{...point,created_by:"alice",updated_by:"alice"}),false);
+ await test("admin may create draft location for triage",setDoc(doc(admin.firestore(),"map_points","draft-001"),point),true);
+ await test("author cannot read unpublished location",getDoc(doc(alice.firestore(),"map_points","draft-001")),false);
+ await test("admin can inspect unpublished location",getDoc(doc(admin.firestore(),"map_points","draft-001")),true);
+ await test("admin cannot publish uncorroborated allegations",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{published:true,updated_at:serverTimestamp(),updated_by:"admin"}),false);
+ await test("admin cannot publish exact geographic precision",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{location_precision:"street",evidence_status:"corroborated",published:true,updated_at:serverTimestamp(),updated_by:"admin"}),false);
+ await test("admin can mark a reviewed approximate point published",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{evidence_status:"corroborated",published:true,updated_at:serverTimestamp(),updated_by:"admin"}),true);
+ await test("approved user may read published approximate location",getDoc(doc(bob.firestore(),"map_points","draft-001")),true);
+ await test("approved user can query published map points",getDocs(query(collection(bob.firestore(),"map_points"),where("published","==",true))),true);
+ await test("ordinary user cannot enumerate drafts",getDocs(collection(bob.firestore(),"map_points")),false);
+ await test("unapproved account cannot read published map points",getDoc(doc(pending.firestore(),"map_points","draft-001")),false);
+ await test("contributor cannot alter published administrative marker",updateDoc(doc(alice.firestore(),"map_points","draft-001"),{notes:"Changed"}),false);
  const owner=await getDoc(doc(alice.firestore(),"submissions","alice-001"));
  assert.equal(owner.data().status,"triage");
  console.log("All "+count+" Firestore security rule assertions passed.");
