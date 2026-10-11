@@ -244,16 +244,42 @@ function drawRasterFrame(){
  }
  el("explorer-map").dataset.loadedTiles=String(loaded);
 }
-function renderRasterMarkers(rows,fit=true){
- if(!fallbackLayer)return;
- if(fit){
-  if(rows.length===1){fallbackCenter=[rows[0].longitude,rows[0].latitude];fallbackZoom=7;}
-  else if(rows.length>1){
-   const average=rows.reduce((s,r)=>[s[0]+r.longitude,s[1]+r.latitude],[0,0]);
-   fallbackCenter=[average[0]/rows.length,average[1]/rows.length];fallbackZoom=3;
-  }else{fallbackCenter=[-53,-12];fallbackZoom=3;}
+// Fit the actual filtered geographic extent, not a fixed global zoom.
+ // The widest longitude gap is excluded so locations near the antimeridian
+ // remain grouped rather than centring the map on the other hemisphere.
+function filteredExtent(rows,width,height){
+ if(!rows.length)return null;
+ if(rows.length===1)return {center:[rows[0].longitude,rows[0].latitude],zoom:7};
+ const longitudes=rows.map(r=>(r.longitude+180+360)%360/360).sort((a,b)=>a-b);
+ let gap=-1,startIndex=0;
+ for(let i=0;i<longitudes.length;i++){
+  const next=i===longitudes.length-1?longitudes[0]+1:longitudes[i+1];
+  const currentGap=next-longitudes[i];
+  if(currentGap>gap){gap=currentGap;startIndex=(i+1)%longitudes.length;}
  }
+ const start=longitudes[startIndex],span=1-gap,centreX=(start+span/2)%1;
+ const centreLongitude=centreX*360-180;
+ const normalizedY=rows.map(r=>projection(0,latLimit(r.latitude),0)[1]/256);
+ const top=Math.min(...normalizedY),bottom=Math.max(...normalizedY);
+ const centreLatitude=inverseProjection(centreX*256,((top+bottom)/2)*256,0)[1];
+ const padding=76;
+ let zoom=2;
+ for(let z=8;z>=2;z--){
+  const scale=256*(2**z);
+  if(span*scale<=Math.max(120,width-2*padding)&&
+     (bottom-top)*scale<=Math.max(120,height-2*padding)){
+   zoom=z;break;
+  }
+ }
+ return {center:[centreLongitude,centreLatitude],zoom};
+}
+function renderRasterMarkers(rows,fit=false){
+ if(!fallbackLayer)return;
  const host=el("explorer-map"),width=Math.max(320,host.clientWidth),height=Math.max(420,host.clientHeight);
+ if(fit && rows.length){
+  const viewport=filteredExtent(rows,width,height);
+  fallbackCenter=viewport.center;fallbackZoom=viewport.zoom;
+ }
  const maxTile=2**fallbackZoom,scale=256*maxTile;
  const [cx,cy]=projection(fallbackCenter[0],fallbackCenter[1],fallbackZoom),left=cx-width/2,top=cy-height/2;
  const startX=Math.floor(left/256),endX=Math.ceil((left+width)/256),startY=Math.floor(top/256),endY=Math.ceil((top+height)/256);
@@ -322,7 +348,7 @@ function setupMap(){
   setTimeout(()=>{if(!mapLoaded)fail();},10000);
  }catch(e){fail();}
 }
-function drawMarkers(rows){
+function drawMarkers(rows,fit=false){
  if(!mapReady||!mapLoaded)return;
  for(const p of pins)p.remove();pins=[];
  const bounds=new window.maplibregl.LngLatBounds();
@@ -334,12 +360,12 @@ function drawMarkers(rows){
   dot.addEventListener("click",()=>focusRecord(r));
   pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
  }
- if(rows.length===1)map.easeTo({center:bounds.getCenter(),zoom:7,duration:300});
- else if(rows.length>1)map.fitBounds(bounds,{padding:50,maxZoom:8,duration:300});
- else map.easeTo({center:[-53,-12],zoom:3,duration:300});
+ if(fit && rows.length===1)map.easeTo({center:bounds.getCenter(),zoom:7,duration:350});
+ else if(fit && rows.length>1)map.fitBounds(bounds,{padding:75,maxZoom:8,duration:400});
+ // With zero mappable records, remove the pins without moving to a fake area.
  requestAnimationFrame(()=>map.resize());
 }
-function render(){
+function render(fitMap=false){
  const f=dataset.filter(matches),m=f.filter(r=>coords(r)),T=trans[language];
  updateLayerCounts();
  el("explorer-map").dataset.visibleMarkerCount=String(m.length);
@@ -357,19 +383,19 @@ function render(){
  if(activeId&&!f.some(r=>r.id===activeId)){closeMapCard();}
  if(activeId){const item=f.find(r=>r.id===activeId);if(item)showDetail(item);}
  setupMap();
- if(fallbackLayer)renderRasterMarkers(m);
- if(mapReady)drawMarkers(m);
+ if(fallbackLayer)renderRasterMarkers(m,fitMap);
+ if(mapReady)drawMarkers(m,fitMap);
 }
 export function initExplorer(rows,lang="pt"){
  language=trans[lang]?lang:"pt";
  canonicalRecords=(Array.isArray(rows)?rows:[]).filter(safe).map((r,i)=>({...r,id:r.id||r.record_id||String(i)}));rebuildDataset();
  for(const id of Object.keys(controls))el("explorer-"+id).value="";
  el("explorer-search").value="";closeMapCard();
- setupSpeciesPicker();options();setExplorerLanguage(language);render();
+ setupSpeciesPicker();options();setExplorerLanguage(language);render(true);
 }
 export function setMapPoints(rows){
  reviewedPoints=(Array.isArray(rows)?rows:[]).filter(safe).filter(r=>r.published===true);
- rebuildDataset();options();render();
+ rebuildDataset();options();render(true);
 }
 export function setExplorerLanguage(lang){
  language=trans[lang]?lang:"pt";const t=trans[language];rebuildDataset();
@@ -425,10 +451,9 @@ document.addEventListener("keydown",ev=>{
  if(document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);
 });
 for(const input of document.querySelectorAll("#explorer-layers input"))input.addEventListener("change",()=>{
- // One rendering path for both MapLibre and raster. Do not clear other
- // geographic/text filters while enabling or disabling thematic layers.
- render();
+ // Update pins, visible results and automatic camera together.
+ render(true);
 });
-for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",render);
-el("explorer-search").addEventListener("input",render);
-el("explorer-reset").addEventListener("click",()=>{el("explorer-search").value="";for(const id of Object.keys(controls))el("explorer-"+id).value="";render();});
+for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",()=>render(true));
+el("explorer-search").addEventListener("input",()=>render(true));
+el("explorer-reset").addEventListener("click",()=>{el("explorer-search").value="";for(const id of Object.keys(controls))el("explorer-"+id).value="";render(true);});
