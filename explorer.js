@@ -100,11 +100,11 @@ function closeMapCard(){
 }
 function appendLegalCard(d,r){
  if(r.record_kind==="platform"||!r.scientific_name)return;
- if(!["national_red_list_status","cites_appendix","cms_appendix","legal_trade_framework","cites_listing_status","cms_listing_status"].some(k=>r[k]))return;
+ if(!["national_red_list_status","national_red_list_listing_status","cites_appendix","cms_appendix","legal_trade_framework","cites_listing_status","cms_listing_status"].some(k=>r[k]))return;
  const tr={pt:["Proteção legal e restrições ao comércio","Lista nacional / ICMBio","Não verificado","Ponto da loja: não representa origem dos animais"],en:["Legal protection and trade restrictions","Brazilian national red list","Not verified","Store point: not the origin of animals"],es:["Protección legal y restricciones comerciales","Lista nacional de Brasil","No verificado","Punto comercial: no representa el origen de los animales"]}[language];
  const block=document.createElement("section");block.className="explorer-legal-context";block.append(textNode("h4",tr[0]));
  for(const [label,value] of [[tr[1],r.national_red_list_status],["CITES",r.cites_appendix],["CMS",r.cms_appendix]]){
-  const row=document.createElement("p"),key=document.createElement("strong");key.textContent=label+": ";row.append(key,document.createTextNode(value||((label==="CITES"||label==="CMS")&&r[label==="CITES"?"cites_listing_status":"cms_listing_status"]==="not_listed"?({pt:"Não incluída nos apêndices de 2026",en:"Not listed in the 2026 appendices",es:"No incluida en los apéndices de 2026"}[language]):tr[2])));block.append(row);
+  const row=document.createElement("p"),key=document.createElement("strong");key.textContent=label+": ";row.append(key,document.createTextNode((label===tr[1]&&r.national_red_list_listing_status==="not_listed"?({pt:"Não incluída na Lista Nacional",en:"Not listed on the Brazilian national list",es:"No incluida en la lista nacional brasileña"}[language]):value)||((label==="CITES"||label==="CMS")&&r[label==="CITES"?"cites_listing_status":"cms_listing_status"]==="not_listed"?({pt:"Não incluída nos apêndices de 2026",en:"Not listed in the 2026 appendices",es:"No incluida en los apéndices de 2026"}[language]):tr[2])));block.append(row);
  }
  if(language==="pt" && r.legal_trade_framework)block.append(textNode("p",r.legal_trade_framework));
  if(r["legal_note_"+language])block.append(textNode("p",r["legal_note_"+language]));
