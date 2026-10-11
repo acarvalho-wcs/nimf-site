@@ -130,6 +130,39 @@ try{
  await page.evaluate(()=>window.__demoSetLanguage("es"));
  assert.ok((await page.locator("#explorer-fullscreen").textContent()).includes("Pantalla"));
  console.log("PASS: "+browserName+" four thematic map layers and fullscreen/escape");
+ // A canonical online store is a PLATFORM layer and points to its public city
+ // centre; the international practitioner directory has no invented marker.
+ await page.evaluate(()=>window.__demoSetPoints([]));
+ await page.evaluate(()=>{
+   window.__demoInit([
+    {id:"myants-de",record_kind:"platform",title:"MyAnts.de",source:"MyAnts.de",
+     source_url:"https://www.myants.de/",status:"Em revisão",category:"Plataforma",
+     scientific_name:null,platform_kind:"online_store",municipality:"Weiden in der Oberpfalz",
+     state:"Bayern",country:"DE",latitude:49.67527,longitude:12.16321,location_precision:"municipality"},
+    {id:"iakp",record_kind:"platform",title:"IAKP",source:"IAKP",
+     source_url:"https://iakp.org/search/",status:"Em revisão",category:"Plataforma",
+     scientific_name:null,platform_kind:"practitioner_directory",country:null},
+    {id:"ant-listing",record_kind:"listing",title:"Colônia anunciada de Atta laevigata",
+     scientific_name:"Atta laevigata",status:"Em revisão",source:"MyAnts.de"}
+   ],"pt");
+ });
+ assert.equal(await page.locator("#explorer-count").textContent(),"3");
+ assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"1");
+ assert.equal(await page.locator("#explorer-unmapped-count").textContent().then(s=>s.trim()),"2 sem localização mapeável");
+ assert.equal(Number(await page.locator('[data-layer-count="platform"]').textContent()),1);
+ assert.equal(Number(await page.locator('[data-layer-count="advertisement"]').textContent()),0);
+ await page.locator("#layers-toggle").click();
+ await page.locator("#explorer-layers").waitFor({state:"visible"});
+ await page.locator('#explorer-layers input[value="platform"]').uncheck();
+ assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"0");
+ assert.equal(await page.locator("#explorer-count").textContent(),"1","Only the unlocated listing remains after hiding platforms");
+ await page.locator('#explorer-layers input[value="platform"]').check();
+ assert.equal(await page.locator("#explorer-count").textContent(),"3");
+ await page.locator("#layers-close").click();
+ await page.evaluate(()=>window.__demoSetLanguage("en"));
+ assert.equal(await page.evaluate(()=>window.__demoLocalized("category","en")),"Commercial listing");
+ console.log("PASS: "+browserName+" one approximate German store marker; global IAKP remains unmapped");
+
 
  // Test the actual intake form, with a browser-side stub for the Firebase import.
  await page.route("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js",route=>route.fulfill({
