@@ -1,0 +1,32 @@
+name: Smoke test private dashboard startup
+on:
+  pull_request:
+    paths:
+      - 'secure.js'
+      - 'secure.html'
+      - 'explorer.js'
+      - 'intake.js'
+      - 'tests/private-load.test.mjs'
+      - '.github/workflows/smoke-private-page.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  startup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test tools
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install chromium
+      - name: Start local GitHub Pages mirror
+        run: |
+          python3 -m http.server 8751 --bind 127.0.0.1 >/tmp/nimf-http.log 2>&1 &
+          sleep 2
+      - name: Confirm private login becomes visible
+        run: node tests/private-load.test.mjs
