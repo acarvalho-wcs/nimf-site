@@ -23,7 +23,7 @@ jobs:
       - name: Install browser test tools
         run: |
           npm install --no-save playwright@1.58.2
-          npx playwright install chromium
+          npx playwright install --with-deps chromium webkit
       - name: Start local GitHub Pages mirror
         run: |
           python3 -m http.server 8751 --bind 127.0.0.1 >/tmp/nimf-http.log 2>&1 &
