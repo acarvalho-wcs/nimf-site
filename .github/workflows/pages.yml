@@ -11,6 +11,7 @@ on:
       - 'secure.js'
       - 'explorer.js'
       - 'intake.js'
+      - 'map-points.js'
       - 'record-locale.js'
       - 'firebase-config.js'
       - '.github/workflows/pages.yml'
@@ -45,13 +46,14 @@ jobs:
           node --check secure.js
           node --check explorer.js
           node --check intake.js
+          node --check map-points.js
           node --check record-locale.js
           node --check firebase-config.js
           test -f secure.html
           test -f secure.css
           test -f firestore.rules
           grep -q 'allow create, update, delete: if false;' firestore.rules
-          cp index.html styles.css app.js secure.html secure.css secure.js explorer.js intake.js record-locale.js firebase-config.js public/
+          cp index.html styles.css app.js secure.html secure.css secure.js explorer.js intake.js map-points.js record-locale.js firebase-config.js public/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
