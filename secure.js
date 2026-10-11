@@ -47,7 +47,7 @@ function drawRecords(){
  for(const r of matched){
   const tr=document.createElement("tr");
   for(const key of ["title","category","source","status"]){
-   const td=document.createElement("td");td.textContent=docCell(r,key);tr.append(td);
+   const td=document.createElement("td");if(key==="title" && r.scientific_name && String(r.title||"").includes(r.scientific_name)){const parts=String(r.title).split(r.scientific_name);td.append(document.createTextNode(parts.shift()));const sci=document.createElement("i");sci.textContent=r.scientific_name;td.append(sci,document.createTextNode(parts.join(r.scientific_name)));}else td.textContent=docCell(r,key);tr.append(td);
   }body.append(tr);
  }
 }
