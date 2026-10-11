@@ -13,8 +13,7 @@ service cloud.firestore {
    allow get, list: if approved();
    allow create, update, delete: if false;
   }
-  // An approved administrator controls map publication. No user-created
-  // geospatial points and no precise street/seller coordinates are permitted.
+  // Only administrators may curate map points. Published points use approximate locations.
   match /map_points/{id} {
    function validPoint() {
     let p = request.resource.data;
@@ -31,77 +30,7 @@ service cloud.firestore {
       && p.location_precision in ['municipality','regional','state','country']
       && p.evidence_status in ['reported','corroborated']
       && p.source_url is string && p.source_url.size() <= 1500
-      && (p.source_url == '' || p.source_url.matches('^https://[^ ]+
-   allow get: if approved() && (resource.data.owner_uid == request.auth.uid || administrator());
-   allow list: if approved() && (administrator() || resource.data.owner_uid == request.auth.uid);
-   allow create: if approved()
-     && request.resource.data.keys().hasOnly(['owner_uid','type','title','url','species','location','details','status','review_note','created_at','updated_at'])
-     && request.resource.data.keys().hasAll(['owner_uid','type','title','url','species','location','details','status','review_note','created_at','updated_at'])
-     && request.resource.data.owner_uid == request.auth.uid
-     && request.resource.data.type in ['platform','advertisement','group','fair','physical_market','other']
-     && request.resource.data.title is string && request.resource.data.title.size() > 2 && request.resource.data.title.size() <= 180
-     && request.resource.data.url is string && request.resource.data.url.size() <= 1500
-     && (request.resource.data.url.matches('^https://[^ ]+
-     && request.resource.data.species is string && request.resource.data.species.size() <= 180
-     && request.resource.data.location is string && request.resource.data.location.size() <= 180
-     && request.resource.data.details is string && request.resource.data.details.size() <= 3000
-     && request.resource.data.status == 'received'
-     && request.resource.data.review_note == ''
-     && request.resource.data.created_at == request.time
-     && request.resource.data.updated_at == request.time;
-   allow update: if administrator()
-     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','review_note','updated_at'])
-     && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
-     && request.resource.data.review_note is string && request.resource.data.review_note.size() <= 1500
-     && request.resource.data.updated_at == request.time;
-   allow delete: if false;
-   match /history/{entryId} {
-     allow get, list: if approved() &&
-       (get(/databases/$(database)/documents/submissions/$(id)).data.owner_uid == request.auth.uid || administrator());
-     allow create: if administrator()
-       && request.resource.data.keys().hasOnly(['status','note','created_at','actor_uid'])
-       && request.resource.data.keys().hasAll(['status','note','created_at','actor_uid'])
-       && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
-       && request.resource.data.note is string && request.resource.data.note.size() <= 1500
-       && request.resource.data.actor_uid == request.auth.uid
-       && request.resource.data.created_at == request.time;
-     allow update, delete: if false;
-   }
-  }
-  match /{document=**}{allow read,write: if false;}
- }
-}
-) || ((request.resource.data.type in ['fair','physical_market','other']) && request.resource.data.url == ''))
-     && request.resource.data.species is string && request.resource.data.species.size() <= 180
-     && request.resource.data.location is string && request.resource.data.location.size() <= 180
-     && request.resource.data.details is string && request.resource.data.details.size() <= 3000
-     && request.resource.data.status == 'received'
-     && request.resource.data.review_note == ''
-     && request.resource.data.created_at == request.time
-     && request.resource.data.updated_at == request.time;
-   allow update: if administrator()
-     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','review_note','updated_at'])
-     && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
-     && request.resource.data.review_note is string && request.resource.data.review_note.size() <= 1500
-     && request.resource.data.updated_at == request.time;
-   allow delete: if false;
-   match /history/{entryId} {
-     allow get, list: if approved() &&
-       (get(/databases/$(database)/documents/submissions/$(id)).data.owner_uid == request.auth.uid || administrator());
-     allow create: if administrator()
-       && request.resource.data.keys().hasOnly(['status','note','created_at','actor_uid'])
-       && request.resource.data.keys().hasAll(['status','note','created_at','actor_uid'])
-       && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
-       && request.resource.data.note is string && request.resource.data.note.size() <= 1500
-       && request.resource.data.actor_uid == request.auth.uid
-       && request.resource.data.created_at == request.time;
-     allow update, delete: if false;
-   }
-  }
-  match /{document=**}{allow read,write: if false;}
- }
-}
-))
+      && (p.source_url == '' || p.source_url.matches('^https://[^ ]+$'))
       && p.notes is string && p.notes.size() <= 1500
       && p.published is bool && (!p.published || p.evidence_status == 'corroborated')
       && p.updated_at == request.time && p.updated_by == request.auth.uid;
@@ -124,37 +53,7 @@ service cloud.firestore {
      && request.resource.data.type in ['platform','advertisement','group','fair','physical_market','other']
      && request.resource.data.title is string && request.resource.data.title.size() > 2 && request.resource.data.title.size() <= 180
      && request.resource.data.url is string && request.resource.data.url.size() <= 1500
-     && (request.resource.data.url.matches('^https://[^ ]+
-     && request.resource.data.species is string && request.resource.data.species.size() <= 180
-     && request.resource.data.location is string && request.resource.data.location.size() <= 180
-     && request.resource.data.details is string && request.resource.data.details.size() <= 3000
-     && request.resource.data.status == 'received'
-     && request.resource.data.review_note == ''
-     && request.resource.data.created_at == request.time
-     && request.resource.data.updated_at == request.time;
-   allow update: if administrator()
-     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','review_note','updated_at'])
-     && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
-     && request.resource.data.review_note is string && request.resource.data.review_note.size() <= 1500
-     && request.resource.data.updated_at == request.time;
-   allow delete: if false;
-   match /history/{entryId} {
-     allow get, list: if approved() &&
-       (get(/databases/$(database)/documents/submissions/$(id)).data.owner_uid == request.auth.uid || administrator());
-     allow create: if administrator()
-       && request.resource.data.keys().hasOnly(['status','note','created_at','actor_uid'])
-       && request.resource.data.keys().hasAll(['status','note','created_at','actor_uid'])
-       && request.resource.data.status in ['received','triage','checking','investigating','resolved','closed']
-       && request.resource.data.note is string && request.resource.data.note.size() <= 1500
-       && request.resource.data.actor_uid == request.auth.uid
-       && request.resource.data.created_at == request.time;
-     allow update, delete: if false;
-   }
-  }
-  match /{document=**}{allow read,write: if false;}
- }
-}
-) || ((request.resource.data.type in ['fair','physical_market','other']) && request.resource.data.url == ''))
+     && (request.resource.data.url.matches('^https://[^ ]+$') || ((request.resource.data.type in ['fair','physical_market','other']) && request.resource.data.url == ''))
      && request.resource.data.species is string && request.resource.data.species.size() <= 180
      && request.resource.data.location is string && request.resource.data.location.size() <= 180
      && request.resource.data.details is string && request.resource.data.details.size() <= 3000
