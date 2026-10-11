@@ -18,7 +18,6 @@ let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[];
 let workspaceView="dashboard";
 function switchWorkspace(view){
  if($("dashboard-panel").hidden || !auth?.currentUser || !auth.currentUser.emailVerified || !activeUser || auth.currentUser.uid!==activeUser.uid)return;
- if(view==="reports" && !reportGrants.length)return;
  workspaceView=view==="reports"?"reports":"dashboard";
  $("dashboard-primary").hidden=workspaceView!=="dashboard";
  $("intelligence-reports-view").hidden=workspaceView!=="reports";
@@ -39,7 +38,7 @@ const reportStrings={
  es:{methodTitle:"Cómo se elaboran",methodBody:"Los informes de inteligencia organizan evidencias de fuentes abiertas, documentos y registros verificados, contrastan información, registran incertidumbres y distinguen observaciones de comercio o infracciones comprobadas. La información sensible está sujeta a controles adicionales.",none:"No hay informes disponibles para su cuenta.",open:"Consultar informe"}
 };
 const t=k=>txt[locale][k]||k;
-function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed||!reportGrants.length;$("reports-nav").hidden=!allowed||!reportGrants.length;$("dashboard-nav").disabled=!allowed;$("dashboard-nav").hidden=!allowed;$("side-navigation").hidden=!allowed;if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;}}
+function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("reports-nav").hidden=!allowed;$("dashboard-nav").disabled=!allowed;$("dashboard-nav").hidden=!allowed;$("side-navigation").hidden=!allowed;if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;}}
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
 function translate(){
  document.documentElement.lang=locale==="pt"?"pt-BR":locale;
@@ -69,7 +68,7 @@ function renderGrantedReports(){
  $("reports-empty-description").hidden=reportGrants.length>0;
 }
 async function loadReportGrants(user,epoch){
- reportGrants=[];$("reports-nav").hidden=true;$("reports-nav").disabled=true;
+ reportGrants=[];renderGrantedReports();
  try{
   const grants=await getDocs(query(collection(db,"report_grants",user.uid,"items"),limit(100)));
   if(epoch!==authEpoch||auth?.currentUser?.uid!==user.uid)return;
@@ -83,7 +82,6 @@ async function loadReportGrants(user,epoch){
   }
  }catch(error){console.warn("Restricted report entitlements unavailable",error?.code||error);}
  if(epoch!==authEpoch||auth?.currentUser?.uid!==user.uid)return;
- $("reports-nav").hidden=!reportGrants.length;$("reports-nav").disabled=!reportGrants.length;
  renderGrantedReports();
 }
 function switchMode(next){
