@@ -62,6 +62,34 @@ try{
  }
 
  console.log("PASS: "+browserName+" OSM composite map and PT EN ES filters");
+ // A published point in each new layer is map-visible only when its layer is enabled.
+ await page.evaluate(()=>{
+  document.getElementById("explorer-species").value="";
+  document.getElementById("explorer-species").dispatchEvent(new Event("change"));
+  window.__demoSetPoints([
+   {id:"point-platform",layer_type:"platform",title:"Reviewed internet platform",municipality:"São Paulo",state:"SP",latitude:-23.55,longitude:-46.63,location_precision:"municipality",published:true,evidence_status:"corroborated"},
+   {id:"point-fair",layer_type:"fair",title:"Reviewed public market",municipality:"Belém",state:"PA",latitude:-1.46,longitude:-48.5,location_precision:"municipality",published:true,evidence_status:"corroborated"},
+   {id:"point-physical",layer_type:"physical_market",title:"Reviewed approximate trading area",municipality:"Manaus",state:"AM",latitude:-3.119,longitude:-60.02,location_precision:"municipality",published:true,evidence_status:"corroborated"},
+   {id:"point-draft",layer_type:"physical_market",title:"Unpublished investigation",municipality:"Belém",state:"PA",latitude:-1.46,longitude:-48.5,location_precision:"municipality",published:false,evidence_status:"reported"}
+  ]);
+ });
+ assert.equal(await page.locator("#explorer-count").textContent(),"4");
+ assert.equal(await page.locator("#explorer-layers input").count(),4);
+ await page.locator('#explorer-layers input[value="physical_market"]').uncheck();
+ assert.equal(await page.locator("#explorer-count").textContent(),"3");
+ await page.locator('#explorer-layers input[value="physical_market"]').check();
+ assert.equal(await page.locator("#explorer-count").textContent(),"4");
+ await page.locator("#explorer-fullscreen").click();
+ assert.ok(await page.locator(".explorer-map-wrap").evaluate(el=>el.classList.contains("is-fullscreen")));
+ assert.equal(await page.locator("#explorer-fullscreen").getAttribute("aria-pressed"),"true");
+ await page.keyboard.press("Escape");
+ assert.ok(!await page.locator(".explorer-map-wrap").evaluate(el=>el.classList.contains("is-fullscreen")));
+ await page.evaluate(()=>window.__demoSetLanguage("en"));
+ assert.ok((await page.locator('[data-layer-title="physical_market"]').textContent()).includes("Physical"));
+ await page.evaluate(()=>window.__demoSetLanguage("es"));
+ assert.ok((await page.locator("#explorer-fullscreen").textContent()).includes("Pantalla"));
+ console.log("PASS: "+browserName+" four thematic map layers and fullscreen/escape");
+
  // Test the actual intake form, with a browser-side stub for the Firebase import.
  await page.route("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js",route=>route.fulfill({
   status:200,contentType:"application/javascript",headers:{"access-control-allow-origin":"*"},
@@ -78,6 +106,7 @@ try{
   assert.equal((await page.locator(".private-contributions .explorer-head h3").textContent()).trim(),title);
   assert.equal((await page.locator("#tip-submit").textContent()).trim(),button);
   assert.equal(await page.locator("#tip-species").getAttribute("placeholder"),placeholder);
+  assert.equal(await page.locator("#tip-type option").count(),6);
  }
  console.log("PASS: "+browserName+" investigation intake changes fully across three languages");
 
