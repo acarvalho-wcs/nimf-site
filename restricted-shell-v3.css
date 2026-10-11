@@ -79,3 +79,20 @@ body[data-theme="dark"]{--bg:#071310;--sidebar:#091611;--surface:#0d1b17;--surfa
 .secure-side-bottom .secure-wcs-logo-card img{display:block;width:100%;max-width:140px;height:auto;max-height:none;object-fit:contain}
 .secure-side-bottom .secure-wcs-logo-caption{font-family:Inter,Arial,sans-serif;font-size:13px;line-height:1.18;letter-spacing:-.025em;font-weight:800;text-align:center;color:#080808;overflow-wrap:normal}
 .secure-side-bottom .secure-wcs-logo-card:hover{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Confidential intelligence reports: Observatory-inspired navigation and locale-aware palette. */
+.intelligence-reports-view{background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:15px;padding:26px 28px;min-height:480px}
+.intelligence-reports-view h2{font-size:23px;font-weight:800;margin:10px 0}
+.intelligence-reports-view>p{color:var(--muted);font-size:13px;max-width:770px;line-height:1.65}
+.reports-method{margin:20px 0 25px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:19px 20px}
+.reports-method h3{font-size:15px;color:var(--text);margin:0 0 9px}
+.reports-method p{font-size:12px;line-height:1.8;color:var(--muted);margin:0}
+.reports-folders{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.reports-folder-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;min-height:125px}
+.reports-folder-card h3{font-size:15px;color:var(--text);margin:0 0 12px}
+.reports-folder-card p{font-size:12px;line-height:1.65;color:var(--muted)}
+.reports-empty-description{padding:18px 0;color:var(--muted)}
+.secure-side-nav-item.active{background:var(--surface2);color:var(--text);border-color:transparent}
+body[data-theme="light"] .intelligence-reports-view{background:#f6faf8}
+body[data-theme="light"] .reports-method,body[data-theme="light"] .reports-folder-card{background:white}
+@media(max-width:720px){.intelligence-reports-view{padding:19px 15px}.reports-folders{grid-template-columns:minmax(0,1fr)}}
