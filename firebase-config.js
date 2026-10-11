@@ -1,9 +1,9 @@
-// Firebase Web configuration is PUBLIC metadata, not a secret.
-// Copy ONLY the Firebase console Web App config values here.
-// Never put an admin SDK private key, service-account JSON, tokens or passwords here.
+// NIMF Firebase WEB configuration (public application identifiers, not credentials).
+// Administrative access is enforced by Firestore Security Rules, not by this file.
+// Do not add service-account JSON, private keys, passwords or user tokens here.
 export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  appId: ""
+  apiKey: "AIzaSyASO8naQUK_WwKgRV9Uqanx08GcMI4UE90",
+  authDomain: "fir-console-61443.firebaseapp.com",
+  projectId: "fir-console-61443",
+  appId: "1:278068161446:web:a63993ee2cb1439eacfd67"
 };
