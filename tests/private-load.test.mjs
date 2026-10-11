@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
-import { chromium } from "playwright";
-const browser=await chromium.launch({headless:true});
+import { chromium, webkit } from "playwright";
+for (const [browserName,engine] of [["chromium",chromium],["webkit",webkit]]) {
+const browser=await engine.launch({headless:true});
 try{
  const page=await browser.newPage();
  const errors=[];
@@ -12,5 +13,6 @@ try{
  assert.ok(shown,"The page must never display only the empty sidebar");
  if(!await page.locator("#auth-panel").isVisible())throw Error("Login unavailable. Console errors: "+errors.slice(0,4).join(" | "));
  assert.equal(await page.locator("#auth-email").isVisible(),true);
- console.log("PASS: private login loads with no credentials or map dependency");
+ console.log("PASS: "+browserName+" private login loads with no credentials or map dependency");
 }finally{await browser.close();}
+}
