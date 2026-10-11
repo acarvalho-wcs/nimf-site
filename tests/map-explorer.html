@@ -17,11 +17,20 @@
 <label><span id="explorer-product-label"></span><select id="explorer-product"></select></label>
 </div>
 <div class="explorer-summary"><strong id="explorer-count"></strong><span id="explorer-count-label"></span><span id="explorer-map-count"></span><span id="explorer-unmapped-count"></span></div>
-<div class="explorer-layout"><div class="explorer-map-wrap"><div id="explorer-map"></div><p id="explorer-map-notice"></p></div><div class="explorer-results"><div id="explorer-results-title"></div><div id="explorer-cards"></div></div></div>
+<div class="explorer-layout"><div class="explorer-map-wrap"><div class="explorer-map-toolbar">
+              <fieldset class="explorer-layer-picker" id="explorer-layers"><legend id="layers-title">Camadas</legend>
+                <label><input type="checkbox" value="advertisement" checked><span class="layer-swatch layer-advertisement"></span><span data-layer-title="advertisement">Anúncios</span></label>
+                <label><input type="checkbox" value="platform" checked><span class="layer-swatch layer-platform"></span><span data-layer-title="platform">Plataformas</span></label>
+                <label><input type="checkbox" value="fair" checked><span class="layer-swatch layer-fair"></span><span data-layer-title="fair">Feiras livres</span></label>
+                <label><input type="checkbox" value="physical_market" checked><span class="layer-swatch layer-physical-market"></span><span data-layer-title="physical_market">Comércio presencial sob investigação</span></label>
+              </fieldset>
+              <button id="explorer-fullscreen" type="button" class="secure-secondary" aria-pressed="false">Tela cheia</button>
+            </div>
+<div id="explorer-map"></div><p id="explorer-map-notice"></p></div><div class="explorer-results"><div id="explorer-results-title"></div><div id="explorer-cards"></div></div></div>
 <section id="explorer-detail" hidden></section>
 </section>
 <script type="module">
-import {initExplorer,setExplorerLanguage} from "../explorer.js";
+import {initExplorer,setExplorerLanguage,setMapPoints} from "../explorer.js";
 import {localizedField, localizedTitle} from "../record-locale.js";
 initExplorer([{
 id:"synthetic-demo",title:"Colônia anunciada de Testudo ficticia",scientific_name:"Testudo ficticia",
@@ -30,6 +39,7 @@ latitude:-3.119,longitude:-60.0217,location_precision:"municipality",
 status:"Em revisão",category:"Anúncio comercial",product_type:"colonia_abelhas_sem_ferrao",description_pt:"Observação em português.",description_en:"Source description in English.",description_es:"Descripción de la fuente en español."
 }], "pt");
 window.__demoSetLanguage=setExplorerLanguage;
+window.__demoSetPoints=setMapPoints;
 window.__demoLocalized=(field,lang)=>localizedField({title:"Colônia anunciada de Testudo ficticia",scientific_name:"Testudo ficticia",status:"Em revisão",category:"Anúncio comercial",product_type:"colonia_abelhas_sem_ferrao"},field,lang);
 window.__demoReady=true;
 </script>
