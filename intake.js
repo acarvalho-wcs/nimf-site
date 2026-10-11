@@ -77,7 +77,7 @@ function updateLinkRequirement(){
  $("tip-url").required=!["fair","physical_market","other"].includes($("tip-type").value);
 }
 export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromote=null){
- db=database;user=currentUser;admin=isAdmin===true;promote=onPromote;ownItems=[];adminItems=[];
+ db=database;user=currentUser;admin=isAdmin===true&&currentUser?.email?.trim().toLowerCase()==="acarvalho@wcs.org";promote=onPromote;ownItems=[];adminItems=[];
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
  $("admin-review").hidden=!admin;setIntakeLanguage(lang);
  const uid=user.uid;

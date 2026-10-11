@@ -197,3 +197,29 @@ body.nimf-map-fullscreen{overflow:hidden!important}
 .explorer-layers-panel{top:8px;right:8px;width:min(310px,calc(100% - 16px));max-height:calc(100% - 16px)}
 .explorer-map-wrap.is-fullscreen #explorer-map-notice{max-width:95%}
 }
+
+/* Observatory animals mark: pale plate only against the dark dashboard theme. */
+body[data-theme="dark"] .secure-observatory-logo{
+ background:#f7f8f3;
+ border:1px solid #edf2ed;
+ border-radius:9px;
+ box-sizing:border-box;
+ padding:4px;
+}
+body[data-theme="light"] .secure-observatory-logo{
+ background:transparent;
+ border-color:transparent;
+ border-radius:0;
+ padding:0;
+}
+
+/* The layer catalogue reports the real number of records in each category.
+   Counts update with the text/geographic filters and correspond to rendered pins. */
+.explorer-layers-panel .layer-row{grid-template-columns:17px 14px minmax(0,1fr) auto}
+.explorer-layers-panel .layer-row small[data-layer-count]{
+ display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:22px;
+ border-radius:11px;padding:0 6px;background:var(--surface2);
+ color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;font-weight:750
+}
+
+.account-identity{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}

@@ -18,6 +18,12 @@ try{
  await logo.evaluate(async img=>{if(!img.complete)await new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true})});});
  assert.ok(await logo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0),"Uploaded animal logo must load as actual image");
  assert.equal((await page.locator("#private-kicker").textContent()).trim(),"PAINEL RESTRITO - APENAS USUÁRIOS AUTORIZADOS");
+ const darkBacking=await logo.evaluate(el=>getComputedStyle(el).backgroundColor);
+ assert.notEqual(darkBacking,"rgba(0, 0, 0, 0)","Logo needs pale backing in dark theme");
+ await page.locator("#secure-theme").click();
+ const lightBacking=await logo.evaluate(el=>getComputedStyle(el).backgroundColor);
+ assert.equal(lightBacking,"rgba(0, 0, 0, 0)","Logo backing should disappear in light theme");
+ await page.locator("#secure-theme").click();
  console.log("PASS: "+browserName+" animal Observatory logo loads and restricted kicker is corrected");
  const shown=await page.locator("#auth-panel").isVisible()||await page.locator("#config-panel").isVisible();
  assert.ok(shown,"The page must never display only the empty sidebar");
@@ -78,10 +84,25 @@ try{
  });
  assert.equal(await page.locator("#explorer-count").textContent(),"4");
  assert.equal(await page.locator("#explorer-layers input").count(),4);
- assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"false");
- assert.equal(await page.locator("#explorer-layers").getAttribute("aria-hidden"),"true");
+ const countFor=async category=>Number(await page.locator('[data-layer-count="'+category+'"]').textContent());
+ assert.equal(await countFor("advertisement"),1);
+ assert.equal(await countFor("platform"),1);
+ assert.equal(await countFor("fair"),1);
+ assert.equal(await countFor("physical_market"),1);
+ assert.equal(await page.locator(".nimf-raster-pin").count(),4,"All four categories should render four map points");
  await page.locator("#layers-toggle").click();
- await page.locator("#explorer-layers").waitFor({state:"visible",timeout:4000});
+ await page.locator("#explorer-layers").waitFor({state:"visible"});
+ await page.locator('#explorer-layers input[value="advertisement"]').uncheck();
+ assert.equal(await page.locator(".nimf-raster-pin[data-layer='advertisement']").count(),0,"Hidden category must remove its map pin");
+ assert.equal(await page.locator(".nimf-raster-pin").count(),3,"Map markers refresh instantly for layer changes");
+ assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"3");
+ assert.equal(await countFor("advertisement"),1,"Badge shows available georeferenced records even when hidden");
+ await page.locator('#explorer-layers input[value="advertisement"]').check();
+ assert.equal(await page.locator(".nimf-raster-pin").count(),4);
+
+ assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"true");
+ assert.equal(await page.locator("#explorer-layers").getAttribute("aria-hidden"),"false");
+ assert.ok(await page.locator("#explorer-layers").isVisible());
  assert.ok(await page.locator("#explorer-layers").isVisible(),"The color-coded category drawer should overlay the map");
  assert.equal(await page.locator("#layers-toggle").getAttribute("aria-expanded"),"true");
  assert.equal(await page.locator("#explorer-layers .layer-swatch").count(),4);
@@ -113,7 +134,7 @@ try{
  // Test the actual intake form, with a browser-side stub for the Firebase import.
  await page.route("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js",route=>route.fulfill({
   status:200,contentType:"application/javascript",headers:{"access-control-allow-origin":"*"},
-  body:"export const collection=()=>null,query=()=>null,where=()=>null,limit=()=>null,onSnapshot=()=>null,addDoc=()=>null,doc=()=>null,serverTimestamp=()=>null,writeBatch=()=>null;"
+  body:"export const collection=()=>null,query=()=>null,where=()=>null,limit=()=>null,onSnapshot=()=>()=>{},addDoc=()=>null,doc=()=>null,serverTimestamp=()=>null,writeBatch=()=>null;"
  }));
  await page.goto("http://127.0.0.1:8751/tests/intake-languages.html",{waitUntil:"domcontentloaded",timeout:30000});
  await page.waitForFunction(()=>window.__intakeTestReady===true,{timeout:15000});
@@ -129,6 +150,16 @@ try{
   assert.equal(await page.locator("#tip-type option").count(),6);
  }
  console.log("PASS: "+browserName+" investigation intake changes fully across three languages");
+ await page.evaluate(async()=>window.__openIntake({}, {uid:"rogue",email:"dcarvalhoaf@gmail.com"},true,"pt"));
+ assert.equal(await page.locator("#admin-review").isHidden(),true,"A flagged external user must not see moderation controls");
+ await page.evaluate(()=>window.__closeIntake());
+ await page.evaluate(async()=>window.__openIntake({}, {uid:"admin",email:"acarvalho@wcs.org"},true,"pt"));
+ assert.equal(await page.locator("#admin-review").isVisible(),true,"Institutional admin can see triage");
+ await page.evaluate(()=>window.__closeIntake());
+ await page.evaluate(async()=>window.__openIntake({}, {uid:"user",email:"dcarvalhoaf@gmail.com"},false,"pt"));
+ assert.equal(await page.locator("#admin-review").isHidden(),true,"Normal contributor sees only their contributions");
+ console.log("PASS: "+browserName+" moderation controls restricted to institutional administrator");
+
 
 
 }finally{await browser.close();}

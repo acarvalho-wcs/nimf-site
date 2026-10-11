@@ -58,7 +58,7 @@ export function setMapPointLanguage(lang){
  renderAdminList();
 }
 export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
- closeMapPoints();db=database;currentUser=user;isAdmin=admin===true;onPoints=whenUpdated;language=useLang(lang);
+ closeMapPoints();db=database;currentUser=user;isAdmin=admin===true&&user?.email?.trim().toLowerCase()==="acarvalho@wcs.org";onPoints=whenUpdated;language=useLang(lang);
  const panel=$("admin-map-panel");panel.hidden=!isAdmin;
  if(isAdmin)setMapPointLanguage(language);
  const ref=collection(db,"map_points");
