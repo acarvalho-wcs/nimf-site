@@ -223,3 +223,43 @@ body[data-theme="light"] .secure-observatory-logo{
 }
 
 .account-identity{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+
+/* Contextual record card inside the geographical viewport in normal and fullscreen modes. */
+.explorer-map-card{
+ position:absolute;right:14px;bottom:44px;z-index:32;
+ width:min(390px,calc(100% - 28px));max-height:calc(100% - 128px);
+ overflow:auto;overscroll-behavior:contain;
+ padding:16px 17px;border:1px solid var(--line);border-radius:13px;
+ background:var(--surface);color:var(--text);
+ box-shadow:0 17px 45px #0008;font-size:12px;line-height:1.6;
+}
+.explorer-map-card[hidden]{display:none!important}
+.explorer-map-card .explorer-detail-head{display:flex;gap:14px;align-items:flex-start}
+.explorer-map-card .explorer-detail-head h3{font-size:15px;line-height:1.4;overflow-wrap:anywhere;flex:1;min-width:0}
+.explorer-map-card-close{flex-shrink:0;display:grid;place-items:center;
+ font-size:22px;line-height:1;width:31px;height:31px;
+ border:1px solid var(--line);border-radius:7px;background:var(--surface2);
+ color:var(--text);cursor:pointer}
+.explorer-map-card-close:hover,.explorer-map-card-close:focus-visible{border-color:var(--accent)}
+.explorer-map-card-category{display:inline-block;margin:8px 0 4px;padding:3px 8px;
+ border:1px solid var(--line);border-radius:12px;color:var(--accent);font-weight:700;font-size:11px}
+.explorer-map-card .explorer-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:13px 0}
+.explorer-map-card .explorer-detail-grid>div{min-width:0}
+.explorer-map-card .explorer-detail-grid span{font-size:10px}
+.explorer-map-card .explorer-detail-grid strong{font-size:12px;overflow-wrap:anywhere}
+.explorer-map-card h4{font-size:12px;margin:8px 0 6px}
+.explorer-map-card p{font-size:11px;margin:6px 0 10px;color:var(--muted);line-height:1.6}
+.explorer-map-card a{font-size:12px;font-weight:700;color:var(--accent);overflow-wrap:anywhere}
+.explorer-map-no-location{font-style:italic}
+.explorer-map-wrap.is-fullscreen .explorer-map-card{
+ right:18px;bottom:50px;width:min(430px,calc(100vw - 36px));max-height:min(75dvh,650px);
+}
+.secure-top>a{max-width:min(76%,670px);line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:560px){
+ .explorer-map-card{right:7px;bottom:40px;width:calc(100% - 14px);padding:12px;
+  max-height:calc(100% - 105px);border-radius:10px}
+ .explorer-map-card .explorer-detail-grid{gap:8px}
+ .explorer-map-wrap.is-fullscreen .explorer-map-card{right:8px;bottom:44px;
+  width:calc(100vw - 16px);max-height:56dvh}
+ .secure-top>a{max-width:68%;font-size:11px}
+}
