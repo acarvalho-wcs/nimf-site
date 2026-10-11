@@ -80,7 +80,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=20261011c");
+   const mod=await import("./explorer.js?v=20261011d");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);
@@ -98,7 +98,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./intake.js?v=20261011c");
+   const mod=await import("./intake.js?v=20261011d");
    if(!valid())return;
    intakeModule=mod;
    await mod.openIntake(db,user,approvalAdmin);
