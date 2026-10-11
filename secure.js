@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { initExplorer, setExplorerLanguage, clearExplorer } from "./explorer.js";
 
 const $=id=>document.getElementById(id);
 const txt={
@@ -20,7 +21,7 @@ function translate(){
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
- if(!$("dashboard-panel").hidden)drawRecords();
+ if(!$("dashboard-panel").hidden){drawRecords();setExplorerLanguage(locale);}
 }
 function switchMode(next){
  mode=next;$("login-tab").classList.toggle("active",next==="login");$("signup-tab").classList.toggle("active",next==="signup");
@@ -54,10 +55,10 @@ async function loadPrivateRecords(user,epoch){
  const snap=await getDocs(query(collection(db,"records"),limit(200)));
  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
  records=snap.docs.map(d=>({id:d.id,...d.data()}));
- $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();
+ $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();initExplorer(records,locale);
 }
 async function evaluateUser(user,epoch){
- activeUser=user;records=[];
+ activeUser=user;records=[];clearExplorer();
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
  try{
