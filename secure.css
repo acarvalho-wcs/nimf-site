@@ -180,8 +180,8 @@
 body.nimf-map-fullscreen{overflow:hidden!important}
 .explorer-map-wrap.is-fullscreen .nimf-raster-layer{height:100%;width:100%}
 /* 30% smaller markers: 21px → 14.7px raster; 17px → 11.9px MapLibre. */
-.nimf-raster-pin{width:15px!important;height:15px!important;border-width:2px!important;background:var(--layer-advertisement)!important;border-color:#245b40!important;position:absolute}
-.nimf-map-dot{width:12px!important;height:12px!important;border:1.5px solid #245b40!important;position:relative}
+.nimf-raster-pin{box-sizing:border-box!important;padding:0!important;min-width:0!important;min-height:0!important;width:15px!important;height:15px!important;border-width:2px!important;background:var(--layer-advertisement)!important;border-color:#245b40!important;position:absolute}
+.nimf-map-dot{box-sizing:border-box!important;padding:0!important;min-width:0!important;min-height:0!important;width:12px!important;height:12px!important;border:1.5px solid #245b40!important;position:relative}
 .nimf-raster-pin::after,.nimf-map-dot::after{content:"";position:absolute;inset:-7px}
 .nimf-raster-pin[data-layer="advertisement"],.nimf-map-dot[data-layer="advertisement"]{background:var(--layer-advertisement)!important;border-color:#245b40!important}
 .nimf-raster-pin[data-layer="platform"],.nimf-map-dot[data-layer="platform"]{background:var(--layer-platform)!important;border-color:#22567f!important}
