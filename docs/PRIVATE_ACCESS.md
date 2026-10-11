@@ -65,3 +65,19 @@ Em Firestore > Data > `access/{UID_DO_ADMINISTRADOR}`, acrescentar campo boolean
 - Firestore Rules devem ser testadas no emulador antes de uso com denúncias sensíveis. A lista atual traz no máximo 100 registros ao autor e 150 ao administrador; paginação é necessária para escalabilidade.
 - Atualizações de status chegam em tempo real ao autor pela escuta Firestore. O histórico completo ainda não é exibido no frontend, embora eventos de atualização estejam previstos no banco.
 - Para um canal formal de denúncias sigilosas, será necessária política de retenção, triagem de riscos, remoção de dados pessoais, rate limiting e definição do acesso administrativo. A conta técnica do GitHub possui direitos amplos no projeto apesar das regras de cliente; proteja a chave e a branch main.
+
+## New geospatial layers: security rollout (October 2026)
+
+**Deployment order is mandatory:** Merge the frontend only **after** the Firestore rules in this pull request have been manually published and tested in project `fir-console-61443`. GitHub Pages does not deploy Firestore rules. Keep a saved copy of current rules and test on the Firestore emulator before manual publication.
+
+Collections:
+
+- `records`: canonical reviewed listings, imported by the existing GitHub Actions pipeline. These appear under **Anúncios**.
+- `map_points`: geographically approximate, curated, administrator-created entries for **Anúncios**, **Plataformas**, **Feiras livres**, and **Pontos de comércio presencial sob investigação**. All approved accounts may query `published == true`; the administrative account can also see unpublished drafts. Only approved administrators (`access/{uid}.admin == true`) may create or update them.
+- `submissions`: user-submitted suggestions, now accepting `fair` and `physical_market` without a URL (the location and narrative are mandatory evidence context). Existing author-only reading and admin triage stay in force.
+
+No private sellers' names, personal identifiers, home or street addresses, contact numbers, or precise suspect coordinates may be entered in `map_points`. Markers support only `municipality`, `regional`, `state`, or `country` precision and represent aggregates or public geography. The administrator must independently corroborate a report (`evidence_status = corroborated`) to set `published = true`; this is not an assertion of criminal guilt. Preserve detailed claims solely in the submitter-author/admin-restricted `submissions` workflow.
+
+**Manual steps:** Open Firebase Console > Firestore > Rules, paste `firestore.rules`, run the security test suite and publish. Then merge the frontend PR. Administrator may use the **Cadastro administrativo de camadas** form, create a draft with a municipality centroid, document the source, and only later publish after verification. Existing records and authentication must remain unchanged.
+
+The layer panel can be expanded to fullscreen or restored with Escape; the four filters are independent. This is not an online platform, public directory of sellers, or accusations registry.
