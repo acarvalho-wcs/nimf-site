@@ -25,7 +25,7 @@ function options(filtered=dataset){
   const element=el("explorer-"+id),old=element.value;
   let values=[...new Set(filtered.map(r=>typeof r[key]==="string"?r[key].trim():"").filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   element.replaceChildren(new Option(trans[language].all,""));
-  for(const value of values)element.add(new Option(value.replaceAll("_"," "),value));
+  for(const value of values){const caption=(id==="status"||id==="product")?localizedField({[key]:value},key,language):value.replaceAll("_"," ");element.add(new Option(caption,value));}
   element.value=values.includes(old)?old:"";
  }
  refreshSpeciesPicker();
