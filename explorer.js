@@ -100,7 +100,7 @@ function closeMapCard(){
 }
 function appendLegalCard(d,r){
  if(r.record_kind==="platform"||!r.scientific_name)return;
- if(!["national_red_list_status","cites_appendix","cms_appendix","legal_trade_framework"].some(k=>r[k]))return;
+ if(!["national_red_list_status","cites_appendix","cms_appendix","legal_trade_framework","cites_listing_status","cms_listing_status"].some(k=>r[k]))return;
  const tr={pt:["Proteção legal e restrições ao comércio","Lista nacional / ICMBio","Não verificado","Ponto da loja: não representa origem dos animais"],en:["Legal protection and trade restrictions","Brazilian national red list","Not verified","Store point: not the origin of animals"],es:["Protección legal y restricciones comerciales","Lista nacional de Brasil","No verificado","Punto comercial: no representa el origen de los animales"]}[language];
  const block=document.createElement("section");block.className="explorer-legal-context";block.append(textNode("h4",tr[0]));
  for(const [label,value] of [[tr[1],r.national_red_list_status],["CITES",r.cites_appendix],["CMS",r.cms_appendix]]){
