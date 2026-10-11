@@ -15,6 +15,21 @@ try{
  const logo=obs.locator("img.secure-observatory-logo");
  assert.ok((await obs.getAttribute("aria-label")).includes("Observatório Global de Tráfico de Animais"));
  assert.equal(await logo.getAttribute("src"),"./assets/Logo_observat.png");
+ const portal=page.locator("#back-public");
+ assert.equal(await portal.getAttribute("href"),"https://wildlife-trafficking-dashboard.wcs-associa-6434.chatgpt.site/");
+ assert.equal((await portal.textContent()).trim(),"Retorne ao Observatório Global de Tráfico de Animais");
+ assert.equal(await page.title(),"IWT Global Observatory | Área restrita");
+ for(const [code,label,tab] of [
+  ["en","Return to the Illegal Wildlife Trafficking Global Observatory","IWT Global Observatory | Restricted area"],
+  ["es","Regrese al Observatorio Global de Tráfico de Animales","IWT Global Observatory | Área restringida"],
+  ["pt","Retorne ao Observatório Global de Tráfico de Animais","IWT Global Observatory | Área restrita"]
+ ]){
+  await page.locator("#secure-language").selectOption(code);
+  assert.equal((await portal.textContent()).trim(),label);
+  assert.equal(await page.title(),tab);
+ }
+ assert.ok(!((await portal.getAttribute("href"))||"").endsWith("/index.html"),"Back navigation must target the actual Observatory");
+
  await logo.evaluate(async img=>{if(!img.complete)await new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true})});});
  assert.ok(await logo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0),"Uploaded animal logo must load as actual image");
  assert.equal((await page.locator("#private-kicker").textContent()).trim(),"PAINEL RESTRITO - APENAS USUÁRIOS AUTORIZADOS");
@@ -50,6 +65,14 @@ try{
  assert.equal(camera.tile,"7/42/65","Web Mercator tile for Manaus must be correct");
 
  assert.equal(await page.locator(".nimf-raster-pin").count(),1,"Georeferenced synthetic record must have a map marker");
+ await page.locator(".nimf-raster-pin").first().click();
+ assert.equal(await page.locator("#explorer-map-card").isVisible(),true,"Clicking a map marker opens a card over the map");
+ assert.equal(await page.locator("#explorer-map-card").getAttribute("data-record-id"),"synthetic-demo");
+ assert.equal(await page.locator("#explorer-map-card .scientific-name").first().evaluate(el=>getComputedStyle(el).fontStyle),"italic");
+ assert.ok((await page.locator("#explorer-map-card").textContent()).includes("Amazonas"));
+ await page.locator(".explorer-map-card-close").click();
+ assert.equal(await page.locator("#explorer-map-card").isHidden(),true,"X closes the record card");
+
  assert.equal(await page.locator(".nimf-raster-pin").first().evaluate(el=>Math.round(parseFloat(getComputedStyle(el).width))),15,"Raster markers should be 30 percent smaller than previous 21px");
  await page.locator("#species-trigger").click();
  const italic=page.locator("#species-menu .scientific-name").first();
@@ -90,6 +113,15 @@ try{
  assert.equal(await countFor("fair"),1);
  assert.equal(await countFor("physical_market"),1);
  assert.equal(await page.locator(".nimf-raster-pin").count(),4,"All four categories should render four map points");
+ await page.locator("#explorer-cards .explorer-card").filter({hasText:"Reviewed internet platform"}).click();
+ assert.equal(await page.locator("#explorer-map-card").getAttribute("data-record-id"),"point-point-platform");
+ const recentered=await page.locator("#explorer-map").evaluate(el=>({
+  lat:Number(el.dataset.centerLatitude),lon:Number(el.dataset.centerLongitude),zoom:Number(el.dataset.zoom)
+ }));
+ assert.ok(Math.abs(recentered.lat+23.55)<0.01&&Math.abs(recentered.lon+46.63)<0.01,"Clicking the right-side result must pan to São Paulo");
+ assert.ok(recentered.zoom>=7,"Clicking the right-side result must zoom toward municipality");
+ assert.ok((await page.locator("#explorer-map-card").textContent()).includes("Reviewed internet platform"));
+
  await page.locator("#layers-toggle").click();
  await page.locator("#explorer-layers").waitFor({state:"visible"});
  await page.locator('#explorer-layers input[value="advertisement"]').uncheck();
@@ -149,6 +181,18 @@ try{
  assert.equal(await page.locator("#explorer-count").textContent(),"3");
  assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"1");
  assert.equal(await page.locator("#explorer-unmapped-count").textContent().then(s=>s.trim()),"2 sem localização mapeável");
+ await page.locator("#explorer-cards .explorer-card").filter({hasText:"MyAnts.de"}).click();
+ assert.equal(await page.locator("#explorer-map-card").getAttribute("data-record-id"),"myants-de");
+ const germany=await page.locator("#explorer-map").evaluate(el=>[Number(el.dataset.centerLatitude),Number(el.dataset.centerLongitude)]);
+ assert.ok(Math.abs(germany[0]-49.67527)<0.01&&Math.abs(germany[1]-12.16321)<0.01,"MyAnts card should center its municipal German location");
+ await page.locator("#explorer-cards .explorer-card").filter({hasText:"IAKP"}).click();
+ assert.equal(await page.locator("#explorer-map-card").getAttribute("data-record-id"),"iakp");
+ const unmapped=await page.locator("#explorer-map").evaluate(el=>[Number(el.dataset.centerLatitude),Number(el.dataset.centerLongitude)]);
+ assert.deepEqual(unmapped,germany,"Unmapped worldwide directory must not invent a map location");
+ assert.ok((await page.locator("#explorer-map-card").textContent()).includes("Sem coordenadas verificadas"));
+ await page.evaluate(()=>window.__demoSetLanguage("en"));
+ assert.ok((await page.locator("#explorer-map-card").textContent()).includes("No verified coordinates"));
+
  assert.equal(Number(await page.locator('[data-layer-count="platform"]').textContent()),1);
  assert.equal(Number(await page.locator('[data-layer-count="advertisement"]').textContent()),0);
  await page.locator("#layers-toggle").click();
