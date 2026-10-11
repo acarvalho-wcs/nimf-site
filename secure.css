@@ -52,3 +52,34 @@
 .privacy-footer{color:var(--faint);font-size:11px;margin-top:20px}
 [hidden]{display:none!important}
 @media(max-width:920px){.secure-layout{grid-template-columns:1fr}.secure-side{min-height:auto;padding:18px 23px;border-right:0;border-bottom:1px solid var(--line)}.secure-side-content,.secure-side-bottom{display:none}.secure-main{min-height:calc(100vh - 82px)}.secure-top{padding:0 20px;height:60px}.secure-content{padding:26px 16px}.secure-card{padding:27px}.private-panel{padding:18px}}
+
+/* Private interactive geographic explorer. No record is embedded in this file. */
+.explorer{margin:18px 0;padding:23px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.explorer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+.explorer-head h3{font-size:22px;margin:9px 0 6px;letter-spacing:-.03em}
+.explorer-head p{max-width:770px;color:var(--muted);font-size:12px;line-height:1.6}
+.explorer-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.explorer-filters label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);font-weight:700}
+.explorer-filters input,.explorer-filters select{width:100%;background:var(--input);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font-size:12px;min-width:0}
+.explorer-filters label:first-child{grid-column:span 2}
+.explorer-summary{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:17px 0 12px;font-size:12px;color:var(--muted)}
+.explorer-summary strong{font-size:25px;color:var(--accent)}.explorer-summary span:not(:first-of-type){border-left:1px solid var(--line);padding-left:12px}
+.explorer-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;min-height:430px}
+.explorer-map-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;background:var(--surface2)}
+#explorer-map{height:420px;width:100%;z-index:0}
+#explorer-map .leaflet-container{font:inherit}
+#explorer-map-notice{font-size:10px;line-height:1.5;padding:9px 12px;margin:0;color:var(--muted)}
+.explorer-results{border:1px solid var(--line);border-radius:10px;min-width:0;display:flex;flex-direction:column;max-height:467px}
+.explorer-results-head{padding:13px 14px;border-bottom:1px solid var(--line);font-size:12px}
+.explorer-cards{overflow:auto;flex:1;padding:7px}
+.explorer-card{display:flex;flex-direction:column;text-align:left;width:100%;gap:7px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--text);cursor:pointer;margin-bottom:8px}
+.explorer-card:hover,.explorer-card:focus-visible{border-color:var(--accent)}
+.explorer-card strong{font-size:12px}.explorer-card span,.explorer-card small{font-size:11px;color:var(--muted)}.explorer-card em{font-style:normal;font-size:10px;color:var(--accent)}
+.explorer-detail{padding:18px;margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);font-size:12px}
+.explorer-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.explorer-detail h3{font-size:18px}
+.explorer-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.explorer-detail-grid div{display:flex;flex-direction:column;gap:4px}.explorer-detail-grid span{color:var(--muted);font-size:10px}.explorer-detail-grid strong{overflow-wrap:anywhere}
+.explorer-detail p{color:var(--muted);line-height:1.75}.explorer-detail a{color:var(--accent)}
+@media(max-width:1100px){.explorer-layout{grid-template-columns:minmax(0,1fr) 210px}}
+@media(max-width:800px){.explorer-layout{grid-template-columns:1fr}.explorer-results{max-height:290px}.explorer-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.explorer-filters label:first-child{grid-column:span 2}.explorer-detail-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:470px){.explorer{padding:13px}.explorer-head{flex-direction:column}.explorer-filters{grid-template-columns:1fr}.explorer-filters label:first-child{grid-column:span 1}.explorer-detail-grid{grid-template-columns:1fr}}
