@@ -1,5 +1,12 @@
 name: Test NIMF Firestore authorization rules
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'firestore.rules'
+      - 'tests/firestore-access.test.mjs'
+      - 'functions/**'
+      - '.github/workflows/test-firestore-rules.yml'
   pull_request:
     paths:
       - 'firestore.rules'
@@ -24,5 +31,7 @@ jobs:
           java-version: '21'
       - name: Install Firebase emulator and rules testing dependencies
         run: npm install --no-save firebase@11.10.0 @firebase/rules-unit-testing@4.0.1 firebase-tools@14.11.1
+      - name: Validate Cloud Functions JS
+        run: node --check functions/index.js
       - name: Test access boundaries using Firestore emulator
         run: npx firebase emulators:exec --only firestore --project demo-nimf-access-tests "node tests/firestore-access.test.mjs"
