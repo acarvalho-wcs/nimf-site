@@ -198,7 +198,7 @@ try{
  assert.equal(await page.locator("#explorer-count").textContent(),"3");
  assert.equal(await page.locator("#explorer-map").getAttribute("data-visible-marker-count"),"1");
  assert.equal(await page.locator("#explorer-unmapped-count").textContent().then(s=>s.trim()),"2 sem localização mapeável");
- await page.locator("#explorer-cards .explorer-card").filter({hasText:"MyAnts.de"}).click();
+ await page.locator("#explorer-cards .explorer-card").filter({hasText:"Weiden in der Oberpfalz"}).click();
  assert.equal(await page.locator("#explorer-map-card").getAttribute("data-record-id"),"myants-de");
  const germany=await page.locator("#explorer-map").evaluate(el=>[Number(el.dataset.centerLatitude),Number(el.dataset.centerLongitude)]);
  assert.ok(Math.abs(germany[0]-49.67527)<0.01&&Math.abs(germany[1]-12.16321)<0.01,"MyAnts card should center its municipal German location");
