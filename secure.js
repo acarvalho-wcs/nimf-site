@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWith
 import { getFirestore, doc, getDoc, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { initExplorer, setExplorerLanguage, clearExplorer } from "./explorer.js";
+import { openIntake, closeIntake } from "./intake.js";
 
 const $=id=>document.getElementById(id);
 const txt={
@@ -10,7 +11,7 @@ const txt={
  en:{sideTitle:"Wildlife market intelligence",sideCopy:"Individual access with verified email and administrator approval before any private data can be accessed.",sideFooter:"Authorized users only",back:"← Back to public preview",authTitle:"Access NIMF",authSubtitle:"Email and passwords are handled by the authentication service, never GitHub Pages.",login:"Sign in",signup:"Request access",email:"Email",password:"Password",confirm:"Confirm password",forgot:"Forgot password?",note:"Creating an account does not grant data access. Administrator approval is required.",configTitle:"Restricted area not configured",configBody:"The administrator must configure Firebase and deploy security rules. No private data is available yet.",unverifiedTitle:"Verify your email",unverifiedText:"An email verification link has been sent. Confirm your address and check again.",pendingTitle:"Awaiting approval",pendingText:"Your email is verified, but an administrator must approve this account.",blockedTitle:"Access not approved",blockedText:"Your account has no valid data access authorization.",refresh:"Check again",resend:"Resend verification",logout:"Sign out",privateTitle:"Private dashboard",privateDescription:"Data loads only after authentication, email verification and Firestore authorization.",recordsLabel:"Available records",account:"Account",approved:"Approved",recordsTitle:"Private records",recordsSubtitle:"Records available only after database access verification.",search:"Search",colTitle:"Title",colType:"Category",colSource:"Source",colStatus:"Verification",empty:"No private records yet.",footer:"Internal data. Do not redistribute without authorization.",genericError:"Unable to complete this action. Check your details or try again.",mismatch:"Passwords do not match.",weak:"Use at least 8 characters.",resetSent:"If this email is registered, you will receive password reset instructions.",resent:"If eligible, another verification message will be sent.",created:"Account created. Verify your email and await approval.",failedRead:"Could not load records. Check database security rules."},
  es:{sideTitle:"Inteligencia de mercados de fauna silvestre",sideCopy:"Acceso individual, correo verificado y aprobación administrativa antes de consultar datos privados.",sideFooter:"Solo usuarios autorizados",back:"← Volver a la vista pública",authTitle:"Ingresar a NIMF",authSubtitle:"El correo y la contraseña son administrados por el servicio de autenticación, nunca por GitHub Pages.",login:"Ingresar",signup:"Solicitar acceso",email:"Correo",password:"Contraseña",confirm:"Confirmar contraseña",forgot:"¿Olvidó su contraseña?",note:"Crear una cuenta no otorga acceso. Se requiere aprobación del administrador.",configTitle:"Área restringida sin configurar",configBody:"El administrador debe configurar Firebase y publicar las reglas de seguridad. No hay datos privados disponibles todavía.",unverifiedTitle:"Verifique su correo",unverifiedText:"Enviamos un enlace de confirmación. Verifique su dirección e inténtelo de nuevo.",pendingTitle:"Esperando aprobación",pendingText:"Su correo fue verificado, pero el administrador debe aprobar la cuenta.",blockedTitle:"Acceso no autorizado",blockedText:"Esta cuenta no tiene autorización válida para acceder a los datos.",refresh:"Verificar nuevamente",resend:"Reenviar confirmación",logout:"Salir",privateTitle:"Panel privado",privateDescription:"Los datos se cargan solamente tras autenticación, verificación del correo y autorización en Firestore.",recordsLabel:"Registros disponibles",account:"Cuenta",approved:"Autorizada",recordsTitle:"Registros privados",recordsSubtitle:"Registros accesibles únicamente tras verificación en la base.",search:"Buscar",colTitle:"Título",colType:"Categoría",colSource:"Fuente",colStatus:"Verificación",empty:"No hay registros privados todavía.",footer:"Datos internos. No redistribuir sin autorización.",genericError:"No se pudo completar la acción. Revise los datos o inténtelo nuevamente.",mismatch:"Las contraseñas no coinciden.",weak:"Utilice por lo menos 8 caracteres.",resetSent:"Si el correo está registrado, recibirá instrucciones para cambiar la contraseña.",resent:"Si es elegible, se enviará otra verificación.",created:"Cuenta creada. Verifique su correo y espere aprobación.",failedRead:"No fue posible consultar los registros. Revise las reglas de seguridad."}
 };
-let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0;
+let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false;
 const t=k=>txt[locale][k]||k;
 function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;}
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
@@ -55,16 +56,17 @@ async function loadPrivateRecords(user,epoch){
  const snap=await getDocs(query(collection(db,"records"),limit(200)));
  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
  records=snap.docs.map(d=>({id:d.id,...d.data()}));
- $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();initExplorer(records,locale);
+ $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();initExplorer(records,locale);void openIntake(db,user,approvalAdmin);
 }
 async function evaluateUser(user,epoch){
- activeUser=user;records=[];clearExplorer();
+ activeUser=user;records=[];clearExplorer();closeIntake();
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
  try{
   const approval=await getDoc(doc(db,"access",user.uid));
   if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
   if(approval.exists() && approval.data().approved===true){
+    approvalAdmin=approval.data().admin===true;
    try{await loadPrivateRecords(user,epoch);}
    catch(e){if(epoch===authEpoch){displayWaiting(user,false,true);message("waiting-error",t("failedRead"));}}
   }else{displayWaiting(user,false,!approval.exists());}
