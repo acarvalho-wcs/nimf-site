@@ -138,3 +138,15 @@
 .nimf-raster-attribution{position:absolute;bottom:2px;right:6px;background:#ffffffd8;color:#315d53;font-size:10px;padding:3px 5px;border-radius:3px}
 .nimf-raster-coordinates{position:absolute;left:12px;bottom:12px;color:#36534b;background:#ffffffdd;padding:5px 8px;border-radius:4px;font-size:11px;pointer-events:none}
 #explorer-map .nimf-gl-map{position:absolute;inset:0;z-index:2}
+
+/* Link brand to the existing Global Wildlife Trafficking Observatory.
+   Match the Observatory's WT / fluorescent lime lettermark; no image asset or new service. */
+.secure-brandmark.observatory-brandmark{
+  width:44px;height:44px;transform:none;border-radius:9px;
+  border:1px solid #dbff60;background:#dbff60;color:#172715;
+  font-size:15px;font-weight:900;line-height:1;letter-spacing:-.6px;
+  box-shadow:0 0 0 1px rgba(24,54,20,.15);
+}
+.secure-brand:hover .observatory-brandmark,
+.secure-brand:focus-visible .observatory-brandmark{background:#edff9c;border-color:#edff9c}
+.secure-brand:focus-visible{outline:2px solid var(--accent);outline-offset:5px;border-radius:7px}
