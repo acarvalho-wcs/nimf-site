@@ -9,6 +9,14 @@ try{
  page.on("console",m=>{if(m.type()==="error")errors.push(m.text())});
  await page.goto("http://127.0.0.1:8751/secure.html",{waitUntil:"domcontentloaded",timeout:30000});
  await page.waitForFunction(()=>window.__nimfAppStarted===true,{timeout:22000});
+ const obs=page.locator("a.secure-brand");
+ assert.equal(await obs.getAttribute("href"),"https://wildlife-trafficking-dashboard.wcs-associa-6434.chatgpt.site/");
+ assert.equal(await obs.getAttribute("target"),"_blank");
+ assert.equal((await obs.locator(".observatory-brandmark").textContent()).trim(),"WT");
+ assert.ok((await obs.getAttribute("aria-label")).includes("Observatório Global de Tráfico de Animais"));
+ const markerStyle=await obs.locator(".observatory-brandmark").evaluate(el=>getComputedStyle(el).backgroundColor);
+ assert.notEqual(markerStyle,"rgba(0, 0, 0, 0)","Observatory WT logo needs a visible background");
+ console.log("PASS: "+browserName+" Observatory WT logo links directly to live global dashboard");
  const shown=await page.locator("#auth-panel").isVisible()||await page.locator("#config-panel").isVisible();
  assert.ok(shown,"The page must never display only the empty sidebar");
  if(!await page.locator("#auth-panel").isVisible())throw Error("Login unavailable. Console errors: "+errors.slice(0,4).join(" | "));
