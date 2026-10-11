@@ -26,7 +26,7 @@ const controls={species:"scientific_name",state:"state",city:"municipality",sour
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
 const safe=r=>r && typeof r==="object"&&!Array.isArray(r);
 function textNode(tag,value,cls){const n=document.createElement(tag);n.textContent=value??"";if(cls)n.className=cls;return n;}
-function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitude)&&r.latitude>=-90&&r.latitude<=90&&r.longitude>=-180&&r.longitude<=180&&["municipality","state","country","regional"].includes(r.location_precision)?[r.latitude,r.longitude]:null;}
+function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitude)&&r.latitude>=-90&&r.latitude<=90&&r.longitude>=-180&&r.longitude<=180&&["address","municipality","state","country","regional"].includes(r.location_precision)?[r.latitude,r.longitude]:null;}
 function options(filtered=dataset){
  for(const [id,key] of Object.entries(controls)){
   const element=el("explorer-"+id),old=element.value;
@@ -287,6 +287,12 @@ function filteredExtent(rows,width,height){
  }
  return {center:[centreLongitude,centreLatitude],zoom};
 }
+function markerGroups(rows){
+ const groups=new Map();
+ for(const r of rows){const c=coords(r);if(!c)continue;const key=c.map(v=>v.toFixed(5)).join(":");if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
+ return [...groups.values()];
+}
+function selectMarkerGroup(items){if(items.length===1){focusRecord(items[0]);return;}const index=items.findIndex(r=>r.id===activeId);focusRecord(items[(index+1)%items.length]);}
 function renderRasterMarkers(rows,fit=false){
  if(!fallbackLayer)return;
  const host=el("explorer-map"),width=Math.max(320,host.clientWidth),height=Math.max(420,host.clientHeight);
