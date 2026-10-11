@@ -7,7 +7,7 @@
  <meta name="description" content="Investigação de Mercados de Fauna — seção de acesso autorizado do Observatório Global de Tráfico de Animais">
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
- <link rel="stylesheet" href="./secure.css?v=20261011m">
+ <link rel="stylesheet" href="./secure.css?v=20261011n">
  <script>
  // Ensure a broken remote module can never leave all panels invisible.
  setTimeout(function(){
@@ -19,7 +19,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=20261011m"></script>
+ <script type="module" src="./secure.js?v=20261011n"></script>
 </head>
 <body data-theme="dark">
  <div class="secure-layout">
@@ -31,6 +31,7 @@
      <p id="side-copy">Esta seção faz parte do Observatório Global de Tráfico de Animais. O acesso às suas ferramentas e informações é restrito a usuários autorizados pela administração do projeto.</p>
    </section>
    <nav class="secure-side-navigation" aria-label="Navegação da área restrita" id="side-navigation">
+     <button id="dashboard-nav" class="secure-side-nav-item active" type="button" disabled aria-controls="dashboard-primary"><span aria-hidden="true">◉</span><span id="dashboard-nav-label">Painel</span></button>
      <button id="reports-nav" class="secure-side-nav-item" type="button" disabled aria-controls="intelligence-reports-view"><span aria-hidden="true">▤</span><span id="reports-nav-label">Relatórios de inteligência</span><span class="secure-nav-lock" aria-hidden="true">◈</span></button>
    </nav>
    <div class="secure-side-contact">
