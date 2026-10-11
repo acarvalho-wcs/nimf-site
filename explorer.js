@@ -11,7 +11,7 @@ const trans={
 const layerNames=["advertisement","platform","fair","physical_market"];
 const activeLayers=()=>new Set([...document.querySelectorAll("#explorer-layers input:checked")].map(e=>e.value));
 function rebuildDataset(){
- const canonical=canonicalRecords.map(r=>({...r,layer_type:"advertisement"}));
+ const canonical=canonicalRecords.map(r=>({...r,layer_type:r.record_kind==="platform"?"platform":"advertisement"}));
  const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(r=>({
   ...r,id:"point-"+r.id,source:trans[language].sourceDraft,
   scientific_name:r.scientific_name||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",

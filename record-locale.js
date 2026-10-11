@@ -5,23 +5,23 @@ export const useLang=l=>langs.includes(l)?l:"pt";
 const dictionaries={
  pt:{
   status:{"Em revisão":"Em revisão","Verificado":"Verificado",pending_review:"Pendente de revisão",verified:"Verificado"},
-  category:{"Anúncio comercial":"Anúncio comercial","Anuncio comercial":"Anúncio comercial",listing:"Anúncio comercial"},
+  category:{"Plataforma":"Plataforma","Anúncio comercial":"Anúncio comercial","Anuncio comercial":"Anúncio comercial",listing:"Anúncio comercial"},
   precision:{municipality:"Município (aproximado)",state:"Estado (aproximado)",country:"País (aproximado)",regional:"Região (aproximada)"},
-  product:{colonia_abelhas_sem_ferrao:"Colônia de abelhas sem ferrão",colony:"Colônia",stingless_bee_colony:"Colônia de abelhas sem ferrão"},
+  product:{online_store:"Loja virtual",practitioner_directory:"Diretório de praticantes",colonia_formigas_vivas:"Colônia de formigas vivas",colonia_abelhas_sem_ferrao:"Colônia de abelhas sem ferrão",colony:"Colônia",stingless_bee_colony:"Colônia de abelhas sem ferrão"},
   titlePrefix:"Colônia anunciada de ",generic:"Anúncio de fauna",fallback:"Não informado"
  },
  en:{
   status:{"Em revisão":"Under review","Verificado":"Verified",pending_review:"Pending review",verified:"Verified"},
-  category:{"Anúncio comercial":"Commercial listing","Anuncio comercial":"Commercial listing",listing:"Commercial listing"},
+  category:{"Plataforma":"Platform","Anúncio comercial":"Commercial listing","Anuncio comercial":"Commercial listing",listing:"Commercial listing"},
   precision:{municipality:"Municipality (approximate)",state:"State (approximate)",country:"Country (approximate)",regional:"Region (approximate)"},
-  product:{colonia_abelhas_sem_ferrao:"Stingless bee colony",colony:"Colony",stingless_bee_colony:"Stingless bee colony"},
+  product:{online_store:"Online store",practitioner_directory:"Practitioner directory",colonia_formigas_vivas:"Live ant colony",colonia_abelhas_sem_ferrao:"Stingless bee colony",colony:"Colony",stingless_bee_colony:"Stingless bee colony"},
   titlePrefix:"Advertised colony of ",generic:"Wildlife listing",fallback:"Not specified"
  },
  es:{
   status:{"Em revisão":"En revisión","Verificado":"Verificado",pending_review:"Pendiente de revisión",verified:"Verificado"},
-  category:{"Anúncio comercial":"Anuncio comercial","Anuncio comercial":"Anuncio comercial",listing:"Anuncio comercial"},
+  category:{"Plataforma":"Plataforma","Anúncio comercial":"Anuncio comercial","Anuncio comercial":"Anuncio comercial",listing:"Anuncio comercial"},
   precision:{municipality:"Municipio (aproximado)",state:"Estado (aproximado)",country:"País (aproximado)",regional:"Región (aproximada)"},
-  product:{colonia_abelhas_sem_ferrao:"Colonia de abejas sin aguijón",colony:"Colonia",stingless_bee_colony:"Colonia de abejas sin aguijón"},
+  product:{online_store:"Tienda virtual",practitioner_directory:"Directorio de practicantes",colonia_formigas_vivas:"Colonia de hormigas vivas",colonia_abelhas_sem_ferrao:"Colonia de abejas sin aguijón",colony:"Colonia",stingless_bee_colony:"Colonia de abejas sin aguijón"},
   titlePrefix:"Colonia anunciada de ",generic:"Anuncio de fauna",fallback:"No informado"
  }
 };
