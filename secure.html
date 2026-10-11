@@ -8,9 +8,18 @@
  <title>NIMF | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css">
- <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
- <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
- <script type="module" src="./secure.js"></script>
+ <script>
+ // Ensure a broken remote module can never leave all panels invisible.
+ setTimeout(function(){
+  if(window.__nimfAppStarted)return;
+  const panel=document.getElementById("config-panel");
+  if(!panel)return;
+  panel.hidden=false;
+  document.getElementById("config-title").textContent="Não foi possível iniciar o acesso";
+  document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
+ },9000);
+ </script>
+ <script type="module" src="./secure.js?v=20261011c"></script>
 </head>
 <body data-theme="dark">
  <div class="secure-layout">
