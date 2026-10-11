@@ -11,12 +11,13 @@ let count=0;
 try {
  const alice=env.authenticatedContext("alice",{email_verified:true,email:"alice@example.org"});
  const bob=env.authenticatedContext("bob",{email_verified:true,email:"bob@example.org"});
- const admin=env.authenticatedContext("admin",{email_verified:true,email:"admin@example.org"});
+ const admin=env.authenticatedContext("admin",{email_verified:true,email:"acarvalho@wcs.org"});
+ const rogue=env.authenticatedContext("rogue",{email_verified:true,email:"dcarvalhoaf@gmail.com"});
  const pending=env.authenticatedContext("pending",{email_verified:true,email:"pending@example.org"});
  const anon=env.unauthenticatedContext();
  await env.withSecurityRulesDisabled(async ctx=>{
   const f=ctx.firestore();
-  for(const [uid,data] of [["alice",{approved:true}],["bob",{approved:true}],["admin",{approved:true,admin:true}],["pending",{approved:false}]]){
+  for(const [uid,data] of [["alice",{approved:true}],["bob",{approved:true}],["admin",{approved:true,admin:true}],["rogue",{approved:true,admin:true}],["pending",{approved:false}]]){
    await setDoc(doc(f,"access",uid),data);
   }
   await setDoc(doc(f,"records","reviewed-001"),{title:"Test market record"});
@@ -38,6 +39,9 @@ try {
  await test("other approved user cannot read submission",getDoc(doc(bob.firestore(),"submissions","alice-001")),false);
  await test("owner query constrained by owner_uid is allowed",getDocs(query(collection(alice.firestore(),"submissions"),where("owner_uid","==","alice"))),true);
  await test("approved user cannot list all submissions",getDocs(collection(bob.firestore(),"submissions")),false);
+ await test("accidental admin flag on another email must not confer moderation",getDoc(doc(rogue.firestore(),"submissions","alice-001")),false);
+ await test("accidental admin flag cannot list other submissions",getDocs(collection(rogue.firestore(),"submissions")),false);
+ await test("rogue-admin flag cannot edit someone else contribution",updateDoc(doc(rogue.firestore(),"submissions","alice-001"),{status:"investigating",updated_at:serverTimestamp()}),false);
  await test("admin can read submissions",getDoc(doc(admin.firestore(),"submissions","alice-001")),true);
  await test("admin can list all submissions",getDocs(collection(admin.firestore(),"submissions")),true);
  await test("owner cannot modify workflow status",updateDoc(doc(alice.firestore(),"submissions","alice-001"),{status:"investigating",updated_at:serverTimestamp()}),false);
@@ -61,6 +65,7 @@ try {
   published:false,created_at:serverTimestamp(),created_by:"admin",
   updated_at:serverTimestamp(),updated_by:"admin"};
  await test("non-admin may not create a geographic point",addDoc(collection(alice.firestore(),"map_points"),{...point,created_by:"alice",updated_by:"alice"}),false);
+ await test("noninstitutional admin flag cannot create map points",setDoc(doc(rogue.firestore(),"map_points","rogue-draft"),{...point,created_by:"rogue",updated_by:"rogue"}),false);
  await test("admin may create draft location for triage",setDoc(doc(admin.firestore(),"map_points","draft-001"),point),true);
  await test("author cannot read unpublished location",getDoc(doc(alice.firestore(),"map_points","draft-001")),false);
  await test("admin can inspect unpublished location",getDoc(doc(admin.firestore(),"map_points","draft-001")),true);
@@ -72,6 +77,11 @@ try {
  await test("ordinary user cannot enumerate drafts",getDocs(collection(bob.firestore(),"map_points")),false);
  await test("unapproved account cannot read published map points",getDoc(doc(pending.firestore(),"map_points","draft-001")),false);
  await test("contributor cannot alter published administrative marker",updateDoc(doc(alice.firestore(),"map_points","draft-001"),{notes:"Changed"}),false);
+ await test("admin may create author-visible status history",setDoc(doc(admin.firestore(),"submissions","alice-001","history","01"),{status:"triage",note:"Verification initiated",created_at:serverTimestamp(),actor_uid:"admin"}),true);
+ await test("author may read own status history",getDoc(doc(alice.firestore(),"submissions","alice-001","history","01")),true);
+ await test("other contributor cannot read author's status history",getDoc(doc(bob.firestore(),"submissions","alice-001","history","01")),false);
+ await test("author cannot forge status history",setDoc(doc(alice.firestore(),"submissions","alice-001","history","02"),{status:"closed",note:"No",created_at:serverTimestamp(),actor_uid:"alice"}),false);
+ await test("noninstitutional flagged admin cannot forge history",setDoc(doc(rogue.firestore(),"submissions","alice-001","history","03"),{status:"closed",note:"No",created_at:serverTimestamp(),actor_uid:"rogue"}),false);
  const owner=await getDoc(doc(alice.firestore(),"submissions","alice-001"));
  assert.equal(owner.data().status,"triage");
  console.log("All "+count+" Firestore security rule assertions passed.");
