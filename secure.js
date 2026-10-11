@@ -2,8 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { initExplorer, setExplorerLanguage, clearExplorer } from "./explorer.js";
-import { openIntake, closeIntake } from "./intake.js";
+// Load optional map and intake modules only after authentication and authorization.
+// A failure in either module must never prevent the login screen from appearing.
 
 const $=id=>document.getElementById(id);
 const txt={
@@ -12,6 +12,7 @@ const txt={
  es:{sideTitle:"Inteligencia de mercados de fauna silvestre",sideCopy:"Acceso individual, correo verificado y aprobación administrativa antes de consultar datos privados.",sideFooter:"Solo usuarios autorizados",back:"← Volver a la vista pública",authTitle:"Ingresar a NIMF",authSubtitle:"El correo y la contraseña son administrados por el servicio de autenticación, nunca por GitHub Pages.",login:"Ingresar",signup:"Solicitar acceso",email:"Correo",password:"Contraseña",confirm:"Confirmar contraseña",forgot:"¿Olvidó su contraseña?",note:"Crear una cuenta no otorga acceso. Se requiere aprobación del administrador.",configTitle:"Área restringida sin configurar",configBody:"El administrador debe configurar Firebase y publicar las reglas de seguridad. No hay datos privados disponibles todavía.",unverifiedTitle:"Verifique su correo",unverifiedText:"Enviamos un enlace de confirmación. Verifique su dirección e inténtelo de nuevo.",pendingTitle:"Esperando aprobación",pendingText:"Su correo fue verificado, pero el administrador debe aprobar la cuenta.",blockedTitle:"Acceso no autorizado",blockedText:"Esta cuenta no tiene autorización válida para acceder a los datos.",refresh:"Verificar nuevamente",resend:"Reenviar confirmación",logout:"Salir",privateTitle:"Panel privado",privateDescription:"Los datos se cargan solamente tras autenticación, verificación del correo y autorización en Firestore.",recordsLabel:"Registros disponibles",account:"Cuenta",approved:"Autorizada",recordsTitle:"Registros privados",recordsSubtitle:"Registros accesibles únicamente tras verificación en la base.",search:"Buscar",colTitle:"Título",colType:"Categoría",colSource:"Fuente",colStatus:"Verificación",empty:"No hay registros privados todavía.",footer:"Datos internos. No redistribuir sin autorización.",genericError:"No se pudo completar la acción. Revise los datos o inténtelo nuevamente.",mismatch:"Las contraseñas no coinciden.",weak:"Utilice por lo menos 8 caracteres.",resetSent:"Si el correo está registrado, recibirá instrucciones para cambiar la contraseña.",resent:"Si es elegible, se enviará otra verificación.",created:"Cuenta creada. Verifique su correo y espere aprobación.",failedRead:"No fue posible consultar los registros. Revise las reglas de seguridad."}
 };
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false;
+let explorerModule=null,intakeModule=null;
 const t=k=>txt[locale][k]||k;
 function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;}
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
@@ -22,7 +23,7 @@ function translate(){
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
- if(!$("dashboard-panel").hidden){drawRecords();setExplorerLanguage(locale);}
+ if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule)explorerModule.setExplorerLanguage(locale);}
 }
 function switchMode(next){
  mode=next;$("login-tab").classList.toggle("active",next==="login");$("signup-tab").classList.toggle("active",next==="signup");
@@ -52,14 +53,70 @@ function drawRecords(){
   }body.append(tr);
  }
 }
+
+function loadMapEngine(){
+ if(window.maplibregl)return Promise.resolve();
+ if(window.__nimfMapEnginePromise)return window.__nimfMapEnginePromise;
+ const link=document.createElement("link");link.rel="stylesheet";
+ link.href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css";
+ document.head.append(link);
+ const sources=[
+  "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js",
+  "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+ ];
+ window.__nimfMapEnginePromise=new Promise((resolve,reject)=>{
+  const next=i=>{
+   if(i>=sources.length){reject(new Error("MapLibre unavailable"));return;}
+   const tag=document.createElement("script");tag.src=sources[i];tag.async=true;
+   tag.onload=()=>window.maplibregl?resolve():next(i+1);
+   tag.onerror=()=>next(i+1);
+   document.head.append(tag);
+  };
+  next(0);
+ });
+ return window.__nimfMapEnginePromise;
+}
+function enablePrivateWidgets(user,epoch){
+ const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
+ void (async()=>{
+  try{
+   const mod=await import("./explorer.js?v=20261011c");
+   if(!valid())return;
+   explorerModule=mod;
+   mod.initExplorer(records,locale);
+   try{
+    await loadMapEngine();
+    if(valid())mod.setExplorerLanguage(locale);
+   }catch(e){
+    if(valid())$("explorer-map-notice").textContent="O serviço cartográfico não pôde ser carregado. Os filtros e os registros permanecem disponíveis.";
+    console.warn("NIMF map initialization unavailable",e?.message||e);
+   }
+  }catch(e){
+   if(valid())$("explorer-map-notice").textContent="Falha ao abrir o explorador geográfico. Os registros permanecem disponíveis na tabela.";
+   console.error("NIMF explorer initialization error",e);
+  }
+ })();
+ void (async()=>{
+  try{
+   const mod=await import("./intake.js?v=20261011c");
+   if(!valid())return;
+   intakeModule=mod;
+   await mod.openIntake(db,user,approvalAdmin);
+  }catch(e){
+   if(valid())$("tip-feedback").textContent="A área de contribuições está temporariamente indisponível. Os demais dados continuam acessíveis.";
+   console.error("NIMF intake initialization error",e);
+  }
+ })();
+}
+
 async function loadPrivateRecords(user,epoch){
  const snap=await getDocs(query(collection(db,"records"),limit(200)));
  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
  records=snap.docs.map(d=>({id:d.id,...d.data()}));
- $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();initExplorer(records,locale);void openIntake(db,user,approvalAdmin);
+ $("record-search").value="";show("dashboard-panel");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);
 }
 async function evaluateUser(user,epoch){
- activeUser=user;records=[];clearExplorer();closeIntake();
+ activeUser=user;records=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
  try{
@@ -122,14 +179,14 @@ for(const id of ["waiting-logout","private-logout"]){
  $(id).addEventListener("click",async()=>{if(auth)await signOut(auth);});
 }
 translate();
-if(!readyConfig()){show("config-panel");}
+if(!readyConfig()){show("config-panel");window.__nimfAppStarted=true;}
 else{
  try{
   const app=initializeApp(firebaseConfig);
   auth=getAuth(app);db=getFirestore(app);
-  show("auth-panel");
+  show("auth-panel");window.__nimfAppStarted=true;
   onAuthStateChanged(auth,user=>{
    const epoch=++authEpoch;void evaluateUser(user,epoch);
   },()=>show("auth-panel"));
- }catch(e){show("config-panel");}
+ }catch(e){show("config-panel");window.__nimfAppStarted=true;}
 }
