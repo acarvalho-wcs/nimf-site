@@ -1,4 +1,5 @@
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
+import { appendScientific } from "./scientific-format.js";
 
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null;
@@ -25,13 +26,6 @@ const controls={species:"scientific_name",state:"state",city:"municipality",sour
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
 const safe=r=>r && typeof r==="object"&&!Array.isArray(r);
 function textNode(tag,value,cls){const n=document.createElement(tag);n.textContent=value??"";if(cls)n.className=cls;return n;}
-function appendScientific(parent,title,taxon){
- const value=String(title||"");const name=String(taxon||"");
- const at=name?value.indexOf(name):-1;
- if(at>=0){parent.append(document.createTextNode(value.slice(0,at)));parent.append(textNode("i",name,"scientific-name"));parent.append(document.createTextNode(value.slice(at+name.length)));}
- else{parent.textContent=value;}
- return parent;
-}
 function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitude)&&r.latitude>=-90&&r.latitude<=90&&r.longitude>=-180&&r.longitude<=180&&["municipality","state","country","regional"].includes(r.location_precision)?[r.latitude,r.longitude]:null;}
 function options(filtered=dataset){
  for(const [id,key] of Object.entries(controls)){
@@ -137,7 +131,7 @@ function showDetail(r){
  if(context.text){
   d.append(textNode("h4",trans[language].observation));
   if(context.sourceLanguage!==language)d.append(textNode("small",trans[language].fallbackLabel+" ("+context.sourceLanguage.toUpperCase()+")"));
-  d.append(textNode("p",context.text));
+  d.append(appendScientific(document.createElement("p"),context.text,r.scientific_name));
  }
  if(!coords(r))d.append(textNode("p",trans[language].unlocated,"explorer-map-no-location"));
  if(typeof r.source_url==="string"&&/^https:\/\/[^/]+/.test(r.source_url)){
