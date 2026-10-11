@@ -81,3 +81,16 @@ No private sellers' names, personal identifiers, home or street addresses, conta
 **Manual steps:** Open Firebase Console > Firestore > Rules, paste `firestore.rules`, run the security test suite and publish. Then merge the frontend PR. Administrator may use the **Cadastro administrativo de camadas** form, create a draft with a municipality centroid, document the source, and only later publish after verification. Existing records and authentication must remain unchanged.
 
 The layer panel can be expanded to fullscreen or restored with Escape; the four filters are independent. This is not an online platform, public directory of sellers, or accusations registry.
+
+## Single institutional administrator and private contribution ownership
+
+The only NIMF triage administrator is the *verified* Firebase Auth identity **acarvalho@wcs.org**. Authorization uses three independent checks: authenticated and verified email, `access/{uid}.approved == true`, and `access/{uid}.admin == true`, plus an exact institutional email check in `firestore.rules`. All other approved users have author-only access to their submissions, status, notes and history; they cannot review or change others' data, even if `admin: true` is accidentally set on their approval document.
+
+**Administrator provisioning (Firebase Console, manually):**
+1. Authentication → Users: locate `acarvalho@wcs.org`; copy its actual Firebase Auth UID (do not use the email as the document ID).
+2. Firestore → Data → `access` → `{uid}`: set `approved` (boolean) `true` and `admin` (boolean) `true`.
+3. Find `dcarvalhoaf@gmail.com` and any other approved accounts by their own UIDs; preserve `approved: true` if they should remain contributors, but set `admin: false` (boolean) or remove that attribute.
+4. Publish the updated `firestore.rules` from this branch before activating the frontend; Github Pages does not deploy these rules.
+5. Test with different browsers / profiles: only institutional admin can see **Triagem administrativa**, while a contributor can see only **Minhas contribuições**. Admin progress `submissions/{id}.status` + `review_note` is visible to that submission's owner; `history` documents are also restricted to owner/admin.
+
+The UI alone does not provide database security: always rely on the published Firestore rules. Changes in Firebase Console cannot be inferred from GitHub commits; verify manually. No private contribution data is embedded in the public site or repository.
