@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>NIMF map integration test</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../secure.css">
+<style>body{margin:0;padding:28px} .explorer{max-width:1000px}#explorer-map{height:530px}</style>
+</head>
+<body data-theme="dark">
+<section class="explorer">
+<div class="explorer-head"><div><span id="explorer-kicker"></span><h3 id="explorer-title"></h3><p id="explorer-desc"></p></div><button id="explorer-reset"></button></div>
+<div class="explorer-filters">
+<label><span id="explorer-search-label"></span><input id="explorer-search"></label>
+<label class="species-filter"><span id="explorer-species-label"></span><select id="explorer-species" class="visually-hidden"><option value="">Todas</option></select><button type="button" id="species-trigger" class="species-trigger" aria-haspopup="listbox" aria-expanded="false">Todas</button><div id="species-menu" class="species-menu" role="listbox" hidden></div></label>
+<label><span id="explorer-state-label"></span><select id="explorer-state"></select></label>
+<label><span id="explorer-city-label"></span><select id="explorer-city"></select></label>
+<label><span id="explorer-source-label"></span><select id="explorer-source"></select></label>
+<label><span id="explorer-status-label"></span><select id="explorer-status"></select></label>
+<label><span id="explorer-product-label"></span><select id="explorer-product"></select></label>
+</div>
+<div class="explorer-summary"><strong id="explorer-count"></strong><span id="explorer-count-label"></span><span id="explorer-map-count"></span><span id="explorer-unmapped-count"></span></div>
+<div class="explorer-layout"><div class="explorer-map-wrap"><div id="explorer-map"></div><p id="explorer-map-notice"></p></div><div class="explorer-results"><div id="explorer-results-title"></div><div id="explorer-cards"></div></div></div>
+<section id="explorer-detail" hidden></section>
+</section>
+<script type="module">
+import {initExplorer} from "../explorer.js";
+initExplorer([{
+id:"synthetic-demo",title:"Colônia anunciada de Testudo ficticia",scientific_name:"Testudo ficticia",
+source:"Synthetic demo",state:"Amazonas",municipality:"Manaus",country:"BR",
+latitude:-3.119,longitude:-60.0217,location_precision:"municipality",
+status:"Em revisão",product_type:"teste_sintetico"
+}], "pt");
+window.__demoReady=true;
+</script>
+</body></html>
