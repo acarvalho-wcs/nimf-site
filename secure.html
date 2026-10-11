@@ -93,6 +93,22 @@
         </div>
         <section id="explorer-detail" class="explorer-detail" hidden aria-live="polite"></section>
       </section>
+      <section class="private-contributions" aria-label="Contribuições e acompanhamento">
+       <div class="explorer-head"><div><span class="secure-label">NIMF / INTELLIGENCE INTAKE</span><h3>Contribuições para investigação</h3><p>Envie links e informações para triagem. Só você e administradores autorizados acessam a submissão. Não insira dados pessoais desnecessários.</p></div></div>
+       <form id="tip-form" class="tip-form">
+        <label>Tipo de informação<select id="tip-type" required><option value="platform">Plataforma / site</option><option value="advertisement">Anúncio de fauna</option><option value="group">Grupo ou canal de comércio</option><option value="other">Outro indício</option></select></label>
+        <label>Título / assunto<input id="tip-title" type="text" required maxlength="180" placeholder="Ex.: Oferta de espécie controlada"></label>
+        <label>Link de referência (HTTPS)<input id="tip-url" type="url" required maxlength="1500" placeholder="https://..."></label>
+        <label>Espécie (se conhecida)<input id="tip-species" type="text" maxlength="180" placeholder="Nome científico ou comum"></label>
+        <label>Localidade mencionada<input id="tip-location" type="text" maxlength="180" placeholder="País, estado, município"></label>
+        <label class="tip-wide">Descrição factual<textarea id="tip-details" rows="3" maxlength="3000" placeholder="Descreva o que a fonte mostra; indique incertezas e evite acusações não verificadas."></textarea></label>
+        <button id="tip-submit" class="secure-button" type="submit">Enviar para triagem</button><p id="tip-feedback" role="status"></p>
+       </form>
+       <div class="contributions-columns">
+        <section><h3>Minhas contribuições</h3><p class="secure-small">Acompanhe o status de cada envio. As notas exibidas aqui são destinadas ao autor.</p><div id="my-tips" class="tip-list"></div></section>
+        <section id="admin-review" hidden><h3>Triagem administrativa</h3><p class="secure-small">Avalie os registros recebidos; ações serão comunicadas ao autor.</p><div id="admin-tips" class="tip-list"></div></section>
+       </div>
+      </section>
       <article class="private-panel">
        <h3 id="records-title">Registros privados</h3>
        <p id="records-subtitle">Dados obtidos exclusivamente após autenticação e checagem de autorização no Firestore.</p>
