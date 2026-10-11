@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWith
 import { getFirestore, doc, getDoc, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import {localizedField, localizedTitle} from "./record-locale.js";
+import {appendScientific} from "./scientific-format.js";
 // Load optional map and intake modules only after authentication and authorization.
 // A failure in either module must never prevent the login screen from appearing.
 
@@ -71,7 +72,7 @@ function drawRecords(){
  for(const r of matched){
   const tr=document.createElement("tr");
   for(const key of ["title","category","source","status"]){
-   const td=document.createElement("td");if(key==="title" && r.scientific_name && String(localizedTitle(r,locale)||"").includes(r.scientific_name)){const parts=String(localizedTitle(r,locale)).split(r.scientific_name);td.append(document.createTextNode(parts.shift()));const sci=document.createElement("i");sci.textContent=r.scientific_name;td.append(sci,document.createTextNode(parts.join(r.scientific_name)));}else td.textContent=docCell(r,key);tr.append(td);
+   const td=document.createElement("td");if(key==="title")appendScientific(td,localizedTitle(r,locale),r.scientific_name);else td.textContent=docCell(r,key);tr.append(td);
   }body.append(tr);
  }
 }
