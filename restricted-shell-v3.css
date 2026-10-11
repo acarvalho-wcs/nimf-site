@@ -1,0 +1,39 @@
+/* Isolated sidebar sizing: intentionally overrides legacy rules, desktop and mobile. */
+body[data-theme="dark"]{--bg:#071310;--sidebar:#091611;--surface:#0d1b17;--surface2:#13251c;--input:#0b1c16;--text:#eff4f0;--muted:#a0b3aa;--faint:#81968b;--line:#243b30;--accent:#d3ff54;--accent-strong:#d3ff54;--banner:#13251c;--shadow:rgba(0,0,0,.18);color-scheme:dark}
+.secure-layout{display:grid;grid-template-columns:262px minmax(0,1fr);width:100%;min-height:100dvh}
+.secure-side{width:262px;max-width:262px;min-width:0;height:100dvh;min-height:0;position:sticky;top:0;padding:22px 17px;display:flex;flex-direction:column;align-items:stretch;gap:0;overflow-x:hidden;overflow-y:auto;background:var(--sidebar);border-right:1px solid var(--line);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+.secure-main{min-width:0}
+.secure-brand{display:flex;flex-direction:row;align-items:center;gap:10px;min-width:0;margin:0 0 18px}
+.secure-brand>span:last-child{display:block;min-width:0;overflow-wrap:anywhere}
+.secure-brand b{font-size:12px;letter-spacing:0;line-height:1.35;text-transform:uppercase;font-weight:800}
+.secure-brand small{font-size:9px;letter-spacing:.02em;line-height:1.4}
+.secure-observatory-logo{width:44px;height:44px;flex:0 0 44px;object-fit:contain}
+.secure-side-content.secure-disclaimer{display:block;margin:0 0 10px;padding:13px 0 16px;border-top:1px solid var(--line);border-bottom:0;max-width:none;min-width:0}
+.secure-side-content.secure-disclaimer h1{font-size:12px;line-height:1.35;margin:8px 0;font-weight:750;letter-spacing:0}
+.secure-side-content.secure-disclaimer p{font-size:11px;line-height:1.55;margin:0;color:var(--muted);overflow-wrap:break-word}
+.secure-side-kicker{font-size:9px;letter-spacing:.10em}
+.secure-side-navigation{display:flex;flex-direction:column;gap:5px;padding:0 0 16px;border-bottom:1px solid var(--line)}
+.secure-side-nav-item{width:100%;min-width:0;display:flex;align-items:center;gap:10px;border:1px solid transparent;background:transparent;border-radius:8px;padding:11px;font-size:12px;font-weight:650;line-height:1.4;color:var(--muted);text-align:left}
+.secure-side-nav-item>span:nth-child(2){flex:1;min-width:0;overflow-wrap:break-word}
+.secure-side-nav-item.active{background:var(--surface2);color:var(--text)}
+.secure-side-nav-item:disabled{opacity:.72}
+.secure-side-contact{display:flex;flex-direction:column;gap:7px;padding:15px 0;border-top:0;border-bottom:1px solid var(--line);min-width:0}
+.secure-side-contact strong{font-size:11px;line-height:1.4;font-weight:750}
+.secure-side-contact a{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.secure-side-bottom{display:block;margin-top:auto;padding:16px 0 0;border-top:0;min-width:0}
+.secure-side-bottom p{font-size:10px;line-height:1.6;margin:0 0 9px;overflow-wrap:break-word}
+.secure-wcs-brand{display:flex;align-items:center;gap:9px}
+.secure-wcs-brand img{width:42px;max-height:50px;object-fit:contain}
+.secure-wcs-brand-copy b{font-size:11px}
+.secure-wcs-brand-copy small{font-size:10px;line-height:1.35}
+.secure-side,.secure-main{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.scientific-name{font-style:italic!important}
+@media(max-width:920px){
+ .secure-layout{grid-template-columns:minmax(0,1fr)}
+ .secure-side{position:relative;width:100%;max-width:none;height:auto;min-height:0;padding:16px;overflow:visible;border-right:0;border-bottom:1px solid var(--line)}
+ .secure-brand{margin-bottom:10px}
+ .secure-side-content.secure-disclaimer{padding:10px 0;margin-bottom:7px}
+ .secure-side-navigation{padding-bottom:8px}
+ .secure-side-contact{padding:10px 0}
+ .secure-side-bottom{margin-top:0;padding-top:10px}
+}
