@@ -7,6 +7,7 @@ on:
       - 'secure.js'
       - 'explorer.js'
       - 'intake.js'
+      - 'tests/startup-modules.test.mjs'
       - 'firebase-config.js'
       - 'firestore.rules'
       - 'docs/PRIVATE_ACCESS.md'
@@ -29,6 +30,7 @@ jobs:
           node --check explorer.js
           node --check intake.js
           node --check firebase-config.js
+          node tests/startup-modules.test.mjs
       - name: Reject privileged credential material
         shell: bash
         run: |

@@ -1,6 +1,7 @@
 import {collection,query,where,orderBy,limit,getDocs,onSnapshot,addDoc,doc,updateDoc,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 let db=null,user=null,admin=false,started=false,unsubOwn=null,unsubAdmin=null;
 const $=id=>document.getElementById(id);
+function validHttps(value){try{const u=new URL(String(value));return u.protocol==="https:"&&!!u.hostname&&!String(value).includes(" ");}catch{return false;}}
 const states=["received","triage","checking","investigating","resolved","closed"];
 const names={received:"Recebido",triage:"Em triagem",checking:"Em verificação",investigating:"Investigação iniciada",resolved:"Concluído",closed:"Encerrado"};
 const node=(tag,content)=>{const n=document.createElement(tag);n.textContent=content??"";return n;};
@@ -9,7 +10,7 @@ function summary(item,canEdit){
  const top=node("strong",item.title||"Sem título");block.append(top);
  block.append(node("small",[(item.type||""),item.species||"",item.location||""].filter(Boolean).join(" · ")));
  const status=node("span",names[item.status]||item.status);status.className="tip-status";block.append(status);
- if(item.url&&/^https:\/\/[^\s]+$/i.test(item.url)){const a=node("a","Abrir referência ↗");a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";block.append(a);}
+ if(validHttps(item.url)){const a=node("a","Abrir referência ↗");a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";block.append(a);}
  if(item.details)block.append(node("p",item.details));
  if(item.review_note)block.append(node("p","Atualização: "+item.review_note));
  if(canEdit){
@@ -75,7 +76,7 @@ export async function openIntake(database,currentUser,isAdmin){
   const send=$("tip-submit");send.disabled=true;$("tip-feedback").textContent="";
   try{
    const values={owner_uid:user.uid,type:$("tip-type").value,title:$("tip-title").value.trim(),url:$("tip-url").value.trim(),species:$("tip-species").value.trim(),location:$("tip-location").value.trim(),details:$("tip-details").value.trim(),status:"received",review_note:"",created_at:serverTimestamp(),updated_at:serverTimestamp()};
-   if(!/^https:\\/\\/[^\\s]+$/i.test(values.url))throw new Error("invalid url");
+   if(!validHttps(values.url))throw new Error("invalid url");
    await addDoc(collection(db,"submissions"),values);
    $("tip-form").reset();$("tip-feedback").textContent="Recebido para triagem.";
   }catch(e){$("tip-feedback").textContent="Não foi possível enviar. Verifique o link e as permissões do Firestore.";}
