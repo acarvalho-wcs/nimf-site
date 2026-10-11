@@ -212,3 +212,12 @@ body[data-theme="light"] .secure-observatory-logo{
  border-radius:0;
  padding:0;
 }
+
+/* The layer catalogue reports the real number of records in each category.
+   Counts update with the text/geographic filters and correspond to rendered pins. */
+.explorer-layers-panel .layer-row{grid-template-columns:17px 14px minmax(0,1fr) auto}
+.explorer-layers-panel .layer-row small[data-layer-count]{
+ display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:22px;
+ border-radius:11px;padding:0 6px;background:var(--surface2);
+ color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;font-weight:750
+}
