@@ -8,7 +8,7 @@
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css?v=20261011cards4">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=20261011wcs12">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=20261011reports13">
  <script>
  // Ensure a broken remote module can never leave all panels invisible.
  setTimeout(function(){
@@ -20,7 +20,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=20261011wcs12"></script>
+ <script type="module" src="./secure.js?v=20261011reports13"></script>
 </head>
 <body data-theme="dark">
  <div class="secure-layout">
@@ -186,14 +186,15 @@
       <p id="privacy-footer" class="privacy-footer">Dados internos. Não redistribua sem autorização.</p>
       </div>
       <section id="intelligence-reports-view" class="intelligence-reports-view" aria-labelledby="reports-page-title" hidden tabindex="-1">
-        <span id="reports-page-kicker" class="secure-label">BIBLIOTECA RESTRITA</span>
+        <span id="reports-page-kicker" class="secure-label">ACESSO CONTROLADO</span>
         <h2 id="reports-page-title">Relatórios de inteligência</h2>
-        <p id="reports-page-description">Espaço interno para organizar relatórios, pastas e arquivos de inteligência com acesso autorizado.</p>
-        <div class="reports-placeholder">
-          <span class="reports-placeholder-icon" aria-hidden="true">▤</span>
-          <h3 id="reports-empty-title">Biblioteca em preparação</h3>
-          <p id="reports-empty-description">As pastas e os documentos serão adicionados em uma próxima etapa. Nenhum arquivo está disponível aqui no momento.</p>
+        <p id="reports-page-description">Relatórios disponíveis exclusivamente conforme autorização individual.</p>
+        <div class="reports-method" role="note">
+          <h3 id="reports-method-title">Como são construídos</h3>
+          <p id="reports-method-body">Relatórios de inteligência organizam informações de fontes abertas, registros documentais e evidências verificadas. Fontes são avaliadas, informações cruzadas e graus de incerteza registrados. A presença de uma espécie em anúncios ou publicações não comprova uma transação ou infração. Material sensível recebe controles específicos de acesso e distribuição.</p>
         </div>
+        <div id="reports-folders" class="reports-folders" aria-live="polite"></div>
+        <p id="reports-empty-description" class="reports-empty-description" hidden>Nenhum relatório foi disponibilizado para sua conta.</p>
       </section>
     </section>
    </main>
