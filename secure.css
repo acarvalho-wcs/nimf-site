@@ -100,3 +100,18 @@
 .explorer-map-wrap{position:relative}
 .map-feedback{color:var(--muted);font-size:12px}
 .scientific-name{font-style:italic}
+
+.private-contributions{margin:18px 0;padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tip-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.tip-form label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:650}
+.tip-form input,.tip-form textarea,.tip-form select,.tip-item textarea,.tip-item select{width:100%;background:var(--input);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:11px;font:inherit}
+.tip-form .tip-wide{grid-column:1/-1}
+#tip-feedback{grid-column:2/-1;font-size:12px;color:var(--muted);align-self:end}
+.contributions-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.contributions-columns h3{font-size:17px}
+.tip-list{display:flex;flex-direction:column;gap:10px;max-height:600px;overflow:auto}
+.tip-item{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:15px;border:1px solid var(--line);border-radius:8px;background:var(--surface2)}
+.tip-item strong{font-size:13px}.tip-item small,.tip-item p{color:var(--muted);line-height:1.6;overflow-wrap:anywhere}.tip-item a{color:var(--accent);font-size:12px}
+.tip-status{color:var(--accent);border:1px solid var(--line);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700}
+@media(max-width:920px){.tip-form{grid-template-columns:repeat(2,minmax(0,1fr))}.contributions-columns{grid-template-columns:1fr}}
+@media(max-width:500px){.tip-form{grid-template-columns:1fr}.tip-form .tip-wide{grid-column:auto}#tip-feedback{grid-column:auto}}
