@@ -1,6 +1,7 @@
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
 let dataset=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
+const rasterCache=new Map();let rasterFrame=null;
 const el=id=>document.getElementById(id);
 const trans={
  pt:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa e filtros",desc:"Mapeamento aproximado, não a localização de vendedores. Combine os filtros para explorar anúncios.",reset:"Limpar filtros",search:"Busca livre",species:"Espécie",state:"Estado / região",city:"Município",source:"Fonte",status:"Verificação",product:"Produto",matches:"registros correspondentes",map:"no mapa",unmapped:"sem localização mapeável",results:"Resultados",notice:"Marcadores indicam posições aproximadas, nunca endereços de vendedores.",searchPlaceholder:"Espécie, fonte, cidade, produto...",fallbackLabel:"Texto disponível em outro idioma",resetMap:"Centralizar registros",mapUnavailable:"O mapa está parcialmente indisponível. O restante do painel permanece acessível.",empty:"Nenhum registro corresponde aos filtros.",all:"Todos",more:"Detalhes",close:"Fechar",link:"Fonte original",precision:"Precisão geográfica",price:"Preço anunciado",quantity:"Quantidade",review:"Situação",observation:"Contexto da observação",noDate:"Data não informada"},
@@ -104,7 +105,7 @@ function initializeRasterFallback(){
  if(fallbackLayer)return;
  const host=el("explorer-map");host.replaceChildren();
  const layer=document.createElement("div");layer.className="nimf-raster-layer";
- const tiles=document.createElement("div");tiles.className="nimf-raster-tiles";
+ const tiles=document.createElement("canvas");tiles.className="nimf-raster-tiles";tiles.setAttribute("aria-hidden","true");
  const pinsLayer=document.createElement("div");pinsLayer.className="nimf-raster-pins";
  const controls=document.createElement("div");controls.className="nimf-raster-controls";
  for(const [symbol,change] of [["+",1],["−",-1]]){
@@ -146,6 +147,33 @@ function initializeRasterFallback(){
   observer.observe(host);
  }
 }
+
+function drawRasterFrame(){
+ if(!fallbackTiles||!rasterFrame)return;
+ const {cells,width,height}=rasterFrame,ctx=fallbackTiles.getContext("2d");
+ if(!ctx)return;
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ fallbackTiles.width=Math.round(width*dpr);fallbackTiles.height=Math.round(height*dpr);
+ fallbackTiles.style.width=width+"px";fallbackTiles.style.height=height+"px";
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,width,height);
+ ctx.fillStyle="#b9d8de";ctx.fillRect(0,0,width,height);
+ for(const cell of cells){
+  let entry=rasterCache.get(cell.key);
+  if(!entry){
+   const image=new Image();image.decoding="async";
+   entry={image,ready:false,failed:false};
+   rasterCache.set(cell.key,entry);
+   // Keep cache bounded for extended browsing sessions.
+   if(rasterCache.size>240)rasterCache.delete(rasterCache.keys().next().value);
+   image.onload=()=>{entry.ready=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
+   image.onerror=()=>{entry.failed=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
+   image.src="https://tile.openstreetmap.org/"+cell.key+".png";
+  }
+  if(entry.ready)ctx.drawImage(entry.image,Math.round(cell.left),Math.round(cell.top),257,257);
+  else{ctx.fillStyle="#e5e7e0";ctx.fillRect(cell.left,cell.top,256,256);}
+ }
+}
 function renderRasterMarkers(rows,fit=true){
  if(!fallbackLayer)return;
  if(fit){
@@ -159,17 +187,17 @@ function renderRasterMarkers(rows,fit=true){
  const maxTile=2**fallbackZoom,scale=256*maxTile;
  const [cx,cy]=projection(fallbackCenter[0],fallbackCenter[1],fallbackZoom),left=cx-width/2,top=cy-height/2;
  const startX=Math.floor(left/256),endX=Math.ceil((left+width)/256),startY=Math.floor(top/256),endY=Math.ceil((top+height)/256);
- const images=document.createDocumentFragment();
+
+ const cells=[];
  for(let y=startY;y<endY;y++){
   if(y<0||y>=maxTile)continue;
   for(let x=startX;x<endX;x++){
-   const tile=document.createElement("img");tile.alt="";tile.loading="eager";tile.decoding="async";tile.dataset.xyz=fallbackZoom+"/"+((x%maxTile+maxTile)%maxTile)+"/"+y;
-   tile.src="https://tile.openstreetmap.org/"+fallbackZoom+"/"+((x%maxTile+maxTile)%maxTile)+"/"+y+".png";
-   tile.style.left=(x*256-left)+"px";tile.style.top=(y*256-top)+"px";
-   images.append(tile);
+   cells.push({key:fallbackZoom+"/"+((x%maxTile+maxTile)%maxTile)+"/"+y,
+     left:x*256-left,top:y*256-top});
   }
  }
- fallbackTiles.replaceChildren(images);
+ rasterFrame={cells,width,height};
+ drawRasterFrame();
  fallbackPins.replaceChildren();
  for(const r of rows){
   const [px,py]=projection(r.longitude,r.latitude,fallbackZoom);
