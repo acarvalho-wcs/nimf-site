@@ -81,11 +81,20 @@ function setupSpeciesPicker(){
   if(!event.target.closest(".species-filter")){menu.hidden=true;trigger.setAttribute("aria-expanded","false");}
  });
 }
-function matches(r){
- if(!activeLayers().has(r.layer_type||"advertisement"))return false;
+function matchesOtherFilters(r){
  const term=normalize(el("explorer-search").value);
  if(term && !["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es"].some(k=>normalize(r[k]).includes(term)))return false;
  return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||r[key]===el("explorer-"+id).value);
+}
+function matches(r){
+ return activeLayers().has(r.layer_type||"advertisement")&&matchesOtherFilters(r);
+}
+function updateLayerCounts(){
+ for(const layer of layerNames){
+  const count=dataset.filter(r=>(r.layer_type||"advertisement")===layer&&matchesOtherFilters(r)&&coords(r)).length;
+  const badge=document.querySelector('[data-layer-count="'+layer+'"]');
+  if(badge){badge.textContent=String(count);badge.setAttribute("aria-label",String(count));}
+ }
 }
 function keyAsScientific(label){return label===trans[language].species;}
 function addField(wrap,label,value){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");d.append(textNode("span",label),keyAsScientific(label)?appendScientific(document.createElement("strong"),String(value),String(value)):textNode("strong",String(value)));wrap.append(d);}
@@ -288,6 +297,8 @@ function drawMarkers(rows){
 }
 function render(){
  const f=dataset.filter(matches),m=f.filter(r=>coords(r)),T=trans[language];
+ updateLayerCounts();
+ el("explorer-map").dataset.visibleMarkerCount=String(m.length);
  el("explorer-count").textContent=String(f.length);
  el("explorer-map-count").textContent=m.length+" "+T.map;
  el("explorer-unmapped-count").textContent=(f.length-m.length)+" "+T.unmapped;
@@ -370,8 +381,9 @@ document.addEventListener("keydown",ev=>{
  if(document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);
 });
 for(const input of document.querySelectorAll("#explorer-layers input"))input.addEventListener("change",()=>{
- const value=[...document.querySelectorAll("#explorer-layers input:checked")];
- options(dataset.filter(r=>activeLayers().has(r.layer_type||"advertisement")));render();
+ // One rendering path for both MapLibre and raster. Do not clear other
+ // geographic/text filters while enabling or disabling thematic layers.
+ render();
 });
 for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",render);
 el("explorer-search").addEventListener("input",render);
