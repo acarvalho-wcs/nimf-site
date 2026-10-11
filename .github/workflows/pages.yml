@@ -14,6 +14,8 @@ on:
       - 'intake.js'
       - 'map-points.js'
       - 'record-locale.js'
+      - 'scientific-format.js'
+      - 'restricted-shell-v3.css'
       - 'firebase-config.js'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -49,12 +51,14 @@ jobs:
           node --check intake.js
           node --check map-points.js
           node --check record-locale.js
+          node --check scientific-format.js
+          test -s restricted-shell-v3.css
           node --check firebase-config.js
           test -f secure.html
           test -f secure.css
           test -f firestore.rules
           grep -q 'allow create, update, delete: if false;' firestore.rules
-          cp index.html styles.css app.js secure.html secure.css secure.js explorer.js intake.js map-points.js record-locale.js firebase-config.js public/
+          cp index.html styles.css app.js secure.html secure.css restricted-shell-v3.css secure.js explorer.js intake.js map-points.js record-locale.js scientific-format.js firebase-config.js public/
           test -f assets/Logo_observat.png
           mkdir -p public/assets
           cp assets/Logo_observat.png public/assets/Logo_observat.png
