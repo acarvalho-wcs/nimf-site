@@ -9,6 +9,26 @@ service cloud.firestore {
    allow get: if verified() && request.auth.uid == uid;
    allow list, create, update, delete: if false;
   }
+  // Applicant owns one request, keyed by their Firebase Authentication UID.
+  // Administrative approval remains server-side, and the applicant cannot self-approve.
+  match /access_requests/{uid} {
+    function validApplication() {
+      let r = request.resource.data;
+      return r.keys().hasOnly(['email','institution','justification','status','created_at','updated_at'])
+        && r.keys().hasAll(['email','institution','justification','status','created_at','updated_at'])
+        && request.auth != null && request.auth.uid == uid
+        && request.auth.token.email is string
+        && r.email == request.auth.token.email
+        && r.institution is string && r.institution.size() >= 3 && r.institution.size() <= 160
+        && r.justification is string && r.justification.size() >= 20 && r.justification.size() <= 1500
+        && r.status == 'pending'
+        && r.created_at == request.time && r.updated_at == request.time;
+    }
+    allow create: if verified() && validApplication();
+    allow get: if administrator() || (verified() && request.auth.uid == uid);
+    allow list: if administrator();
+    allow update, delete: if false;
+  }
   match /records/{id} {
    allow get, list: if approved();
    allow create, update, delete: if false;
