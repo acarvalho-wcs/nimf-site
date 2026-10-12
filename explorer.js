@@ -354,7 +354,7 @@ function setupMap(){
  host.append(glHost);
  let loadTimedOut=false;
  let alternateStyleAttempted=false;
- const fallbackWebglStyle={version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm-raster",type:"raster",source:"osm"}]};
+ const fallbackWebglStyle={version:8,sources:{basemap:{type:"raster",tiles:["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors © CARTO"}},layers:[{id:"dark-raster",type:"raster",source:"basemap"}]};
  const fail=()=>{
   if(mapLoaded || loadTimedOut)return;
   loadTimedOut=true;
@@ -366,11 +366,11 @@ function setupMap(){
  try{
   map=new window.maplibregl.Map({
    container:glHost,
-   style:"https://tiles.openfreemap.org/styles/liberty/style.json",
+   style:"https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
    center:[fallbackCenter[0],fallbackCenter[1]],zoom:fallbackZoom,
    attributionControl:true,cooperativeGestures:true,projection:{type:projectionMode==="globe"?"globe":"mercator"}
   });
-  map.addControl(new window.maplibregl.NavigationControl({showCompass:true,showZoom:true}),"top-right");
+  map.addControl(new window.maplibregl.NavigationControl({showCompass:true,showZoom:true}),"bottom-right");
   map.on("load",()=>{
    if(loadTimedOut)return;
    mapLoaded=true;mapReady=true;
