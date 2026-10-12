@@ -328,3 +328,16 @@ body[data-theme="light"] .map-filters-head button{background:#e8f2eb;color:#1738
 .explorer-map-wrap.is-fullscreen .explorer-map-toolbar{top:12px;left:12px;max-width:calc(100% - 24px)}
 .explorer-map-wrap.is-fullscreen .map-filters-panel{max-height:calc(100dvh - 108px)}
 @media(max-width:460px){.map-filters-panel{width:min(320px,calc(100vw - 38px));padding:10px}.map-filters-actions{gap:6px}.map-filters-actions>.map-toolbar-button{font-size:11px;padding:7px 5px}}
+
+/* Collapsed user contributions panel integrates with the existing utility dock. */
+.my-contributions-panel{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:20px}
+.my-contributions-panel h3{font-size:17px;margin:0 0 9px}
+.my-contributions-panel .tip-list{max-height:min(60vh,600px);overflow:auto}
+@media(max-width:640px){
+ .my-contributions-panel{padding:15px}
+ .utility-panel-controls{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0}
+ .utility-panel-controls .utility-panel-button{width:100%;min-width:0;white-space:normal;text-align:left}
+ .utility-panel-compare{width:100%;margin:0;padding:7px 0}
+ .map-filters-panel{max-width:calc(100vw - 28px)}
+ .secure-card,.explorer,.private-contributions,.private-panel{min-width:0;max-width:100%;box-sizing:border-box}
+}
