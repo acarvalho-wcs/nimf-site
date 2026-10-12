@@ -31,6 +31,9 @@ $("reports-nav").addEventListener("click",()=>switchWorkspace("reports"));
 $("dashboard-nav").addEventListener("click",()=>switchWorkspace("dashboard"));
 
 for(const [language,translations] of Object.entries({"pt":{"sideTitle":"Sobre esta seção de investigação","sideCopy":"A Investigação de Mercados de Fauna integra o Observatório Global de Tráfico de Animais. O acesso às ferramentas, análises e informações desta seção é restrito a usuários autorizados pela administração do projeto.","sideFooter":"Criado e gerenciado pelo Programa de Inteligência para Conservação da WCS Brasil.","brand":"Investigação de Mercados de Fauna","sideKicker":"SEÇÃO RESTRITA","reportsNav":"Relatórios de inteligência","contact":"Entre em contato com os desenvolvedores","program":"Programa de Inteligência para Conservação","reportsKicker":"BIBLIOTECA RESTRITA","reportsTitle":"Relatórios de inteligência","reportsDesc":"Página interna para organização de relatórios, pastas e arquivos de inteligência, disponíveis somente a usuários autorizados.","reportsEmptyTitle":"Biblioteca em preparação","reportsEmptyDesc":"Pastas e documentos serão adicionados em uma próxima etapa. Nenhum arquivo está disponível no momento.","authTitle":"Acessar Investigação de Mercados de Fauna","authKicker":"INVESTIGAÇÃO DE MERCADOS DE FAUNA / ACESSO","intakeKicker":"INVESTIGAÇÃO DE MERCADOS DE FAUNA / CONTRIBUIÇÕES","mapKicker":"INVESTIGAÇÃO DE MERCADOS DE FAUNA / MAPA REVISADO"},"en":{"sideTitle":"About this investigation section","sideCopy":"Wildlife Market Investigations is part of the Illegal Wildlife Trafficking Global Observatory. Access to the tools, analyses and information in this section is restricted to users authorized by the project's administration.","sideFooter":"Created and managed by the WCS Brazil Conservation Intelligence Program.","brand":"Wildlife Market Investigations","sideKicker":"RESTRICTED SECTION","reportsNav":"Intelligence reports","contact":"Contact the developers","program":"Conservation Intelligence Program","reportsKicker":"RESTRICTED LIBRARY","reportsTitle":"Intelligence reports","reportsDesc":"Internal page for organizing intelligence reports, folders and files, available only to authorized users.","reportsEmptyTitle":"Library in preparation","reportsEmptyDesc":"Folders and documents will be added at a later stage. No files are currently available.","authTitle":"Access Wildlife Market Investigations","authKicker":"WILDLIFE MARKET INVESTIGATIONS / ACCESS","intakeKicker":"WILDLIFE MARKET INVESTIGATIONS / CONTRIBUTIONS","mapKicker":"WILDLIFE MARKET INVESTIGATIONS / REVIEWED MAP"},"es":{"sideTitle":"Sobre esta sección de investigación","sideCopy":"Investigación de Mercados de Fauna forma parte del Observatorio Global de Tráfico de Animales. El acceso a las herramientas, los análisis y la información de esta sección está restringido a usuarios autorizados por la administración del proyecto.","sideFooter":"Creado y gestionado por el Programa de Inteligencia para la Conservación de WCS Brasil.","brand":"Investigación de Mercados de Fauna","sideKicker":"SECCIÓN RESTRINGIDA","reportsNav":"Informes de inteligencia","contact":"Contacte a los desarrolladores","program":"Programa de Inteligencia para la Conservación","reportsKicker":"BIBLIOTECA RESTRINGIDA","reportsTitle":"Informes de inteligencia","reportsDesc":"Página interna para organizar informes, carpetas y archivos de inteligencia, disponibles únicamente para usuarios autorizados.","reportsEmptyTitle":"Biblioteca en preparación","reportsEmptyDesc":"Las carpetas y los documentos se agregarán en una próxima etapa. Actualmente no hay archivos disponibles.","authTitle":"Acceder a Investigación de Mercados de Fauna","authKicker":"INVESTIGACIÓN DE MERCADOS DE FAUNA / ACCESO","intakeKicker":"INVESTIGACIÓN DE MERCADOS DE FAUNA / CONTRIBUCIONES","mapKicker":"INVESTIGACIÓN DE MERCADOS DE FAUNA / MAPA REVISADO"}}))Object.assign(txt[language],translations);
+Object.assign(txt.pt,{waitingKicker:"CONTROLE DE ACESSO",authEmailPlaceholder:"usuario@instituicao.org",institutionPlaceholder:"Ex.: Universidade, órgão público ou ONG",justificationPlaceholder:"Explique a finalidade profissional do acesso e como pretende utilizar a plataforma.",retryTitle:"Complete sua solicitação para avaliação administrativa."});
+Object.assign(txt.en,{waitingKicker:"ACCESS CONTROL",authEmailPlaceholder:"user@institution.org",institutionPlaceholder:"e.g. University, government agency or NGO",justificationPlaceholder:"Explain the professional purpose of your request and how you intend to use the platform.",retryTitle:"Complete your request for administrative review."});
+Object.assign(txt.es,{waitingKicker:"CONTROL DE ACCESO",authEmailPlaceholder:"usuario@institucion.org",institutionPlaceholder:"Ej.: Universidad, organismo público u ONG",justificationPlaceholder:"Explique la finalidad profesional del acceso y cómo pretende utilizar la plataforma.",retryTitle:"Complete su solicitud para evaluación administrativa."});
 txt.pt.dashboardNav="Painel";txt.en.dashboardNav="Dashboard";txt.es.dashboardNav="Panel";
 const reportStrings={
  pt:{methodTitle:"Como são construídos",methodBody:"Relatórios de inteligência organizam evidências de fontes abertas, documentos e registros verificados, confrontando informações, registrando incertezas e distinguindo observação de comprovação de comércio ou ilícito. Informações sensíveis são tratadas sob controles adicionais de acesso.",none:"Nenhum relatório foi disponibilizado para sua conta.",open:"Consultar relatório"},
@@ -48,11 +51,14 @@ function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
 function translate(){
  document.documentElement.lang=locale==="pt"?"pt-BR":locale;
   document.title="IWT Global Observatory | "+(locale==="pt"?"Área restrita":locale==="en"?"Restricted area":"Área restringida");
- const items={"side-title":"sideTitle","side-copy":"sideCopy","side-footer":"sideFooter","back-public":"back","auth-title":"authTitle","auth-subtitle":"authSubtitle","login-tab":"login","signup-tab":"signup","email-label":"email","password-label":"password","confirm-label":"confirm","forgot-password":"forgot","auth-note":"note","config-title":"configTitle","config-body":"configBody","refresh-access":"refresh","resend-verification":"resend","waiting-logout":"logout","private-title":"privateTitle","private-description":"privateDescription","private-logout":"logout","records-label":"recordsLabel","account-label":"account","account-status":"approved","records-title":"recordsTitle","records-subtitle":"recordsSubtitle","search-label":"search","col-title":"colTitle","col-type":"colType","col-source":"colSource","col-status":"colStatus","privacy-footer":"footer"};
+ const items={"waiting-kicker":"waitingKicker","side-title":"sideTitle","side-copy":"sideCopy","side-footer":"sideFooter","back-public":"back","auth-title":"authTitle","auth-subtitle":"authSubtitle","login-tab":"login","signup-tab":"signup","email-label":"email","password-label":"password","confirm-label":"confirm","forgot-password":"forgot","auth-note":"note","config-title":"configTitle","config-body":"configBody","refresh-access":"refresh","resend-verification":"resend","waiting-logout":"logout","private-title":"privateTitle","private-description":"privateDescription","private-logout":"logout","records-label":"recordsLabel","account-label":"account","account-status":"approved","records-title":"recordsTitle","records-subtitle":"recordsSubtitle","search-label":"search","col-title":"colTitle","col-type":"colType","col-source":"colSource","col-status":"colStatus","privacy-footer":"footer"};
  items["private-kicker"]="privateKicker";
  Object.assign(items,{"side-brand-name":"brand","side-kicker":"sideKicker","dashboard-nav-label":"dashboardNav","reports-nav-label":"reportsNav","contact-label":"contact","program-name":"program","reports-page-kicker":"reportsKicker","reports-page-title":"reportsTitle","reports-page-description":"reportsDesc","reports-empty-description":"reportsEmptyDesc","auth-kicker":"authKicker","intake-kicker":"intakeKicker","admin-map-kicker":"mapKicker"});
  for(const [id,key] of Object.entries(items))$(id).textContent=t(key);
  $("record-search").placeholder=t("searchPlaceholder");
+ $("auth-email").placeholder=t("authEmailPlaceholder");$("auth-institution").placeholder=t("institutionPlaceholder");$("auth-justification").placeholder=t("justificationPlaceholder");$("retry-request-title").textContent=t("retryTitle");
+ for(const [id,key] of [["institution-label","institution"],["justification-label","justification"],["signup-privacy-note","privacy"],["retry-institution-label","institution"],["retry-justification-label","justification"],["retry-request-button","send"],["admin-requests-title","adminTitle"],["admin-requests-description","adminDescription"]]){const target=$(id);if(target)target.textContent=accessStrings[locale][key];}
+ document.querySelector(".secure-brand")?.setAttribute("aria-label",t("back"));document.querySelector(".secure-brand")?.setAttribute("title",t("back"));
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  if(intakeModule){try{intakeModule.setIntakeLanguage(locale);}catch(e){console.warn("Intake locale update failed",e);}}
   if(mapModule){try{mapModule.setMapPointLanguage(locale);}catch(e){console.warn("Map admin locale update failed",e);}}
@@ -145,7 +151,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=mobile40");
+   const mod=await import("./explorer.js?v=filter42");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
@@ -175,7 +181,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./intake.js?v=mobile40");
+   const mod=await import("./intake.js?v=filter42");
    if(!valid())return;
    intakeModule=mod;
    await mod.openIntake(db,user,approvalAdmin,locale,tip=>mapModule?.promoteTip(tip));
@@ -354,16 +360,16 @@ else{
 (function initializeUtilityPanels(){
  const container=document.getElementById("utility-panel-grid"),compare=document.getElementById("utility-compare");
  if(!container||!compare)return;
- const definitions=[["exchange","information-exchange-panel","utility-open-exchange"],["mine","my-contributions-panel","utility-open-mine"],["triage","admin-review","utility-open-triage"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
+ const definitions=[["exchange","information-exchange-panel","utility-open-exchange"],["mine","my-contributions-panel","utility-open-mine"],["triage","admin-review","utility-open-triage"],["history","admin-history","utility-open-history"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
  const open=new Set(), nodes=definitions.map(([key,id,buttonId])=>({key,node:document.getElementById(id),button:document.getElementById(buttonId)}));
  for(const entry of nodes){
   if(!entry.node||!entry.button)continue;
-  if(entry.key==="triage"||entry.key==="layers")entry.node.dataset.adminAvailable="false";
+  if(entry.key==="triage"||entry.key==="history"||entry.key==="layers")entry.node.dataset.adminAvailable="false";
   entry.node.dataset.collapsed="true";
   entry.node.classList.add("utility-managed");
   container.append(entry.node);
  }
- const labels={pt:{exchange:"Troca de informações",mine:"Minhas contribuições",triage:"Triagem",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{exchange:"Information exchange",mine:"My contributions",triage:"Review queue",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{exchange:"Intercambio de información",mine:"Mis contribuciones",triage:"Revisión",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
+ const labels={pt:{exchange:"Troca de informações",mine:"Minhas contribuições",triage:"Triagem",history:"Histórico de triagens",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{exchange:"Information exchange",mine:"My contributions",triage:"Review queue",history:"Triage history",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{exchange:"Intercambio de información",mine:"Mis contribuciones",triage:"Revisión",history:"Historial de evaluaciones",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
  const redraw=()=>{
   const lang=typeof locale==="string"&&labels[locale]?locale:"pt";
   for(const entry of nodes){
@@ -388,7 +394,7 @@ else{
    else{if(!compare.checked)open.clear();open.add(entry.key);}
    redraw();
   });
-  if(entry.key==="triage"||entry.key==="layers"){
+  if(entry.key==="triage"||entry.key==="history"||entry.key==="layers"){
    const observer=new MutationObserver(()=>{
     if(!entry.node.hidden){entry.node.dataset.adminAvailable="true";entry.node.hidden=false;}
     else if(entry.node.dataset.adminAvailable==="true"){entry.node.dataset.adminAvailable="false";open.delete(entry.key);}
