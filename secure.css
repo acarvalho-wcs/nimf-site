@@ -264,3 +264,9 @@ body[data-theme="light"] .secure-observatory-logo{
 #explorer-map .maplibregl-ctrl-group button{filter:invert(1) brightness(1.5)}
 #explorer-map[data-projection-mode="globe"]{background:#081b27}
 @media(max-width:680px){.explorer-mode-switch button{padding:6px 8px;font-size:10px}.explorer-map-toolbar{gap:4px;flex-wrap:wrap;max-width:calc(100% - 12px)}}
+
+/* Dark cartography: layer drawer sits below the primary map toolbar. */
+.explorer-map-wrap .explorer-layers-panel{top:64px;right:12px;max-height:calc(100% - 76px)}
+.explorer-map-wrap.is-fullscreen .explorer-layers-panel{top:70px;right:14px;max-height:calc(100dvh - 84px)}
+#explorer-map .maplibregl-ctrl-bottom-right{right:12px;bottom:35px}
+@media(max-width:680px){.explorer-map-wrap .explorer-layers-panel{top:88px;max-height:calc(100% - 100px)}.explorer-map-wrap.is-fullscreen .explorer-layers-panel{top:96px;max-height:calc(100dvh - 108px)}}
