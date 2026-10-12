@@ -123,11 +123,11 @@ function loadMapEngine(){
  if(window.maplibregl)return Promise.resolve();
  if(window.__nimfMapEnginePromise)return window.__nimfMapEnginePromise;
  const link=document.createElement("link");link.rel="stylesheet";
- link.href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css";
+ link.href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.10.0/dist/maplibre-gl.css";
  document.head.append(link);
  const sources=[
-  "https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js",
-  "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+  "https://cdn.jsdelivr.net/npm/maplibre-gl@5.10.0/dist/maplibre-gl.js",
+  "https://unpkg.com/maplibre-gl@5.10.0/dist/maplibre-gl.js"
  ];
  window.__nimfMapEnginePromise=new Promise((resolve,reject)=>{
   const next=i=>{
@@ -145,7 +145,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=caxiasgroups29");
+   const mod=await import("./explorer.js?v=mapglobe30");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
