@@ -59,7 +59,7 @@ function translate(){
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
- if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule)explorerModule.setExplorerLanguage(locale);} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels();
+ if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule)explorerModule.setExplorerLanguage(locale);} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels(); if(window.__nimfMapFilterTranslate)window.__nimfMapFilterTranslate();
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
@@ -404,4 +404,55 @@ else{
  observer.observe(document.body,{attributes:true,attributeFilter:["data-private-ready"]});
  window.__nimfRefreshUtilityPanels=redraw;
  redraw();
+})();
+
+/* Map filters drawer: reparent the existing global controls, preserving listeners. */
+(function setupMapFiltersDrawer(){
+ const toggle=document.getElementById("map-filters-toggle");
+ const panel=document.getElementById("map-filters-panel");
+ const close=document.getElementById("map-filters-close");
+ const language=document.getElementById("secure-language");
+ const theme=document.getElementById("secure-theme");
+ const top=document.querySelector(".secure-top-right");
+ const langMount=document.getElementById("map-language-mount");
+ const themeMount=document.getElementById("map-theme-mount");
+ const map=document.querySelector(".explorer-map-wrap");
+ if(!toggle||!panel||!close||!language||!theme||!top||!langMount||!themeMount||!map)return;
+ const labels={pt:{filter:"Filtros",heading:"Controles do mapa",lang:"Idioma",theme:"Tema da interface",close:"Fechar filtros"},en:{filter:"Filters",heading:"Map controls",lang:"Language",theme:"Interface theme",close:"Close filters"},es:{filter:"Filtros",heading:"Controles del mapa",lang:"Idioma",theme:"Tema de la interfaz",close:"Cerrar filtros"}};
+ const moveControls=()=>{
+  const visible=document.body.dataset.privateReady==="true"
+   && !document.getElementById("dashboard-panel").hidden
+   && !document.getElementById("dashboard-primary").hidden;
+  if(visible){langMount.append(language);themeMount.append(theme);}
+  else{top.append(language);top.append(theme);setOpen(false);}
+ };
+ function setOpen(open){
+  const active=Boolean(open);
+  panel.hidden=!active;
+  panel.inert=!active;
+  toggle.setAttribute("aria-expanded",String(active));
+  toggle.classList.toggle("is-active",active);
+ }
+ const translateDrawer=()=>{
+  const l=labels[locale]||labels.pt;
+  document.getElementById("map-filters-toggle-label").textContent=l.filter;
+  document.getElementById("map-filters-heading").textContent=l.heading;
+  document.getElementById("map-language-label").textContent=l.lang;
+  document.getElementById("map-interface-theme-label").textContent=l.theme;
+  close.setAttribute("aria-label",l.close);close.title=l.close;
+  theme.setAttribute("aria-label",l.theme);
+  language.setAttribute("aria-label",l.lang);
+ };
+ toggle.addEventListener("click",()=>{setOpen(panel.hidden);if(!panel.hidden)language.focus({preventScroll:true});});
+ close.addEventListener("click",()=>{setOpen(false);toggle.focus({preventScroll:true});});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panel.hidden){setOpen(false);toggle.focus({preventScroll:true});}});
+ document.addEventListener("pointerdown",e=>{if(!panel.hidden&&!panel.contains(e.target)&&!toggle.contains(e.target))setOpen(false);});
+ const obs=new MutationObserver(moveControls);
+ obs.observe(document.body,{attributes:true,attributeFilter:["data-private-ready"]});
+ for(const id of ["dashboard-panel","dashboard-primary"]){
+  const el=document.getElementById(id);if(el)obs.observe(el,{attributes:true,attributeFilter:["hidden"]});
+ }
+ window.__nimfMapFilterTranslate=translateDrawer;
+ window.__nimfMapFilterSync=moveControls;
+ moveControls();translateDrawer();
 })();
