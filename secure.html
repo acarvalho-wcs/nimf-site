@@ -27,7 +27,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=mobile40"></script>
+ <script type="module" src="./secure.js?v=exchange41"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -180,7 +180,7 @@
         </div>
         <section id="explorer-detail" class="explorer-detail" hidden aria-live="polite"></section>
       </section>
-      <section class="private-contributions" aria-label="Contribuições e acompanhamento">
+      <section id="information-exchange-panel" class="private-contributions" data-collapsed="true" aria-labelledby="intake-kicker">
        <div class="explorer-head"><div><span class="secure-label" id="intake-kicker">TROCA DE INFORMAÇÕES</span><h3>Contribuições para investigação</h3><p>Envie links e informações para triagem. Só você e administradores autorizados acessam a submissão. Não insira dados pessoais desnecessários.</p></div></div>
        <form id="tip-form" class="tip-form">
         <label>Tipo de informação<select id="tip-type" required><option value="platform">Plataforma / site</option><option value="advertisement">Anúncio de fauna</option><option value="group">Grupo ou canal de comércio</option><option value="fair">Feira livre</option><option value="physical_market">Ponto de comércio presencial sob investigação</option><option value="other">Outro indício</option></select></label>
@@ -217,6 +217,7 @@
       </section>
       <section id="utility-panel-workspace" class="utility-panel-workspace" aria-label="Ferramentas de análise">
        <div class="utility-panel-controls" role="group" aria-label="Painéis administrativos">
+        <button id="utility-open-exchange" type="button" class="secure-secondary utility-panel-button" aria-controls="information-exchange-panel" aria-expanded="false">Troca de informações <span aria-hidden="true">▾</span></button>
         <button id="utility-open-mine" type="button" class="secure-secondary utility-panel-button" aria-controls="my-contributions-panel" aria-expanded="false">Minhas contribuições <span aria-hidden="true">▾</span></button>
         <button id="utility-open-triage" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-review" aria-expanded="false" hidden>Triagem <span aria-hidden="true">▾</span></button>
         <button id="utility-open-layers" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-map-panel" aria-expanded="false" hidden>Cadastro de camadas <span aria-hidden="true">▾</span></button>
