@@ -92,6 +92,24 @@ function updateLayerCounts(){
   if(badge){badge.textContent=String(count);badge.setAttribute("aria-label",String(count));}
  }
 }
+const faunaVocabulary={
+ birds:{pt:"aves",en:"birds",es:"aves"}, "wildlife meat":{pt:"carne de fauna silvestre",en:"wildlife meat",es:"carne de fauna silvestre"},
+ "animal parts":{pt:"partes de animais",en:"animal parts",es:"partes de animales"},
+ reptiles:{pt:"répteis",en:"reptiles",es:"reptiles"}, birdsong:{pt:"aves canoras",en:"songbirds",es:"aves canoras"},
+ "feathers":{pt:"penas",en:"feathers",es:"plumas"}, "arachnids":{pt:"aracnídeos",en:"arachnids",es:"arácnidos"},
+ snakes:{pt:"serpentes",en:"snakes",es:"serpientes"}, "iguana":{pt:"iguana",en:"iguana",es:"iguana"},
+ "axolotl":{pt:"axolote",en:"axolotl",es:"ajolote"}, "frog":{pt:"rã",en:"frog",es:"rana"},
+ "fauna silvestre":{pt:"fauna silvestre",en:"wildlife",es:"fauna silvestre"},
+ "aves silvestres":{pt:"aves silvestres",en:"wild birds",es:"aves silvestres"},
+ "peixes ornamentais":{pt:"peixes ornamentais",en:"ornamental fish",es:"peces ornamentales"},
+ "aves":{pt:"aves",en:"birds",es:"aves"},
+ "mamíferos":{pt:"mamíferos",en:"mammals",es:"mamíferos"},
+ "répteis":{pt:"répteis",en:"reptiles",es:"reptiles"},
+ "primatas":{pt:"primatas",en:"primates",es:"primates"},
+ "psitacídeos":{pt:"psitacídeos",en:"parrots and allies",es:"psitácidos"},
+ "derivados de fauna":{pt:"derivados de fauna",en:"wildlife derivatives",es:"derivados de fauna"}
+};
+function translatedFaunaGroup(group){const term=String(group).trim();return faunaVocabulary[term.toLowerCase()]?.[language]||term;}
 function keyAsScientific(label){return label===trans[language].species;}
 function addField(wrap,label,value){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");d.append(textNode("span",label),keyAsScientific(label)?appendScientific(document.createElement("strong"),String(value),String(value)):textNode("strong",String(value)));wrap.append(d);}
 function closeMapCard(){
@@ -154,7 +172,7 @@ function showDetail(r){
  if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
  if(Array.isArray(r.species_additional)&&r.species_additional.length){const h={pt:"Outros táxons registrados",en:"Other recorded taxa",es:"Otros taxones registrados"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
  const externalLinks=document.createElement("div");externalLinks.className="explorer-external-links";if(r.social_profile_url&&/^https:\/\//.test(r.social_profile_url)){const a=textNode("a",r.social_handle||"Instagram");a.href=r.social_profile_url;a.target="_blank";a.rel="noopener noreferrer";externalLinks.append(a);}
- if(Array.isArray(r.fauna_groups)&&r.fauna_groups.length){d.append(textNode("h4",{pt:"Grupos de fauna documentados",en:"Documented fauna groups",es:"Grupos de fauna documentados"}[language]));d.append(textNode("p",r.fauna_groups.join(" · ")));}
+ if(Array.isArray(r.fauna_groups)&&r.fauna_groups.length){d.append(textNode("h4",{pt:"Grupos de fauna documentados",en:"Documented fauna groups",es:"Grupos de fauna documentados"}[language]));d.append(textNode("p",r.fauna_groups.map(translatedFaunaGroup).join(" · ")));}
  appendLegalCard(d,r);
  if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
