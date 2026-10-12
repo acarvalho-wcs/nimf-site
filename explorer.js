@@ -377,9 +377,11 @@ function renderRasterMarkers(rows,fit=false){
 }
 function mapStyleUrl(){return "https://basemaps.cartocdn.com/gl/"+(mapColorMode==="dark"?"dark-matter":"positron")+"-gl-style/style.json";}
 function updateMapThemeButton(){
- const button=el("explorer-map-theme"),label=el("explorer-map-theme-label");
- if(button){button.setAttribute("aria-pressed",String(mapColorMode==="light"));button.title=mapColorMode==="dark"?"Mapa claro / Light map / Mapa claro":"Mapa escuro / Dark map / Mapa oscuro";}
- if(label)label.textContent=({pt:mapColorMode==="dark"?"Mapa claro":"Mapa escuro",en:mapColorMode==="dark"?"Light map":"Dark map",es:mapColorMode==="dark"?"Mapa claro":"Mapa oscuro"})[language];
+ const labels={pt:{dark:"Escuro",light:"Claro",name:"Cor do mapa"},en:{dark:"Dark",light:"White",name:"Map color"},es:{dark:"Oscuro",light:"Claro",name:"Color del mapa"}}[language];
+ const group=el("map-color-switch");if(group)group.setAttribute("aria-label",labels.name);
+ for(const [id,mode] of [["map-color-dark","dark"],["map-color-light","light"]]){
+  const button=el(id);if(button){button.textContent=labels[mode];button.setAttribute("aria-pressed",String(mapColorMode===mode));button.classList.toggle("is-active",mapColorMode===mode);}
+ }
  const host=el("explorer-map");if(host)host.dataset.mapColor=mapColorMode;
 }
 function setMapColorMode(color){
@@ -391,8 +393,7 @@ function setMapColorMode(color){
  }
  if(fallbackLayer)fallbackLayer.dataset.mapColor=color;
 }
-const mapThemeButton=el("explorer-map-theme");
-if(mapThemeButton)mapThemeButton.addEventListener("click",()=>setMapColorMode(mapColorMode==="dark"?"light":"dark"));
+for(const [id,mode] of [["map-color-dark","dark"],["map-color-light","light"]])el(id)?.addEventListener("click",()=>setMapColorMode(mode));
 function setupMap(){
  if(!fallbackLayer)initializeRasterFallback();
  if(mapReady||mapAttempted||!window.maplibregl)return;
