@@ -354,7 +354,7 @@ else{
 (function initializeUtilityPanels(){
  const container=document.getElementById("utility-panel-grid"),compare=document.getElementById("utility-compare");
  if(!container||!compare)return;
- const definitions=[["mine","my-contributions-panel","utility-open-mine"],["triage","admin-review","utility-open-triage"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
+ const definitions=[["exchange","information-exchange-panel","utility-open-exchange"],["mine","my-contributions-panel","utility-open-mine"],["triage","admin-review","utility-open-triage"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
  const open=new Set(), nodes=definitions.map(([key,id,buttonId])=>({key,node:document.getElementById(id),button:document.getElementById(buttonId)}));
  for(const entry of nodes){
   if(!entry.node||!entry.button)continue;
@@ -363,12 +363,12 @@ else{
   entry.node.classList.add("utility-managed");
   container.append(entry.node);
  }
- const labels={pt:{mine:"Minhas contribuições",triage:"Triagem",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{mine:"My contributions",triage:"Review queue",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{mine:"Mis contribuciones",triage:"Revisión",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
+ const labels={pt:{exchange:"Troca de informações",mine:"Minhas contribuições",triage:"Triagem",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{exchange:"Information exchange",mine:"My contributions",triage:"Review queue",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{exchange:"Intercambio de información",mine:"Mis contribuciones",triage:"Revisión",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
  const redraw=()=>{
   const lang=typeof locale==="string"&&labels[locale]?locale:"pt";
   for(const entry of nodes){
    if(!entry.node||!entry.button)continue;
-   const available=entry.key==="records"||entry.key==="mine"||entry.node.dataset.adminAvailable==="true";
+   const available=entry.key==="records"||entry.key==="mine"||entry.key==="exchange"||entry.node.dataset.adminAvailable==="true";
    entry.button.hidden=!available;
    if(!available)open.delete(entry.key);
    const expanded=available&&open.has(entry.key);
