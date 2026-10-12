@@ -50,6 +50,7 @@ function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","d
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
 function translate(){
  document.documentElement.lang=locale==="pt"?"pt-BR":locale;
+ refreshInterfaceThemeLabel();
   document.title="IWT Global Observatory | "+(locale==="pt"?"Área restrita":locale==="en"?"Restricted area":"Área restringida");
  const items={"waiting-kicker":"waitingKicker","side-title":"sideTitle","side-copy":"sideCopy","side-footer":"sideFooter","back-public":"back","auth-title":"authTitle","auth-subtitle":"authSubtitle","login-tab":"login","signup-tab":"signup","email-label":"email","password-label":"password","confirm-label":"confirm","forgot-password":"forgot","auth-note":"note","config-title":"configTitle","config-body":"configBody","refresh-access":"refresh","resend-verification":"resend","waiting-logout":"logout","private-title":"privateTitle","private-description":"privateDescription","private-logout":"logout","records-label":"recordsLabel","account-label":"account","account-status":"approved","records-title":"recordsTitle","records-subtitle":"recordsSubtitle","search-label":"search","col-title":"colTitle","col-type":"colType","col-source":"colSource","col-status":"colStatus","privacy-footer":"footer"};
  items["private-kicker"]="privateKicker";
@@ -265,15 +266,20 @@ function readyConfig(){
 }
 function busy(value){$("submit-button").disabled=value;}
 $("secure-language").addEventListener("change",e=>{locale=e.target.value;translate();});
+const interfaceThemeLabels={pt:{dark:"Escuro",light:"Claro",name:"Tema da interface"},en:{dark:"Dark",light:"White",name:"Interface theme"},es:{dark:"Oscuro",light:"Claro",name:"Tema de la interfaz"}};
 function refreshInterfaceThemeLabel(){
- const button=$("secure-theme");if(!button)return;
- const next=document.body.dataset.theme==="dark"?"White":"Dark";
- button.textContent=next;button.setAttribute("aria-label",next);button.setAttribute("title",next);
+ const mode=document.body.dataset.theme==="light"?"light":"dark";
+ const labels=interfaceThemeLabels[locale]||interfaceThemeLabels.pt;
+ const legacy=$("secure-theme");if(legacy){legacy.textContent=mode==="dark"?labels.light:labels.dark;legacy.setAttribute("aria-label",labels.name);}
+ for(const [id,value] of [["interface-theme-dark","dark"],["interface-theme-light","light"]]){
+  const button=$(id);if(button){button.textContent=labels[value];button.setAttribute("aria-pressed",String(mode===value));button.classList.toggle("is-active",mode===value);}
+ }
+ $("secure-theme-switch")?.setAttribute("aria-label",labels.name);
 }
-$("secure-theme").addEventListener("click",()=>{document.body.dataset.theme=document.body.dataset.theme==="dark"?"light":"dark";refreshInterfaceThemeLabel();});
+function setInterfaceTheme(mode){if(mode!=="dark"&&mode!=="light")return;document.body.dataset.theme=mode;refreshInterfaceThemeLabel();}
+$("secure-theme").addEventListener("click",()=>setInterfaceTheme(document.body.dataset.theme==="dark"?"light":"dark"));
+for(const [id,mode] of [["interface-theme-dark","dark"],["interface-theme-light","light"]])$(id)?.addEventListener("click",()=>setInterfaceTheme(mode));
 refreshInterfaceThemeLabel();
-$("map-toolbar-theme")?.addEventListener("change",event=>{const desired=event.target.value;if(desired!=="dark"&&desired!=="light")return;document.body.dataset.theme=desired;refreshInterfaceThemeLabel();});
-$("secure-theme")?.addEventListener("click",()=>{const selector=$("map-toolbar-theme");if(selector)selector.value=document.body.dataset.theme==="light"?"light":"dark";});
 $("login-tab").addEventListener("click",()=>switchMode("login"));
 $("signup-tab").addEventListener("click",()=>switchMode("signup"));
 $("record-search").addEventListener("input",drawRecords);
@@ -426,19 +432,19 @@ else{
  const panel=document.getElementById("map-filters-panel");
  const close=document.getElementById("map-filters-close");
  const language=document.getElementById("secure-language");
- const theme=document.getElementById("secure-theme");
+
  const top=document.querySelector(".secure-top-right");
  const langMount=document.getElementById("map-language-mount");
- const themeMount=document.getElementById("map-theme-mount");
+
  const map=document.querySelector(".explorer-map-wrap");
- if(!toggle||!panel||!close||!language||!theme||!top||!langMount||!themeMount||!map)return;
+ if(!toggle||!panel||!close||!language||!top||!langMount||!map)return;
  const labels={pt:{filter:"Filtros",heading:"Controles do mapa",lang:"Idioma",theme:"Tema da interface",close:"Fechar filtros"},en:{filter:"Filters",heading:"Map controls",lang:"Language",theme:"Interface theme",close:"Close filters"},es:{filter:"Filtros",heading:"Controles del mapa",lang:"Idioma",theme:"Tema de la interfaz",close:"Cerrar filtros"}};
  const moveControls=()=>{
   const visible=document.body.dataset.privateReady==="true"
    && !document.getElementById("dashboard-panel").hidden
    && !document.getElementById("dashboard-primary").hidden;
-  if(visible){langMount.append(language);themeMount.append(theme);}
-  else{top.append(language);top.append(theme);setOpen(false);}
+  if(visible){langMount.append(language);}
+  else{top.prepend(language);setOpen(false);}
  };
  function setOpen(open){
   const active=Boolean(open);
@@ -451,14 +457,10 @@ else{
   const l=labels[locale]||labels.pt;
   document.getElementById("map-filters-toggle-label").textContent=l.filter;
   document.getElementById("map-filters-heading").textContent=l.heading;
-  const toolbarTheme=document.getElementById("map-toolbar-theme");
-  if(toolbarTheme){toolbarTheme.value=document.body.dataset.theme==="light"?"light":"dark";toolbarTheme.setAttribute("aria-label",l.theme);}
-  const themeLabel=document.getElementById("map-toolbar-theme-label");if(themeLabel)themeLabel.textContent=l.theme;
   document.getElementById("map-language-label").textContent=l.lang;
-  document.getElementById("map-interface-theme-label").textContent=l.theme;
   close.setAttribute("aria-label",l.close);close.title=l.close;
-  theme.setAttribute("aria-label",l.theme);
   language.setAttribute("aria-label",l.lang);
+  refreshInterfaceThemeLabel();
  };
  toggle.addEventListener("click",()=>{setOpen(panel.hidden);if(!panel.hidden)language.focus({preventScroll:true});});
  close.addEventListener("click",()=>{setOpen(false);toggle.focus({preventScroll:true});});
