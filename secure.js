@@ -145,7 +145,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=filterfit27");
+   const mod=await import("./explorer.js?v=filterload28");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
