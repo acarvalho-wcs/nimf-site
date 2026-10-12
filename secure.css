@@ -286,3 +286,20 @@ body[data-theme="dark"] .explorer-layers-panel .explorer-layers-head,body[data-t
  .secure-main .mobile-login-institutional{margin:8px auto 26px;max-width:580px;width:100%;text-align:center}
  .secure-main .mobile-login-institutional .secure-wcs-logo-card{margin:12px auto}
 }
+
+/* Restricted administrative dock: all three workspaces initially collapsed. */
+.utility-panel-workspace{margin:20px 0;border:1px solid var(--line);border-radius:13px;background:var(--surface);padding:14px;min-width:0}
+.utility-panel-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.utility-panel-button{border:1px solid var(--line)!important;border-radius:9px!important;background:var(--surface2)!important;color:var(--text)!important;min-height:40px;padding:9px 13px;font-size:12px;font-weight:750}
+.utility-panel-button.is-active{border-color:var(--accent)!important;box-shadow:inset 0 0 0 1px var(--accent);color:var(--text)!important}
+.utility-panel-compare{display:inline-flex;align-items:center;gap:7px;margin-left:auto;color:var(--muted);font-size:12px;font-weight:650;cursor:pointer}
+.utility-panel-compare input{accent-color:var(--accent);width:17px;height:17px}
+.utility-panel-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:0;min-width:0}
+.utility-panel-grid:has(.utility-managed[data-collapsed="false"]){margin-top:14px}
+.utility-panel-grid.utility-compare-enabled{grid-template-columns:repeat(var(--utility-count,1),minmax(0,1fr))}
+.utility-panel-grid>.utility-managed[data-collapsed="true"]{display:none!important}
+.utility-panel-grid>.utility-managed[data-collapsed="false"]{display:block;min-width:0;width:100%;max-width:none;margin:0;overflow-wrap:anywhere}
+.utility-panel-grid .tip-form{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.utility-panel-grid .contributions-columns{grid-template-columns:1fr}
+.utility-panel-grid .table-wrap{max-width:100%;overflow:auto}
+@media(max-width:880px){.utility-panel-grid.utility-compare-enabled{grid-template-columns:1fr}.utility-panel-compare{margin-left:0}}
