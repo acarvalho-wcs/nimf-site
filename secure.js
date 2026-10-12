@@ -54,12 +54,12 @@ function translate(){
  for(const [id,key] of Object.entries(items))$(id).textContent=t(key);
  $("record-search").placeholder=t("searchPlaceholder");
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
- if(intakeModule)intakeModule.setIntakeLanguage(locale);
-  if(mapModule)mapModule.setMapPointLanguage(locale);
+ if(intakeModule){try{intakeModule.setIntakeLanguage(locale);}catch(e){console.warn("Intake locale update failed",e);}}
+  if(mapModule){try{mapModule.setMapPointLanguage(locale);}catch(e){console.warn("Map admin locale update failed",e);}}
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
- if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule)explorerModule.setExplorerLanguage(locale);} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels(); if(window.__nimfMapFilterTranslate)window.__nimfMapFilterTranslate();
+ if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule){try{explorerModule.setExplorerLanguage(locale);}catch(e){console.warn("Explorer locale update failed",e);}}} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels(); if(window.__nimfMapFilterTranslate)window.__nimfMapFilterTranslate();
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
