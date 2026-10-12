@@ -212,6 +212,7 @@ function initializeRasterFallback(){
  const at=textNode("div","","nimf-raster-coordinates");
  layer.append(tiles,pinsLayer,controls,credit,at);host.append(layer);
  fallbackLayer=layer;fallbackTiles=tiles;fallbackPins=pinsLayer;
+ host.dataset.activeEngine="raster";
  let gesture=null;
  layer.addEventListener("pointerdown",event=>{
   if(event.target.closest("button"))return;
@@ -354,6 +355,8 @@ function setupMap(){
   loadTimedOut=true;
   if(map){try{map.remove();}catch(e){}map=null;}
   glHost.remove();fallbackLayer.style.display="";
+  el("explorer-map").dataset.activeEngine="raster";
+  renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
  };
  try{
   map=new window.maplibregl.Map({
@@ -364,11 +367,20 @@ function setupMap(){
   });
   map.addControl(new window.maplibregl.NavigationControl({showCompass:false}),"top-right");
   map.on("load",()=>{
-   if(loadTimedOut)return;mapLoaded=true;mapReady=true;
-   glHost.style.opacity="1";glHost.removeAttribute("aria-hidden");
-   fallbackLayer.style.display="none";
-   drawMarkers(dataset.filter(matches).filter(r=>coords(r)));
-   requestAnimationFrame(()=>map.resize());
+   if(loadTimedOut)return;
+   mapLoaded=true;mapReady=true;
+   // The user may filter while the WebGL engine loads. Always use the current
+   // filtered results rather than the initial global camera.
+   map.resize();
+   drawMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
+   requestAnimationFrame(()=>{
+    if(!mapReady||!mapLoaded||loadTimedOut)return;
+    map.resize();
+    drawMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
+    glHost.style.opacity="1";glHost.removeAttribute("aria-hidden");
+    fallbackLayer.style.display="none";
+    el("explorer-map").dataset.activeEngine="maplibre";
+   });
   });
   map.on("error",()=>{if(!mapLoaded)fail();});
   setTimeout(()=>{if(!mapLoaded)fail();},10000);
@@ -388,6 +400,12 @@ function drawMarkers(rows,fit=false){
  }
  if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
  else if(fit && rows.length>1){map.stop();map.fitBounds(bounds,{padding:75,maxZoom:8,duration:0});}
+ // Record the actual on-screen camera for functional verification.
+ const mapHost=el("explorer-map"),center=map.getCenter();
+ mapHost.dataset.centerLongitude=String(center.lng);
+ mapHost.dataset.centerLatitude=String(center.lat);
+ mapHost.dataset.zoom=String(map.getZoom());
+ mapHost.dataset.mappedCount=String(rows.length);
  // With zero mappable records, remove the pins without moving to a fake area.
  requestAnimationFrame(()=>map.resize());
 }
