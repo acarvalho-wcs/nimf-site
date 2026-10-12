@@ -78,7 +78,7 @@ function setupSpeciesPicker(){
 }
 function matchesOtherFilters(r){
  const term=normalize(el("explorer-search").value);
- if(term && !(["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es","social_handle"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[]),...(r.species_aliases||[])].some(v=>normalize(v).includes(term))))return false;
+ if(term && !(["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es","social_handle"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[]),...(r.species_aliases||[]),...(r.fauna_groups||[])].some(v=>normalize(v).includes(term))))return false;
  return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
 }
 function matches(r){
@@ -153,6 +153,7 @@ function showDetail(r){
  if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
  if(Array.isArray(r.species_additional)&&r.species_additional.length){const h={pt:"Outros táxons registrados",en:"Other recorded taxa",es:"Otros taxones registrados"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
  const externalLinks=document.createElement("div");externalLinks.className="explorer-external-links";if(r.social_profile_url&&/^https:\/\//.test(r.social_profile_url)){const a=textNode("a",r.social_handle||"Instagram");a.href=r.social_profile_url;a.target="_blank";a.rel="noopener noreferrer";externalLinks.append(a);}
+ if(Array.isArray(r.fauna_groups)&&r.fauna_groups.length){d.append(textNode("h4",{pt:"Grupos de fauna documentados",en:"Documented fauna groups",es:"Grupos de fauna documentados"}[language]));d.append(textNode("p",r.fauna_groups.join(" · ")));}
  appendLegalCard(d,r);
  if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
