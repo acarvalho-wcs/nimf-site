@@ -346,24 +346,27 @@ function renderRasterMarkers(rows,fit=false){
 }
 function setupMap(){
  if(!fallbackLayer)initializeRasterFallback();
- if(mapReady||mapAttempted||!window.maplibregl||!window.maplibregl.supported())return;
+ if(mapReady||mapAttempted||!window.maplibregl)return;
+ if(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported()){el("explorer-map").dataset.mapError="webgl-unavailable";return;}
  mapAttempted=true;
  const host=el("explorer-map"),glHost=document.createElement("div");
  glHost.className="nimf-gl-map";glHost.style.opacity="0";glHost.setAttribute("aria-hidden","true");
  host.append(glHost);
  let loadTimedOut=false;
+ let alternateStyleAttempted=false;
+ const fallbackWebglStyle={version:8,sources:{osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors"}},layers:[{id:"osm-raster",type:"raster",source:"osm"}]};
  const fail=()=>{
   if(mapLoaded || loadTimedOut)return;
   loadTimedOut=true;
   if(map){try{map.remove();}catch(e){}map=null;}
   glHost.remove();fallbackLayer.style.display="";
-  el("explorer-map").dataset.activeEngine="raster";
+  el("explorer-map").dataset.activeEngine="raster";el("explorer-map").dataset.mapError="webgl-load-failed";
   renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
  };
  try{
   map=new window.maplibregl.Map({
    container:glHost,
-   style:"https://tiles.openfreemap.org/styles/liberty",
+   style:"https://tiles.openfreemap.org/styles/liberty/style.json",
    center:[fallbackCenter[0],fallbackCenter[1]],zoom:fallbackZoom,
    attributionControl:true,cooperativeGestures:true,projection:{type:projectionMode==="globe"?"globe":"mercator"}
   });
@@ -372,6 +375,7 @@ function setupMap(){
    if(loadTimedOut)return;
    mapLoaded=true;mapReady=true;
    applyProjection(false);
+   el("explorer-map").dataset.mapError="";
    // The user may filter while the WebGL engine loads. Always use the current
    // filtered results rather than the initial global camera.
    map.resize();
@@ -385,7 +389,11 @@ function setupMap(){
     el("explorer-map").dataset.activeEngine="maplibre";
    });
   });
-  map.on("error",()=>{if(!mapLoaded)fail();});
+  map.on("error",()=>{
+   if(mapLoaded||loadTimedOut)return;
+   if(!alternateStyleAttempted){alternateStyleAttempted=true;try{map.setStyle(fallbackWebglStyle);return;}catch(e){}}
+   fail();
+  });
   setTimeout(()=>{if(!mapLoaded)fail();},10000);
  }catch(e){fail();}
 }
@@ -395,7 +403,8 @@ function applyProjection(fit=true){
  if(globeButton){globeButton.classList.toggle("is-active",projectionMode==="globe");globeButton.setAttribute("aria-pressed",String(projectionMode==="globe"));}
  const host=el("explorer-map");host.dataset.projectionMode=projectionMode;
  if(mapReady&&mapLoaded&&map){
-  try{map.setProjection({type:projectionMode==="globe"?"globe":"mercator"});}catch(error){
+  try{map.setProjection({type:projectionMode==="globe"?"globe":"mercator"});host.dataset.projectionApplied=projectionMode;}catch(error){
+   host.dataset.mapError="projection-not-supported";
    if(projectionMode==="globe"){projectionMode="map";applyProjection(false);}
   }
   if(fit)drawMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
@@ -405,6 +414,7 @@ function applyProjection(fit=true){
 function setProjectionMode(mode){
  if(mode!=="map"&&mode!=="globe")return;
  projectionMode=mode;applyProjection(true);
+ if(!mapReady&&window.maplibregl&&!mapAttempted)setupMap();
  if(!mapReady&&mode==="globe"){
   const notice=el("explorer-map-notice");
   if(notice)notice.textContent={pt:"GLOBE requer WebGL. MAP 2D permanece disponível enquanto o mapa 3D carrega ou caso o navegador não ofereça suporte.",en:"GLOBE requires WebGL. MAP 2D remains available while 3D loads or if the browser cannot support it.",es:"GLOBE requiere WebGL. MAP 2D sigue disponible mientras carga el mapa 3D o si el navegador no lo admite."}[language];
