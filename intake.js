@@ -26,7 +26,7 @@ function summary(item,canEdit){
  if(item.details)block.append(node("p",item.details)); // User-authored evidence remains verbatim.
  if(item.review_note)block.append(node("p",T.update+": "+item.review_note));
  if(canEdit){
-  const email=authorEmails.get(item.owner_uid);
+  const email=item.owner_email||authorEmails.get(item.owner_uid)||(item.owner_uid===user?.uid?user.email:"");
   const contact=node("p",T.author+": ");contact.className="submission-author-email";
   if(email){const a=node("a",email);a.href="mailto:"+encodeURIComponent(email).replace(/%40/g,"@");contact.append(a);}else contact.append(node("span",T.unknownAuthor));
   block.append(contact);
@@ -112,7 +112,7 @@ export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromot
   ev.preventDefault();if(!user)return;
   const send=$("tip-submit");send.disabled=true;feedback("");
   try{
-   const values={owner_uid:user.uid,type:$("tip-type").value,title:$("tip-title").value.trim(),url:$("tip-url").value.trim(),species:$("tip-species").value.trim(),location:$("tip-location").value.trim(),details:$("tip-details").value.trim(),status:"received",review_note:"",created_at:serverTimestamp(),updated_at:serverTimestamp()};
+   const values={owner_uid:user.uid,owner_email:user.email||"",type:$("tip-type").value,title:$("tip-title").value.trim(),url:$("tip-url").value.trim(),species:$("tip-species").value.trim(),location:$("tip-location").value.trim(),details:$("tip-details").value.trim(),status:"received",review_note:"",created_at:serverTimestamp(),updated_at:serverTimestamp()};
    if(!validHttps(values.url) && !(["fair","physical_market","other"].includes(values.type)&&values.url===""))throw new Error("invalid url");
    await addDoc(collection(db,"submissions"),values);
    $("tip-form").reset();feedback("sent");
