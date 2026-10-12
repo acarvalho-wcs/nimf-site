@@ -26,6 +26,70 @@ function rebuildDataset(){
 }
 const controls={species:"scientific_name",state:"state",city:"municipality",source:"source",status:"status",product:"product_type"};
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
+
+/* Search works across structured evidence, independent of the display language.
+   Match at word starts so "aves" cannot accidentally match "chaves". */
+const normalizeSearch=value=>String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+const searchFields=[
+ "title","title_pt","title_en","title_es","name","scientific_name","scientific_names",
+ "genus","taxon","taxa","species","species_name","species_names","species_list",
+ "species_observed","species_offered","species_additional","species_aliases",
+ "common_name","common_name_pt","common_name_en","common_name_es","common_names",
+ "fauna_group","fauna_groups","animal_group","animal_groups","wildlife_group",
+ "fauna_class","taxonomic_class","class","product_type","product_category",
+ "country","country_name","country_pt","country_en","country_es","country_code",
+ "country_iso2","country_iso3","origin_country","destination_country",
+ "state","state_name","region","municipality","city","location","location_name",
+ "route","route_text","origin","destination","source","source_url","status",
+ "description","description_pt","description_en","description_es","notes",
+ "social_handle","keywords","tags"
+];
+const countryFields=["country","country_name","country_pt","country_en","country_es","country_code","country_iso2","country_iso3","origin_country","destination_country"];
+const synonymGroups=[
+ ["aves","ave","bird","birds","avian","avifauna","passaros","passaro","pajaros","pajaro","oiseau","oiseaux"],
+ ["mamiferos","mamifero","mammals","mammal","mamiferos"],
+ ["repteis","reptil","reptiles","reptile","reptiles"],
+ ["peixes","peixe","fish","fishes","peces","pez"],
+ ["tubaroes","tubarao","sharks","shark","tiburones","tiburon"]
+];
+const searchIndexCache=new WeakMap();
+function addSearchValues(value,parts,depth=0){
+ if(typeof value==="string"){
+  const normalized=normalizeSearch(value);
+  if(normalized)parts.push(normalized);
+ }else if(depth<4&&Array.isArray(value)){
+  for(const entry of value.slice(0,300))addSearchValues(entry,parts,depth+1);
+ }else if(depth<4&&value&&typeof value==="object"){
+  for(const [key,entry] of Object.entries(value).slice(0,120)){
+   // Timestamp / numeric metadata is not a free-text search field.
+   if(!key.startsWith("_"))addSearchValues(entry,parts,depth+1);
+  }
+ }
+}
+function searchableRecordParts(record){
+ const cached=searchIndexCache.get(record);if(cached)return cached;
+ const parts=[];
+ for(const field of searchFields)addSearchValues(record[field],parts);
+ const countryNames=countryFields.flatMap(field=>{
+  const list=[];addSearchValues(record[field],list);return list;
+ });
+ const brazil=/\b(?:brasil|brazil|brazilian|brasileiro|brasileira|brasileno|brasilena)\b/;
+ const structuredBrazil=countryNames.some(value=>brazil.test(value)||value==="br"||value==="bra"||value.startsWith("br ")||value.startsWith("bra "));
+ if(structuredBrazil||parts.some(value=>brazil.test(value)))parts.push("brasil brazil brazilian brasileiro brasileira br bra");
+ for(const names of synonymGroups){
+  if(parts.some(value=>names.some(name=>(" "+value+" ").includes(" "+name+" ")))){
+   parts.push(names.join(" "));
+  }
+ }
+ searchIndexCache.set(record,parts);
+ return parts;
+}
+function matchesFreeSearch(record,rawTerm){
+ const term=normalizeSearch(rawTerm);
+ if(!term)return true;
+ return searchableRecordParts(record).some(value=>(" "+value).includes(" "+term));
+}
+
 const safe=r=>r && typeof r==="object"&&!Array.isArray(r);
 const inclusionDate=value=>{
  if(!value)return 0;
@@ -91,9 +155,8 @@ function setupSpeciesPicker(){
  });
 }
 function matchesOtherFilters(r){
- const term=normalize(el("explorer-search").value);
- if(term && !(["title","title_pt","title_en","title_es","scientific_name","source","source_url","state","municipality","city","country","country_name","route","route_text","origin","destination","location","product_type","status","description_pt","description_en","description_es","social_handle"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[]),...(r.species_aliases||[]),...(r.fauna_groups||[])].some(v=>normalize(v).includes(term))))return false;
- return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
+ if(!matchesFreeSearch(r,el("explorer-search").value))return false;
+ return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_additional)?r.species_additional:[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
 }
 function matches(r){
  return activeLayers().has(r.layer_type||"advertisement")&&matchesOtherFilters(r);
