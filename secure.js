@@ -145,7 +145,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=darkmap32");
+   const mod=await import("./explorer.js?v=mapthemes33");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
@@ -315,3 +315,31 @@ else{
   },()=>show("auth-panel"));
  }catch(e){show("config-panel");window.__nimfAppStarted=true;}
 }
+
+/* Mobile sign-in: show institutional disclaimer and WCS identity after the login card. */
+(function arrangeMobileLoginInstitutional(){
+ const disclaimer=document.querySelector(".secure-side-content.secure-disclaimer");
+ const institutional=document.querySelector(".secure-side-bottom");
+ const authCard=document.getElementById("auth-panel");
+ if(!disclaimer||!institutional||!authCard)return;
+ const a=document.createComment("sidebar disclaimer location"),b=document.createComment("sidebar institutional location");
+ disclaimer.before(a);institutional.before(b);
+ const mq=window.matchMedia("(max-width: 920px)");
+ const sync=()=>{
+  const move=mq.matches && !authCard.hidden && document.body.dataset.privateReady!=="true";
+  if(move){
+   authCard.after(disclaimer);
+   disclaimer.after(institutional);
+   disclaimer.classList.add("mobile-login-disclaimer");
+   institutional.classList.add("mobile-login-institutional");
+  }else{
+   a.after(disclaimer);b.after(institutional);
+   disclaimer.classList.remove("mobile-login-disclaimer");
+   institutional.classList.remove("mobile-login-institutional");
+  }
+ };
+ mq.addEventListener("change",sync);
+ new MutationObserver(sync).observe(authCard,{attributes:true,attributeFilter:["hidden"]});
+ new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:["data-private-ready"]});
+ sync();
+})();
