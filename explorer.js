@@ -30,7 +30,7 @@ function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitu
 function options(filtered=dataset){
  for(const [id,key] of Object.entries(controls)){
   const element=el("explorer-"+id),old=element.value;
-  let values=[...new Set(filtered.flatMap(r=>id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_reported_additional)?r.species_reported_additional:[])]:[r[key]]).filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))].sort((a,b)=>a.localeCompare(b));
+  let values=[...new Set(filtered.flatMap(r=>id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_additional)?r.species_additional:[])]:[r[key]]).filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))].sort((a,b)=>a.localeCompare(b));
   element.replaceChildren(new Option(trans[language].all,""));
   for(const value of values){const caption=(id==="status"||id==="product")?localizedField({[key]:value},key,language):value.replaceAll("_"," ");element.add(new Option(caption,value));}
   element.value=values.includes(old)?old:"";
@@ -77,8 +77,8 @@ function setupSpeciesPicker(){
 }
 function matchesOtherFilters(r){
  const term=normalize(el("explorer-search").value);
- if(term && !(["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es","social_handle"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_reported_additional||[]),...(r.species_aliases||[])].some(v=>normalize(v).includes(term))))return false;
- return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_reported_additional||[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
+ if(term && !(["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es","social_handle"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[]),...(r.species_aliases||[])].some(v=>normalize(v).includes(term))))return false;
+ return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_additional||[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
 }
 function matches(r){
  return activeLayers().has(r.layer_type||"advertisement")&&matchesOtherFilters(r);
@@ -127,6 +127,7 @@ function showDetail(r){
  const category=trans[language].layerNames[r.layer_type||"advertisement"];
  if(category)d.append(textNode("div",category,"explorer-map-card-category"));
  const info=document.createElement("div");info.className="explorer-detail-grid";
+ const associated=[...(r.species_observed||[]),...(r.species_additional||[]),...(r.species_offered||[])];
  for(const [key,label] of [
    ["scientific_name",trans[language].species],
    ["source",trans[language].source],
@@ -136,7 +137,7 @@ function showDetail(r){
    ["product_type",trans[language].product],
    ["status",trans[language].review],
    ["location_precision",trans[language].precision]
- ])addField(info,label,localizedField(r,key,language));
+ ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,localizedField(r,key,language));}
  if(Number.isFinite(r.advertised_price)){
   try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency||"BRL"}).format(r.advertised_price));}catch{}
  }
@@ -149,7 +150,7 @@ function showDetail(r){
   d.append(appendScientific(document.createElement("p"),context.text,r.scientific_name));
  }
  if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
- if(Array.isArray(r.species_reported_additional)&&r.species_reported_additional.length){const h={pt:"Outros táxons mencionados em relatórios anteriores",en:"Additional taxa mentioned in earlier reports",es:"Otros taxones mencionados en informes anteriores"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_reported_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
+ if(Array.isArray(r.species_additional)&&r.species_additional.length){const h={pt:"Outros táxons registrados",en:"Other recorded taxa",es:"Otros taxones registrados"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
  if(r.social_profile_url&&/^https:\/\//.test(r.social_profile_url)){const a=textNode("a",r.social_handle||"Instagram");a.href=r.social_profile_url;a.target="_blank";a.rel="noopener noreferrer";d.append(a);}
  appendLegalCard(d,r);
  if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
