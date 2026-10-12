@@ -373,3 +373,20 @@ body[data-theme="light"] .map-filters-panel .explorer-filters>label{background:#
 .map-toolbar-primary .map-fullscreen-shortcut{margin-left:auto}
 .explorer-map-wrap.is-fullscreen .explorer-map-toolbar{width:calc(100% - 24px);max-width:calc(100% - 24px)}
 @media(max-width:640px){.map-toolbar-primary .map-fullscreen-shortcut{margin-left:0}.explorer-map-toolbar>.map-toolbar-primary{gap:6px}.map-toolbar-primary .map-toolbar-theme{padding:6px 8px;font-size:11px}.map-toolbar-primary .map-toolbar-theme select{min-width:55px}}
+
+/* Two independent segmented theme controls: interface in the header, basemap beside fullscreen. */
+.secure-top-right{align-items:center}
+.secure-top-right .interface-theme-switch{display:none;box-sizing:border-box;flex:0 0 auto;min-width:0}
+body[data-private-ready="true"] .secure-top-right .interface-theme-switch{display:inline-flex}
+body[data-private-ready="true"] .secure-top-right #secure-theme{display:none!important}
+.secure-top-right .interface-theme-switch button,.map-toolbar-primary .map-color-switch button{font:inherit;font-size:11px;font-weight:800;letter-spacing:.03em;min-height:33px;padding:6px 11px;border:0}
+.map-toolbar-primary .map-color-switch{flex:0 0 auto;min-width:0;box-sizing:border-box}
+.map-toolbar-primary .map-color-switch button{min-width:60px}
+.map-toolbar-primary .map-fullscreen-shortcut{margin-left:0}
+.map-toolbar-primary .map-color-switch{margin-left:auto}
+@media(max-width:640px){
+ .secure-top-right .interface-theme-switch{flex:0 0 auto;min-height:0}
+ .secure-top-right .interface-theme-switch button{padding:6px 9px}
+ .map-toolbar-primary .map-color-switch{margin-left:0}
+ .map-toolbar-primary .map-color-switch button{min-width:48px;padding:5px 8px}
+}
