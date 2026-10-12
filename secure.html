@@ -7,8 +7,8 @@
  <meta name="description" content="Investigação de Mercados de Fauna — seção de acesso autorizado do Observatório Global de Tráfico de Animais">
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
- <link rel="stylesheet" href="./secure.css?v=mobile40">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=mobile40">
+ <link rel="stylesheet" href="./secure.css?v=filter42">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=filter42">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
@@ -27,7 +27,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=exchange41"></script>
+ <script type="module" src="./secure.js?v=filter42"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -92,7 +92,7 @@
       <p id="auth-note" class="secure-small">Criar uma conta não concede acesso aos dados. É necessária aprovação do administrador.</p>
     </section>
     <section id="waiting-panel" class="secure-card" hidden>
-      <span class="secure-label">ACCESS CONTROL</span><div class="waiting-symbol">◇</div>
+      <span class="secure-label" id="waiting-kicker">CONTROLE DE ACESSO</span><div class="waiting-symbol">◇</div>
       <h2 id="waiting-title">Verificação pendente</h2>
       <p id="waiting-text">Confirme seu endereço pelo e-mail recebido. Depois, o administrador poderá aprovar o acesso.</p>
       <p id="waiting-address" class="secure-email"></p>
@@ -129,16 +129,7 @@
        <div><span id="account-label">Conta</span><strong id="account-status">Autorizada</strong><small id="account-email" class="account-identity"></small><small id="account-role" class="account-identity"></small></div>
       </div>
       <section class="explorer" aria-label="Market intelligence explorer">
-        <div class="explorer-head"><div><span class="secure-label" id="explorer-kicker">EXPLORADOR GEOGRÁFICO</span><h3 id="explorer-title">Mercados de fauna: mapa e filtros</h3><p id="explorer-desc">Mapeamento aproximado, não a localização de vendedores. Use os filtros combinados para explorar os anúncios.</p></div><button type="button" id="explorer-reset" class="secure-secondary">Limpar filtros</button></div>
-        <div class="explorer-filters">
-          <label><span id="explorer-search-label">Busca livre</span><input type="search" id="explorer-search" placeholder="Espécie, fonte, cidade, produto..."></label>
-          <label class="species-filter"><span id="explorer-species-label">Espécie</span><select id="explorer-species" class="visually-hidden" aria-label="Espécie"><option value="">Todas</option></select><button type="button" id="species-trigger" class="species-trigger" aria-haspopup="listbox" aria-expanded="false">Todas</button><div id="species-menu" class="species-menu" role="listbox" hidden></div></label>
-          <label><span id="explorer-state-label">Estado / região</span><select id="explorer-state"><option value="">Todos</option></select></label>
-          <label><span id="explorer-city-label">Município</span><select id="explorer-city"><option value="">Todos</option></select></label>
-          <label><span id="explorer-source-label">Fonte</span><select id="explorer-source"><option value="">Todas</option></select></label>
-          <label><span id="explorer-status-label">Verificação</span><select id="explorer-status"><option value="">Todas</option></select></label>
-          <label><span id="explorer-product-label">Produto</span><select id="explorer-product"><option value="">Todos</option></select></label>
-        </div>
+        <div class="explorer-head"><div><span class="secure-label" id="explorer-kicker">EXPLORADOR GEOGRÁFICO</span><h3 id="explorer-title">Mercados de fauna: mapa e filtros</h3><p id="explorer-desc">Mapeamento aproximado, não a localização de vendedores. Use os filtros combinados para explorar os anúncios.</p></div></div>
         <div class="explorer-summary"><strong id="explorer-count">0</strong><span id="explorer-count-label">registros correspondentes</span><span id="explorer-map-count">0 no mapa</span><span id="explorer-unmapped-count">0 sem localização mapeável</span></div>
         <div class="explorer-layout">
           <div class="explorer-map-wrap">
@@ -149,6 +140,16 @@
                   <strong id="map-filters-heading">Controles do mapa</strong>
                   <button id="map-filters-close" type="button" aria-label="Fechar filtros" title="Fechar filtros">×</button>
                 </div>
+        <div class="explorer-filters" id="explorer-filter-grid">
+          <label class="search-records-box"><span id="explorer-search-label">BUSCAR REGISTROS</span><input type="search" id="explorer-search" placeholder="Buscar espécie, local, rota, país, termo..." autocomplete="off"><span class="map-filter-results-count" id="map-filter-results-count" role="status" aria-live="polite">0 registros encontrados</span></label>
+          <label class="species-filter"><span id="explorer-species-label">Espécie</span><select id="explorer-species" class="visually-hidden" aria-label="Espécie"><option value="">Todas</option></select><button type="button" id="species-trigger" class="species-trigger" aria-haspopup="listbox" aria-expanded="false">Todas</button><div id="species-menu" class="species-menu" role="listbox" hidden></div></label>
+          <label><span id="explorer-state-label">Estado / região</span><select id="explorer-state"><option value="">Todos</option></select></label>
+          <label><span id="explorer-city-label">Município</span><select id="explorer-city"><option value="">Todos</option></select></label>
+          <label><span id="explorer-source-label">Fonte</span><select id="explorer-source"><option value="">Todas</option></select></label>
+          <label><span id="explorer-status-label">Verificação</span><select id="explorer-status"><option value="">Todas</option></select></label>
+          <label><span id="explorer-product-label">Produto</span><select id="explorer-product"><option value="">Todos</option></select></label>
+        </div>
+                <div class="map-filters-reset-row"><button type="button" id="explorer-reset" class="secure-secondary">Limpar filtros</button></div>
                 <div class="map-filters-actions">
                   <div class="map-setting"><label id="map-language-label" for="secure-language">Idioma</label><div id="map-language-mount" class="map-setting-mount"></div></div>
                   <div class="map-setting"><span id="map-interface-theme-label">Tema da interface</span><div id="map-theme-mount" class="map-setting-mount"></div></div>
@@ -193,6 +194,7 @@
        </form>
        <section id="my-contributions-panel" class="my-contributions-panel" data-collapsed="true"><h3>Minhas contribuições</h3><p class="secure-small">Acompanhe o status de cada envio. As notas exibidas aqui são destinadas ao autor.</p><div id="my-tips" class="tip-list"></div></section>
        <section id="admin-review" hidden><h3>Triagem administrativa</h3><p class="secure-small">Avalie os registros recebidos; ações serão comunicadas ao autor.</p><div id="admin-tips" class="tip-list"></div></section>
+       <section id="admin-history" hidden><h3 id="admin-history-title">Histórico de triagens</h3><p id="admin-history-description" class="secure-small">Casos concluídos ou encerrados, preservados para consulta e acompanhamento.</p><div id="admin-history-tips" class="tip-list"></div></section>
         <section id="admin-map-panel" class="admin-map-panel" hidden>
           <div class="explorer-head"><div><span class="secure-label" id="admin-map-kicker">INVESTIGAÇÃO DE MERCADOS DE FAUNA / MAPA REVISADO</span><h3 id="admin-map-title">Cadastro administrativo de camadas</h3><p id="admin-map-help">Publique apenas informações corroboradas. Não inclua nomes ou endereços particulares. Pontos publicados serão visíveis aos usuários autorizados.</p></div></div>
           <form id="admin-map-form" class="tip-form">
@@ -220,6 +222,7 @@
         <button id="utility-open-exchange" type="button" class="secure-secondary utility-panel-button" aria-controls="information-exchange-panel" aria-expanded="false">Troca de informações <span aria-hidden="true">▾</span></button>
         <button id="utility-open-mine" type="button" class="secure-secondary utility-panel-button" aria-controls="my-contributions-panel" aria-expanded="false">Minhas contribuições <span aria-hidden="true">▾</span></button>
         <button id="utility-open-triage" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-review" aria-expanded="false" hidden>Triagem <span aria-hidden="true">▾</span></button>
+        <button id="utility-open-history" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-history" aria-expanded="false" hidden>Histórico de triagens <span aria-hidden="true">▾</span></button>
         <button id="utility-open-layers" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-map-panel" aria-expanded="false" hidden>Cadastro de camadas <span aria-hidden="true">▾</span></button>
         <button id="utility-open-records" type="button" class="secure-secondary utility-panel-button" aria-controls="private-records-panel" aria-expanded="false">Registros privados <span aria-hidden="true">▾</span></button>
         <label class="utility-panel-compare"><input type="checkbox" id="utility-compare"> <span id="utility-compare-label">Comparar lado a lado</span></label>
