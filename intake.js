@@ -1,7 +1,7 @@
 import { collection, query, where, limit, onSnapshot, addDoc, doc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { useLang } from "./record-locale.js";
 let db=null,user=null,admin=false,started=false,unsubOwn=null,unsubAdmin=null,language="pt";
-let ownItems=[],adminItems=[],feedbackKey="",promote=null;
+let ownItems=[],adminItems=[],feedbackKey="",promote=null,authorEmails=new Map(),unsubContacts=null;
 const $=id=>document.getElementById(id);
 const states=["received","triage","checking","investigating","resolved","closed"];
 const I={
@@ -9,6 +9,7 @@ const I={
  en:{kicker:"INFORMATION EXCHANGE",heading:"Investigation contributions",intro:"Submit links and source information for review. Only you and authorized administrators can access your submission. Do not include unnecessary personal information.",type:"Information type",types:["Platform / website","Wildlife listing","Trading group or channel","Open-air market","Physical trading location under investigation","Other lead"],promote:"Prepare reviewed map point",urlGuidance:"Link optional for fairs, physical locations and other leads; avoid private addresses.",title:"Title / subject",url:"Reference link (HTTPS)",species:"Species (if known)",location:"Reported location",details:"Factual description",send:"Submit for review",mine:"My contributions",mineDesc:"Track the status of your submissions. Notes are intended for the contributor.",admin:"Administrative review",adminDesc:"Review submitted leads; decisions are visible to the contributor.",none:"No contributions submitted yet.",noneAdmin:"No submissions pending review.",open:"Open reference ↗",update:"Update",note:"Progress note visible to the contributor",save:"Record progress",errUpdate:"Could not update the status. Check Firestore permissions.",invalid:"Could not submit. Check the HTTPS link and access permissions.",sent:"Submitted for review.",errOwn:"Could not load your contributions. Check access rules.",errAdmin:"Could not load the administrative review queue.",untitled:"Untitled",example:"e.g. Offer involving a controlled species",specPlaceholder:"Scientific or common name",locationPlaceholder:"Country, state, municipality",detailsPlaceholder:"Describe what the source shows, indicate uncertainty and avoid unverified allegations.",states:["Received","In triage","Under verification","Investigation started","Resolved","Closed"]},
  es:{kicker:"INTERCAMBIO DE INFORMACIÓN",heading:"Contribuciones para investigación",intro:"Envíe enlaces e información para evaluación. Solo usted y los administradores autorizados pueden consultar su contribución. No incluya datos personales innecesarios.",type:"Tipo de información",types:["Plataforma / sitio web","Anuncio de fauna","Grupo o canal de comercio","Feria libre","Punto de comercio presencial bajo investigación","Otro indicio"],promote:"Preparar punto para el mapa",urlGuidance:"Enlace opcional para ferias, comercio presencial u otros indicios; evite direcciones privadas.",title:"Título / asunto",url:"Enlace de referencia (HTTPS)",species:"Especie (si se conoce)",location:"Localidad mencionada",details:"Descripción factual",send:"Enviar para evaluación",mine:"Mis contribuciones",mineDesc:"Siga el estado de sus envíos. Las notas están destinadas a su autor.",admin:"Evaluación administrativa",adminDesc:"Evalúe las informaciones recibidas; las decisiones serán visibles para el autor.",none:"Todavía no hay contribuciones.",noneAdmin:"No hay envíos para evaluación.",open:"Abrir referencia ↗",update:"Actualización",note:"Nota de seguimiento visible para el autor",save:"Registrar avance",errUpdate:"No se pudo actualizar. Compruebe los permisos de Firestore.",invalid:"No se pudo enviar. Compruebe el enlace HTTPS y los permisos.",sent:"Enviado para evaluación.",errOwn:"No fue posible cargar sus contribuciones. Compruebe las reglas de acceso.",errAdmin:"No fue posible cargar la evaluación administrativa.",untitled:"Sin título",example:"Ej.: Oferta de especie controlada",specPlaceholder:"Nombre científico o común",locationPlaceholder:"País, estado, municipio",detailsPlaceholder:"Describa lo que muestra la fuente; indique las incertidumbres y evite acusaciones no verificadas.",states:["Recibido","En evaluación","En verificación","Investigación iniciada","Resuelto","Cerrado"]}
 };
+for(const [lang,extra] of Object.entries({pt:{author:"E-mail do autor",unknownAuthor:"E-mail não disponível",history:"Histórico de triagens",historyDesc:"Casos concluídos ou encerrados, preservados para consulta.",noneHistory:"Nenhuma triagem concluída."},en:{author:"Contributor email",unknownAuthor:"Email unavailable",history:"Triage history",historyDesc:"Resolved or closed cases retained for reference.",noneHistory:"No completed reviews."},es:{author:"Correo del autor",unknownAuthor:"Correo no disponible",history:"Historial de evaluaciones",historyDesc:"Casos resueltos o cerrados conservados para consulta.",noneHistory:"No hay evaluaciones finalizadas."}}))Object.assign(I[lang],extra);
 const typeKeys=["platform","advertisement","group","fair","physical_market","other"];
 const txt=()=>I[language];
 const node=(tag,content)=>{const n=document.createElement(tag);n.textContent=content??"";return n;};
@@ -25,6 +26,10 @@ function summary(item,canEdit){
  if(item.details)block.append(node("p",item.details)); // User-authored evidence remains verbatim.
  if(item.review_note)block.append(node("p",T.update+": "+item.review_note));
  if(canEdit){
+  const email=authorEmails.get(item.owner_uid);
+  const contact=node("p",T.author+": ");contact.className="submission-author-email";
+  if(email){const a=node("a",email);a.href="mailto:"+encodeURIComponent(email).replace(/%40/g,"@");contact.append(a);}else contact.append(node("span",T.unknownAuthor));
+  block.append(contact);
   const select=document.createElement("select");
   for(const k of states)select.add(new Option(stateLabel(k),k));
   select.value=item.status;
@@ -49,10 +54,15 @@ function summary(item,canEdit){
  return block;
 }
 function renderLists(){
- const mine=$("my-tips"),other=$("admin-tips");mine.replaceChildren();other.replaceChildren();
+ const mine=$("my-tips"),other=$("admin-tips"),history=$("admin-history-tips");mine.replaceChildren();other.replaceChildren();history?.replaceChildren();
  const sorted=a=>[...a].sort((x,y)=>(y.created_at?.seconds||0)-(x.created_at?.seconds||0));
  if(!ownItems.length)mine.append(node("p",txt().none));else for(const item of sorted(ownItems))mine.append(summary(item,false));
- if(admin){if(!adminItems.length)other.append(node("p",txt().noneAdmin));else for(const item of sorted(adminItems))other.append(summary(item,true));}
+ if(admin){
+  const pending=sorted(adminItems.filter(item=>!["resolved","closed"].includes(item.status)));
+  const finished=sorted(adminItems.filter(item=>["resolved","closed"].includes(item.status)));
+  if(!pending.length)other.append(node("p",txt().noneAdmin));else for(const item of pending)other.append(summary(item,true));
+  if(history){if(!finished.length)history.append(node("p",txt().noneHistory));else for(const item of finished)history.append(summary(item,true));}
+ }
 }
 export function setIntakeLanguage(lang){
  language=useLang(lang);const T=txt(),sec=document.querySelector(".private-contributions");
@@ -72,6 +82,7 @@ export function setIntakeLanguage(lang){
  const mine=$("my-contributions-panel"),review=$("admin-review");
  if(mine){mine.querySelector("h3").textContent=T.mine;mine.querySelector("p.secure-small").textContent=T.mineDesc;}
  if(review){review.querySelector("h3").textContent=T.admin;review.querySelector("p.secure-small").textContent=T.adminDesc;}
+ if($("admin-history-title"))$("admin-history-title").textContent=T.history;if($("admin-history-description"))$("admin-history-description").textContent=T.historyDesc;
  renderLists();if(feedbackKey)$("tip-feedback").textContent=T[feedbackKey]||"";
 }
 function updateLinkRequirement(){
@@ -80,7 +91,12 @@ function updateLinkRequirement(){
 export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromote=null){
  db=database;user=currentUser;admin=isAdmin===true&&currentUser?.email?.trim().toLowerCase()==="acarvalho@wcs.org";promote=onPromote;ownItems=[];adminItems=[];
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
- $("admin-review").hidden=!admin;setIntakeLanguage(lang);
+ $("admin-review").hidden=!admin;$("admin-history").hidden=!admin;setIntakeLanguage(lang);
+ if(unsubContacts){unsubContacts();unsubContacts=null;}authorEmails.clear();
+ if(admin){unsubContacts=onSnapshot(query(collection(db,"access_requests"),limit(500)),snap=>{
+  authorEmails=new Map(snap.docs.map(d=>[d.id,d.data()?.email]).filter(([,email])=>typeof email==="string"&&email.includes("@")));
+  renderLists();
+ },error=>console.warn("Contributor contact lookup unavailable",error?.code||error));}
  const uid=user.uid;
  unsubOwn=onSnapshot(query(collection(db,"submissions"),where("owner_uid","==",uid),limit(100)),snap=>{
   if(!user||user.uid!==uid)return;
@@ -104,7 +120,7 @@ export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromot
  });
 }
 export function closeIntake(){
- if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
+ if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();if(unsubContacts)unsubContacts();unsubOwn=null;unsubAdmin=null;unsubContacts=null;authorEmails.clear();
  user=null;db=null;admin=false;promote=null;ownItems=[];adminItems=[];
- $("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-review").hidden=true;feedback("");
+ $("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-history-tips")?.replaceChildren();$("admin-review").hidden=true;$("admin-history").hidden=true;feedback("");
 }
