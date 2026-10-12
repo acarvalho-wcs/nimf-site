@@ -30,7 +30,7 @@ function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitu
 function options(filtered=dataset){
  for(const [id,key] of Object.entries(controls)){
   const element=el("explorer-"+id),old=element.value;
-  let values=[...new Set(filtered.flatMap(r=>id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[])]:[r[key]]).filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))].sort((a,b)=>a.localeCompare(b));
+  let values=[...new Set(filtered.flatMap(r=>id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_reported_additional)?r.species_reported_additional:[])]:[r[key]]).filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))].sort((a,b)=>a.localeCompare(b));
   element.replaceChildren(new Option(trans[language].all,""));
   for(const value of values){const caption=(id==="status"||id==="product")?localizedField({[key]:value},key,language):value.replaceAll("_"," ");element.add(new Option(caption,value));}
   element.value=values.includes(old)?old:"";
@@ -77,8 +77,8 @@ function setupSpeciesPicker(){
 }
 function matchesOtherFilters(r){
  const term=normalize(el("explorer-search").value);
- if(term && !(["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[])].some(v=>normalize(v).includes(term))))return false;
- return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(r.species_observed||[]),...(r.species_offered||[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
+ if(term && !(["title","scientific_name","source","source_url","state","municipality","country","product_type","status","description_pt","description_en","description_es","social_handle"].some(k=>normalize(r[k]).includes(term))||[...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_reported_additional||[]),...(r.species_aliases||[])].some(v=>normalize(v).includes(term))))return false;
+ return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(r.species_observed||[]),...(r.species_offered||[]),...(r.species_reported_additional||[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
 }
 function matches(r){
  return activeLayers().has(r.layer_type||"advertisement")&&matchesOtherFilters(r);
@@ -149,6 +149,8 @@ function showDetail(r){
   d.append(appendScientific(document.createElement("p"),context.text,r.scientific_name));
  }
  if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
+ if(Array.isArray(r.species_reported_additional)&&r.species_reported_additional.length){const h={pt:"Outros táxons mencionados em relatórios anteriores",en:"Additional taxa mentioned in earlier reports",es:"Otros taxones mencionados en informes anteriores"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_reported_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
+ if(r.social_profile_url&&/^https:\/\//.test(r.social_profile_url)){const a=textNode("a",r.social_handle||"Instagram");a.href=r.social_profile_url;a.target="_blank";a.rel="noopener noreferrer";d.append(a);}
  appendLegalCard(d,r);
  if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
