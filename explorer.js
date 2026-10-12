@@ -27,6 +27,19 @@ function rebuildDataset(){
 const controls={species:"scientific_name",state:"state",city:"municipality",source:"source",status:"status",product:"product_type"};
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
 const safe=r=>r && typeof r==="object"&&!Array.isArray(r);
+const inclusionDate=value=>{
+ if(!value)return 0;
+ if(typeof value.toMillis==="function")return value.toMillis();
+ if(typeof value.seconds==="number")return value.seconds*1000;
+ if(typeof value==="number")return value>1e11?value:value>1e9?value*1000:0;
+ if(typeof value==="string"){const n=Date.parse(value);return Number.isFinite(n)?n:0;}
+ return 0;
+};
+const newestFirst=rows=>[...rows].sort((a,b)=>{
+ const fields=["created_at","createdAt","added_at","addedAt","ingested_at","ingestedAt","published_at","publishedAt","updated_at","updatedAt"];
+ const when=r=>{for(const key of fields){const n=inclusionDate(r[key]);if(n)return n;}return 0;};
+ return when(b)-when(a);
+});
 function textNode(tag,value,cls){const n=document.createElement(tag);n.textContent=value??"";if(cls)n.className=cls;return n;}
 function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitude)&&r.latitude>=-90&&r.latitude<=90&&r.longitude>=-180&&r.longitude<=180&&["address","municipality","state","country","regional"].includes(r.location_precision)?[r.latitude,r.longitude]:null;}
 function options(filtered=dataset){
@@ -505,7 +518,7 @@ function drawMarkers(rows,fit=false){
  requestAnimationFrame(()=>map.resize());
 }
 function render(fitMap=false){
- const f=dataset.filter(matches),m=f.filter(r=>coords(r)),T=trans[language];
+ const f=newestFirst(dataset.filter(matches)),m=f.filter(r=>coords(r)),T=trans[language];
  const viewKey=viewportSignature({search:el("explorer-search").value,filters:Object.keys(controls).map(id=>el("explorer-"+id).value),layers:[...activeLayers()],locations:m});
  const fitNow=needsViewportFit(fitMap,lastViewportSignature,viewKey);
  lastViewportSignature=viewKey;
