@@ -142,10 +142,24 @@
         <div class="explorer-summary"><strong id="explorer-count">0</strong><span id="explorer-count-label">registros correspondentes</span><span id="explorer-map-count">0 no mapa</span><span id="explorer-unmapped-count">0 sem localização mapeável</span></div>
         <div class="explorer-layout">
           <div class="explorer-map-wrap">
-            <div class="explorer-map-toolbar"><div class="explorer-mode-switch" role="group" aria-label="Map projection"><button id="explorer-mode-map" type="button" aria-pressed="true">MAP</button><button id="explorer-mode-globe" type="button" aria-pressed="false">GLOBE</button></div>
-              <button id="layers-toggle" type="button" class="secure-secondary map-toolbar-button" aria-controls="explorer-layers" aria-expanded="false"><span class="layers-icon" aria-hidden="true">☷</span><span id="layers-toggle-label">Camadas</span></button>
-              <button id="explorer-map-theme" type="button" class="secure-secondary map-toolbar-button" aria-pressed="false" title="Alternar cores do mapa">◐ <span id="explorer-map-theme-label">Mapa claro</span></button>
-              <button id="explorer-fullscreen" type="button" class="secure-secondary map-toolbar-button" aria-pressed="false">Tela cheia</button>
+            <div class="explorer-map-toolbar">
+              <button id="map-filters-toggle" type="button" class="secure-secondary map-toolbar-button map-filters-toggle" aria-controls="map-filters-panel" aria-expanded="false" aria-haspopup="true"><span aria-hidden="true">☷</span> <span id="map-filters-toggle-label">Filtros</span> <span class="map-filters-chevron" aria-hidden="true">▾</span></button>
+              <section id="map-filters-panel" class="map-filters-panel" aria-labelledby="map-filters-heading" hidden inert>
+                <div class="map-filters-head">
+                  <strong id="map-filters-heading">Controles do mapa</strong>
+                  <button id="map-filters-close" type="button" aria-label="Fechar filtros" title="Fechar filtros">×</button>
+                </div>
+                <div class="map-filters-actions">
+                  <div class="explorer-mode-switch" role="group" aria-label="Map projection"><button id="explorer-mode-map" type="button" aria-pressed="true">MAP</button><button id="explorer-mode-globe" type="button" aria-pressed="false">GLOBE</button></div>
+                  <button id="layers-toggle" type="button" class="secure-secondary map-toolbar-button" aria-controls="explorer-layers" aria-expanded="false"><span class="layers-icon" aria-hidden="true">☷</span><span id="layers-toggle-label">Camadas</span></button>
+                  <button id="explorer-map-theme" type="button" class="secure-secondary map-toolbar-button" aria-pressed="false" title="Alternar cores do mapa">◐ <span id="explorer-map-theme-label">Mapa claro</span></button>
+                  <button id="explorer-fullscreen" type="button" class="secure-secondary map-toolbar-button" aria-pressed="false">Tela cheia</button>
+                </div>
+                <div id="map-global-controls" class="map-global-controls">
+                  <div class="map-setting"><label id="map-language-label" for="secure-language">Idioma</label><div id="map-language-mount" class="map-setting-mount"></div></div>
+                  <div class="map-setting"><span id="map-interface-theme-label">Tema da interface</span><div id="map-theme-mount" class="map-setting-mount"></div></div>
+                </div>
+              </section>
             </div>
             <aside id="explorer-layers" class="explorer-layers-panel" aria-hidden="true" aria-labelledby="layers-title" inert>
               <div class="explorer-layers-head">
