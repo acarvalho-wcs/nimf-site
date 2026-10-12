@@ -59,7 +59,7 @@ function translate(){
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
- if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule)explorerModule.setExplorerLanguage(locale);}
+ if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule)explorerModule.setExplorerLanguage(locale);} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels();
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
@@ -342,4 +342,66 @@ else{
  new MutationObserver(sync).observe(authCard,{attributes:true,attributeFilter:["hidden"]});
  new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:["data-private-ready"]});
  sync();
+})();
+
+/* Admin workspace: only one expanded by default, optional multi-column comparison. */
+(function initializeUtilityPanels(){
+ const container=document.getElementById("utility-panel-grid"),compare=document.getElementById("utility-compare");
+ if(!container||!compare)return;
+ const definitions=[["triage","admin-review","utility-open-triage"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
+ const open=new Set(), nodes=definitions.map(([key,id,buttonId])=>({key,node:document.getElementById(id),button:document.getElementById(buttonId)}));
+ for(const entry of nodes){
+  if(!entry.node||!entry.button)continue;
+  if(entry.key!=="records")entry.node.dataset.adminAvailable="false";
+  entry.node.dataset.collapsed="true";
+  entry.node.classList.add("utility-managed");
+  container.append(entry.node);
+ }
+ const labels={pt:{triage:"Triagem",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{triage:"Review queue",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{triage:"Revisión",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
+ const redraw=()=>{
+  const lang=typeof locale==="string"&&labels[locale]?locale:"pt";
+  for(const entry of nodes){
+   if(!entry.node||!entry.button)continue;
+   const available=entry.key==="records"||entry.node.dataset.adminAvailable==="true";
+   entry.button.hidden=!available;
+   if(!available)open.delete(entry.key);
+   const expanded=available&&open.has(entry.key);
+   entry.button.setAttribute("aria-expanded",String(expanded));
+   entry.button.classList.toggle("is-active",expanded);
+   entry.node.dataset.collapsed=String(!expanded);
+   entry.button.textContent=labels[lang][entry.key]+" "+(expanded?"▴":"▾");
+  }
+  const count=open.size;container.style.setProperty("--utility-count",String(Math.max(1,count)));
+  container.classList.toggle("utility-compare-enabled",compare.checked);
+  document.getElementById("utility-compare-label").textContent=labels[lang].compare;
+ };
+ for(const entry of nodes){
+  if(!entry.node||!entry.button)continue;
+  entry.button.addEventListener("click",()=>{
+   if(open.has(entry.key))open.delete(entry.key);
+   else{if(!compare.checked)open.clear();open.add(entry.key);}
+   redraw();
+  });
+  if(entry.key!=="records"){
+   const observer=new MutationObserver(()=>{
+    if(!entry.node.hidden){entry.node.dataset.adminAvailable="true";entry.node.hidden=false;}
+    else if(entry.node.dataset.adminAvailable==="true"){entry.node.dataset.adminAvailable="false";open.delete(entry.key);}
+    redraw();
+   });
+   observer.observe(entry.node,{attributes:true,attributeFilter:["hidden"]});
+  }
+ }
+ compare.addEventListener("change",()=>{
+  if(!compare.checked&&open.size>1){
+   const first=[...open][open.size-1];open.clear();open.add(first);
+  }
+  redraw();
+ });
+ const observer=new MutationObserver(()=>{
+  if(document.getElementById("dashboard-panel")?.hidden||document.body.dataset.privateReady!=="true"){open.clear();compare.checked=false;}
+  redraw();
+ });
+ observer.observe(document.body,{attributes:true,attributeFilter:["data-private-ready"]});
+ window.__nimfRefreshUtilityPanels=redraw;
+ redraw();
 })();
