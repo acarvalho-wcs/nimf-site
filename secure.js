@@ -259,7 +259,13 @@ function readyConfig(){
 }
 function busy(value){$("submit-button").disabled=value;}
 $("secure-language").addEventListener("change",e=>{locale=e.target.value;translate();});
-$("secure-theme").addEventListener("click",()=>{document.body.dataset.theme=document.body.dataset.theme==="dark"?"light":"dark";});
+function refreshInterfaceThemeLabel(){
+ const button=$("secure-theme");if(!button)return;
+ const next=document.body.dataset.theme==="dark"?"White":"Dark";
+ button.textContent=next;button.setAttribute("aria-label",next);button.setAttribute("title",next);
+}
+$("secure-theme").addEventListener("click",()=>{document.body.dataset.theme=document.body.dataset.theme==="dark"?"light":"dark";refreshInterfaceThemeLabel();});
+refreshInterfaceThemeLabel();
 $("login-tab").addEventListener("click",()=>switchMode("login"));
 $("signup-tab").addEventListener("click",()=>switchMode("signup"));
 $("record-search").addEventListener("input",drawRecords);
