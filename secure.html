@@ -205,7 +205,16 @@
           <div id="admin-map-list" class="tip-list" aria-live="polite"></div>
         </section>
       </section>
-      <article class="private-panel">
+      <section id="utility-panel-workspace" class="utility-panel-workspace" aria-label="Ferramentas de análise">
+       <div class="utility-panel-controls" role="group" aria-label="Painéis administrativos">
+        <button id="utility-open-triage" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-review" aria-expanded="false" hidden>Triagem <span aria-hidden="true">▾</span></button>
+        <button id="utility-open-layers" type="button" class="secure-secondary utility-panel-button" aria-controls="admin-map-panel" aria-expanded="false" hidden>Cadastro de camadas <span aria-hidden="true">▾</span></button>
+        <button id="utility-open-records" type="button" class="secure-secondary utility-panel-button" aria-controls="private-records-panel" aria-expanded="false">Registros privados <span aria-hidden="true">▾</span></button>
+        <label class="utility-panel-compare"><input type="checkbox" id="utility-compare"> <span id="utility-compare-label">Comparar lado a lado</span></label>
+       </div>
+       <div id="utility-panel-grid" class="utility-panel-grid" style="--utility-count:1"></div>
+      </section>
+      <article id="private-records-panel" class="private-panel" data-collapsed="true">
        <h3 id="records-title">Registros privados</h3>
        <p id="records-subtitle">Dados obtidos exclusivamente após autenticação e checagem de autorização no Firestore.</p>
        <div class="private-search"><label for="record-search" id="search-label">Pesquisar</label><input type="search" id="record-search" placeholder="Buscar nos registros carregados"></div>
