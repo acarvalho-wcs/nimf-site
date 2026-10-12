@@ -270,3 +270,19 @@ body[data-theme="light"] .secure-observatory-logo{
 .explorer-map-wrap.is-fullscreen .explorer-layers-panel{top:70px;right:14px;max-height:calc(100dvh - 84px)}
 #explorer-map .maplibregl-ctrl-bottom-right{right:12px;bottom:35px}
 @media(max-width:680px){.explorer-map-wrap .explorer-layers-panel{top:88px;max-height:calc(100% - 100px)}.explorer-map-wrap.is-fullscreen .explorer-layers-panel{top:96px;max-height:calc(100dvh - 108px)}}
+
+/* Theme-aware layer drawer: follows the site's light/dark mode. */
+body[data-theme="light"] .explorer-layers-panel{--surface:#f9fcfa;--surface2:#e8f2eb;--text:#18362a;--muted:#4c695b;--line:#bcd3c3;background:#f9fcfa!important;color:#18362a!important;border-color:#bcd3c3!important;box-shadow:0 16px 42px #143a302a}
+body[data-theme="light"] .explorer-layers-panel .explorer-layers-head,body[data-theme="light"] .explorer-layers-panel .explorer-layer-picker{background:#f9fcfa!important;color:#18362a!important}
+body[data-theme="light"] .explorer-layers-panel .layer-row,body[data-theme="light"] .explorer-layers-panel strong{color:#18362a!important}
+body[data-theme="light"] .explorer-layers-panel p,body[data-theme="light"] .explorer-layers-panel small,body[data-theme="light"] .explorer-layers-panel legend{color:#516b5c!important}
+body[data-theme="dark"] .explorer-layers-panel{background:#0d1b17!important;color:#eff4f0!important;border-color:#284337!important}
+body[data-theme="dark"] .explorer-layers-panel .explorer-layers-head,body[data-theme="dark"] .explorer-layers-panel .explorer-layer-picker{background:#0d1b17!important;color:#eff4f0!important}
+.explorer-map-toolbar #explorer-map-theme{display:inline-flex;align-items:center;gap:5px}
+@media(max-width:920px){
+ .secure-main .mobile-login-disclaimer{margin:18px auto 8px;width:100%;max-width:580px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-sizing:border-box}
+ .secure-main .mobile-login-disclaimer h1{font-size:15px;margin:7px 0}
+ .secure-main .mobile-login-disclaimer p{font-size:12px;line-height:1.65}
+ .secure-main .mobile-login-institutional{margin:8px auto 26px;max-width:580px;width:100%;text-align:center}
+ .secure-main .mobile-login-institutional .secure-wcs-logo-card{margin:12px auto}
+}
