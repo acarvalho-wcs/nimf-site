@@ -45,9 +45,18 @@ export function appendScientific(parent,value,taxon=""){
  let offset=0;
  for(const [start,end] of ranges){
   if(start>offset)parent.append(document.createTextNode(text.slice(offset,start)));
+  const original=text.slice(start,end);
+  // Taxonomic qualifiers sp. / spp. are roman (not italic), even after an italic genus.
+  const qualifier=original.match(/^(.+?)(\s+)(sp\.|spp\.)$/iu);
   const name=document.createElement("i");name.className="scientific-name";
-  name.textContent=text.slice(start,end);parent.append(name);offset=end;
+  name.textContent=qualifier?qualifier[1]:original;
+  parent.append(name);
+  if(qualifier)parent.append(document.createTextNode(qualifier[2]+qualifier[3]));
+  offset=end;
  }
  if(offset<text.length)parent.append(document.createTextNode(text.slice(offset)));
  return parent;
 }
+
+// Use for scientific taxa in filters and list items without styling HTML directly.
+export function appendScientificTerm(parent,taxon){return appendScientific(parent,taxon,taxon);}
