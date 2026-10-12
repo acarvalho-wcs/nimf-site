@@ -254,3 +254,13 @@ body[data-theme="light"] .secure-observatory-logo{
  .secure-top>a{max-width:68%;font-size:11px}
 }
 
+
+/* Projection selector: inherits the restricted intelligence palette. */
+.explorer-mode-switch{display:inline-flex;gap:2px;padding:3px;border:1px solid #74a68e;border-radius:10px;background:#0d2923ef;box-shadow:0 5px 18px #0005;align-items:center}
+.explorer-mode-switch button{border:0;border-radius:7px;padding:7px 12px;min-height:31px;background:transparent;color:#c7e1d3;font-size:11px;font-weight:800;letter-spacing:.1em;cursor:pointer}
+.explorer-mode-switch button.is-active,.explorer-mode-switch button[aria-pressed="true"]{background:#d9f0df;color:#0b3429;box-shadow:0 2px 7px #0004}
+.explorer-mode-switch button:focus-visible{outline:2px solid #e7f6dc;outline-offset:2px}
+#explorer-map .maplibregl-ctrl-group{background:#10352de9;border:1px solid #79a992;border-radius:9px;overflow:hidden}
+#explorer-map .maplibregl-ctrl-group button{filter:invert(1) brightness(1.5)}
+#explorer-map[data-projection-mode="globe"]{background:#081b27}
+@media(max-width:680px){.explorer-mode-switch button{padding:6px 8px;font-size:10px}.explorer-map-toolbar{gap:4px;flex-wrap:wrap;max-width:calc(100% - 12px)}}
