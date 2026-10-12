@@ -68,9 +68,10 @@ export function setIntakeLanguage(lang){
  $("tip-submit").textContent=T.send;
  $("tip-url-note").textContent=T.urlGuidance;
  updateLinkRequirement();
- const cols=sec.querySelectorAll(".contributions-columns > section");
- cols[0].querySelector("h3").textContent=T.mine;cols[0].querySelector("p.secure-small").textContent=T.mineDesc;
- cols[1].querySelector("h3").textContent=T.admin;cols[1].querySelector("p.secure-small").textContent=T.adminDesc;
+ // Admin review is in the collapsible utility dock, not .contributions-columns.
+ const mine=sec.querySelector(".contributions-columns > section"),review=$("admin-review");
+ if(mine){mine.querySelector("h3").textContent=T.mine;mine.querySelector("p.secure-small").textContent=T.mineDesc;}
+ if(review){review.querySelector("h3").textContent=T.admin;review.querySelector("p.secure-small").textContent=T.adminDesc;}
  renderLists();if(feedbackKey)$("tip-feedback").textContent=T[feedbackKey]||"";
 }
 function updateLinkRequirement(){
