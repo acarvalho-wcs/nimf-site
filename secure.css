@@ -314,12 +314,12 @@ body[data-theme="dark"] .explorer-layers-panel .explorer-layers-head,body[data-t
 .map-filters-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .map-filters-head strong{font-size:12px;font-weight:800}
 .map-filters-head button{border:1px solid var(--line);border-radius:7px;background:var(--surface2);color:var(--text);width:30px;height:30px;font-size:20px;cursor:pointer}
-.map-filters-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
-.map-filters-actions .explorer-mode-switch{grid-column:1/-1;justify-self:start}
-.map-filters-actions>.map-toolbar-button{min-width:0;white-space:normal;line-height:1.3}
-.map-global-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.map-filters-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px;margin-top:12px;align-items:stretch}
+.map-filters-actions .explorer-mode-switch{grid-column:auto;justify-self:stretch;width:100%;min-width:0;box-sizing:border-box;display:flex}
+.map-filters-actions .explorer-mode-switch button{flex:1;min-width:0;padding-left:5px;padding-right:5px}
+.map-filters-actions>.map-toolbar-button{width:100%;min-width:0;white-space:normal;line-height:1.3;box-sizing:border-box}
 .map-setting{display:flex;flex-direction:column;min-width:0;gap:5px;font-size:11px;font-weight:700;color:var(--muted)}
-.map-setting-mount{display:flex;align-items:center;min-height:38px}
+.map-setting-mount{display:flex;align-items:center;min-height:38px;min-width:0}
 .map-setting-mount #secure-language,.map-setting-mount #secure-theme{height:38px;min-height:38px;background:var(--input);border:1px solid var(--line);border-radius:8px;color:var(--text);font-weight:750;padding:7px 10px;cursor:pointer}
 .map-setting-mount #secure-language{width:100%}
 .map-setting-mount #secure-theme{width:100%}
