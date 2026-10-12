@@ -7,7 +7,7 @@
  <meta name="description" content="Investigação de Mercados de Fauna — seção de acesso autorizado do Observatório Global de Tráfico de Animais">
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
- <link rel="stylesheet" href="./secure.css?v=filter42">
+ <link rel="stylesheet" href="./secure.css?v=maptools43">
  <link rel="stylesheet" href="./restricted-shell-v3.css?v=filter42">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
@@ -27,7 +27,7 @@
   document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
  },9000);
  </script>
- <script type="module" src="./secure.js?v=filter42"></script>
+ <script type="module" src="./secure.js?v=maptools43"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -134,7 +134,11 @@
         <div class="explorer-layout">
           <div class="explorer-map-wrap">
             <div class="explorer-map-toolbar">
-              <button id="map-filters-toggle" type="button" class="secure-secondary map-toolbar-button map-filters-toggle" aria-controls="map-filters-panel" aria-expanded="false" aria-haspopup="true"><span aria-hidden="true">☷</span> <span id="map-filters-toggle-label">Filtros</span> <span class="map-filters-chevron" aria-hidden="true">▾</span></button>
+              <div class="map-toolbar-primary">
+                <button id="map-filters-toggle" type="button" class="secure-secondary map-toolbar-button map-filters-toggle" aria-controls="map-filters-panel" aria-expanded="false" aria-haspopup="true"><span aria-hidden="true">☷</span> <span id="map-filters-toggle-label">Filtros</span> <span class="map-filters-chevron" aria-hidden="true">▾</span></button>
+                <label class="map-toolbar-theme" for="map-toolbar-theme"><span id="map-toolbar-theme-label">Tema</span><select id="map-toolbar-theme" aria-label="Tema"><option value="dark">Dark</option><option value="light">White</option></select></label>
+                <button id="map-toolbar-fullscreen" type="button" class="secure-secondary map-toolbar-button map-fullscreen-shortcut" aria-controls="explorer-map" aria-pressed="false"><span aria-hidden="true">⛶</span> <span id="map-toolbar-fullscreen-label">Fullscreen</span></button>
+              </div>
               <section id="map-filters-panel" class="map-filters-panel" aria-labelledby="map-filters-heading" hidden inert>
                 <div class="map-filters-head">
                   <strong id="map-filters-heading">Controles do mapa</strong>
