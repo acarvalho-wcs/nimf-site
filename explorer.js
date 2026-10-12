@@ -2,7 +2,7 @@ import {viewportSignature,needsViewportFit} from "./explorer-viewport.js";
 import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
-let projectionMode="map";
+let projectionMode="map", mapColorMode="dark";
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null,lastViewportSignature=null;
 const el=id=>document.getElementById(id);
@@ -344,6 +344,24 @@ function renderRasterMarkers(rows,fit=false){
  host.dataset.tileCount=String(cells.length);
  host.dataset.mappedCount=String(rows.length);
 }
+function mapStyleUrl(){return "https://basemaps.cartocdn.com/gl/"+(mapColorMode==="dark"?"dark-matter":"positron")+"-gl-style/style.json";}
+function updateMapThemeButton(){
+ const button=el("explorer-map-theme"),label=el("explorer-map-theme-label");
+ if(button){button.setAttribute("aria-pressed",String(mapColorMode==="light"));button.title=mapColorMode==="dark"?"Mapa claro / Light map / Mapa claro":"Mapa escuro / Dark map / Mapa oscuro";}
+ if(label)label.textContent=({pt:mapColorMode==="dark"?"Mapa claro":"Mapa escuro",en:mapColorMode==="dark"?"Light map":"Dark map",es:mapColorMode==="dark"?"Mapa claro":"Mapa oscuro"})[language];
+ const host=el("explorer-map");if(host)host.dataset.mapColor=mapColorMode;
+}
+function setMapColorMode(color){
+ if(color!=="dark"&&color!=="light")return;
+ mapColorMode=color;updateMapThemeButton();
+ if(mapReady&&mapLoaded&&map){
+  try{map.setStyle(mapStyleUrl(),{diff:false});}
+  catch(e){try{map.setStyle({version:8,sources:{basemap:{type:"raster",tiles:["https://basemaps.cartocdn.com/"+(color==="light"?"light_all":"dark_all")+"/{z}/{x}/{y}.png"],tileSize:256}},layers:[{id:"safe-raster",type:"raster",source:"basemap"}]});}catch(ignore){}}
+ }
+ if(fallbackLayer)fallbackLayer.dataset.mapColor=color;
+}
+const mapThemeButton=el("explorer-map-theme");
+if(mapThemeButton)mapThemeButton.addEventListener("click",()=>setMapColorMode(mapColorMode==="dark"?"light":"dark"));
 function setupMap(){
  if(!fallbackLayer)initializeRasterFallback();
  if(mapReady||mapAttempted||!window.maplibregl)return;
@@ -354,7 +372,7 @@ function setupMap(){
  host.append(glHost);
  let loadTimedOut=false;
  let alternateStyleAttempted=false;
- const fallbackWebglStyle={version:8,sources:{basemap:{type:"raster",tiles:["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors © CARTO"}},layers:[{id:"dark-raster",type:"raster",source:"basemap"}]};
+ const fallbackWebglStyle=color=>({version:8,sources:{basemap:{type:"raster",tiles:["https://basemaps.cartocdn.com/"+(color==="light"?"light_all":"dark_all")+"/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap contributors © CARTO"}},layers:[{id:"safe-raster",type:"raster",source:"basemap"}]});
  const fail=()=>{
   if(mapLoaded || loadTimedOut)return;
   loadTimedOut=true;
@@ -366,7 +384,7 @@ function setupMap(){
  try{
   map=new window.maplibregl.Map({
    container:glHost,
-   style:"https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+   style:mapStyleUrl(),
    center:[fallbackCenter[0],fallbackCenter[1]],zoom:fallbackZoom,
    attributionControl:true,cooperativeGestures:true,projection:{type:projectionMode==="globe"?"globe":"mercator"}
   });
@@ -391,7 +409,7 @@ function setupMap(){
   });
   map.on("error",()=>{
    if(mapLoaded||loadTimedOut)return;
-   if(!alternateStyleAttempted){alternateStyleAttempted=true;try{map.setStyle(fallbackWebglStyle);return;}catch(e){}}
+   if(!alternateStyleAttempted){alternateStyleAttempted=true;try{map.setStyle(fallbackWebglStyle(mapColorMode));return;}catch(e){}}
    fail();
   });
   setTimeout(()=>{if(!mapLoaded)fail();},10000);
@@ -482,7 +500,7 @@ export function setMapPoints(rows){
  rebuildDataset();options();render(true);
 }
 export function setExplorerLanguage(lang){
- language=trans[lang]?lang:"pt";const t=trans[language];rebuildDataset();
+ language=trans[lang]?lang:"pt";const t=trans[language];rebuildDataset();updateMapThemeButton();
  el("layers-title").textContent=t.layersHeading;
  el("layers-toggle-label").textContent=t.layers;
  el("layers-hint").textContent=t.layersHint;
