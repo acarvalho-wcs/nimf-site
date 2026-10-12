@@ -389,6 +389,9 @@ function setupMap(){
    attributionControl:true,cooperativeGestures:true,projection:{type:projectionMode==="globe"?"globe":"mercator"}
   });
   map.addControl(new window.maplibregl.NavigationControl({showCompass:true,showZoom:true}),"bottom-right");
+  map.on("move",updateGlobeMarkerVisibility);
+  map.on("rotate",updateGlobeMarkerVisibility);
+  map.on("pitch",updateGlobeMarkerVisibility);
   map.on("load",()=>{
    if(loadTimedOut)return;
    mapLoaded=true;mapReady=true;
@@ -426,6 +429,7 @@ function applyProjection(fit=true){
    if(projectionMode==="globe"){projectionMode="map";applyProjection(false);}
   }
   if(fit)drawMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
+  updateGlobeMarkerVisibility();
   requestAnimationFrame(()=>map.resize());
  }
 }
@@ -440,6 +444,23 @@ function setProjectionMode(mode){
 }
 for(const [id,mode] of [["explorer-mode-map","map"],["explorer-mode-globe","globe"]]){
  const button=el(id);if(button)button.addEventListener("click",()=>setProjectionMode(mode));
+}
+function updateGlobeMarkerVisibility(){
+ if(!map||!mapReady||!mapLoaded)return;
+ const globe=projectionMode==="globe";
+ const center=map.getCenter();
+ const latitude=center.lat*Math.PI/180,longitude=center.lng*Math.PI/180;
+ const cosLat=Math.cos(latitude),sinLat=Math.sin(latitude);
+ for(const marker of pins){
+  const elem=marker.getElement();
+  if(!globe){elem.style.visibility="visible";elem.style.pointerEvents="auto";continue;}
+  const pos=marker.getLngLat(),lat=pos.lat*Math.PI/180,dlon=(pos.lng-center.lng)*Math.PI/180;
+  const facing=sinLat*Math.sin(lat)+cosLat*Math.cos(lat)*Math.cos(dlon);
+  const visible=facing>0.005;
+  elem.style.visibility=visible?"visible":"hidden";
+  elem.style.pointerEvents=visible?"auto":"none";
+  elem.setAttribute("aria-hidden",String(!visible));
+ }
 }
 function drawMarkers(rows,fit=false){
  if(!mapReady||!mapLoaded)return;
@@ -462,6 +483,7 @@ function drawMarkers(rows,fit=false){
  mapHost.dataset.zoom=String(map.getZoom());
  mapHost.dataset.mappedCount=String(rows.length);
  // With zero mappable records, remove the pins without moving to a fake area.
+ updateGlobeMarkerVisibility();
  requestAnimationFrame(()=>map.resize());
 }
 function render(fitMap=false){
