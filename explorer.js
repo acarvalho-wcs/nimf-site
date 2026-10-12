@@ -449,10 +449,14 @@ function setupMap(){
   setTimeout(()=>{if(!mapLoaded)fail();},10000);
  }catch(e){fail();}
 }
+function syncToolbarProjection(){
+ for(const [id,mode] of [["map-toolbar-mode-map","map"],["map-toolbar-mode-globe","globe"]]){const button=el(id);if(button){button.classList.toggle("is-active",projectionMode===mode);button.setAttribute("aria-pressed",String(projectionMode===mode));}}
+}
 function applyProjection(fit=true){
  const mapButton=el("explorer-mode-map"),globeButton=el("explorer-mode-globe");
  if(mapButton){mapButton.classList.toggle("is-active",projectionMode==="map");mapButton.setAttribute("aria-pressed",String(projectionMode==="map"));}
  if(globeButton){globeButton.classList.toggle("is-active",projectionMode==="globe");globeButton.setAttribute("aria-pressed",String(projectionMode==="globe"));}
+ syncToolbarProjection();
  const host=el("explorer-map");host.dataset.projectionMode=projectionMode;
  if(mapReady&&mapLoaded&&map){
   try{map.setProjection({type:projectionMode==="globe"?"globe":"mercator"});host.dataset.projectionApplied=projectionMode;}catch(error){
@@ -474,6 +478,9 @@ function setProjectionMode(mode){
  }
 }
 for(const [id,mode] of [["explorer-mode-map","map"],["explorer-mode-globe","globe"]]){
+ const button=el(id);if(button)button.addEventListener("click",()=>setProjectionMode(mode));
+}
+for(const [id,mode] of [["map-toolbar-mode-map","map"],["map-toolbar-mode-globe","globe"]]){
  const button=el(id);if(button)button.addEventListener("click",()=>setProjectionMode(mode));
 }
 function updateGlobeMarkerVisibility(){
@@ -565,6 +572,7 @@ export function setExplorerLanguage(lang){
  for(const el of document.querySelectorAll("[data-layer-title]"))el.textContent=t.layerNames[el.dataset.layerTitle];
  const expanded=el("explorer-map-wrap")?.classList.contains("is-fullscreen")||document.querySelector(".explorer-map-wrap")?.classList.contains("is-fullscreen");
  el("explorer-fullscreen").textContent=expanded?t.exitFullscreen:t.fullscreen;
+ syncToolbarFullscreen(expanded);syncToolbarProjection();
  el("explorer-search").placeholder=t.searchRecordsPlaceholder;
  el("explorer-search-label").textContent=t.searchBox;
  el("explorer-map").setAttribute("aria-label",t.title);
@@ -581,6 +589,11 @@ function resizeDisplayedMap(){
  if(fallbackLayer)renderRasterMarkers(visible,false);
  if(mapReady)requestAnimationFrame(()=>map.resize());
 }
+function syncToolbarFullscreen(expanded){
+ const button=el("map-toolbar-fullscreen"),label=el("map-toolbar-fullscreen-label");
+ if(button)button.setAttribute("aria-pressed",String(expanded));
+ if(label)label.textContent=expanded?trans[language].exitFullscreen:trans[language].fullscreen;
+}
 function toggleFullScreen(force){
  const wrap=document.querySelector(".explorer-map-wrap");
  const expanded=force===undefined?!wrap.classList.contains("is-fullscreen"):!!force;
@@ -588,9 +601,11 @@ function toggleFullScreen(force){
  document.body.classList.toggle("nimf-map-fullscreen",expanded);
  el("explorer-fullscreen").setAttribute("aria-pressed",String(expanded));
  el("explorer-fullscreen").textContent=expanded?trans[language].exitFullscreen:trans[language].fullscreen;
+ syncToolbarFullscreen(expanded);
  requestAnimationFrame(()=>{resizeDisplayedMap();setTimeout(resizeDisplayedMap,120);});
 }
 el("explorer-fullscreen").addEventListener("click",()=>toggleFullScreen());
+el("map-toolbar-fullscreen")?.addEventListener("click",()=>toggleFullScreen());
 function setLayersPanel(open){
  const panel=el("explorer-layers"),toggle=el("layers-toggle");
  panel.classList.toggle("open",open);
