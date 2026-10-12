@@ -432,20 +432,8 @@ else{
  const panel=document.getElementById("map-filters-panel");
  const close=document.getElementById("map-filters-close");
  const language=document.getElementById("secure-language");
-
- const top=document.querySelector(".secure-top-right");
- const langMount=document.getElementById("map-language-mount");
-
- const map=document.querySelector(".explorer-map-wrap");
- if(!toggle||!panel||!close||!language||!top||!langMount||!map)return;
- const labels={pt:{filter:"Filtros",heading:"Controles do mapa",lang:"Idioma",theme:"Tema da interface",close:"Fechar filtros"},en:{filter:"Filters",heading:"Map controls",lang:"Language",theme:"Interface theme",close:"Close filters"},es:{filter:"Filtros",heading:"Controles del mapa",lang:"Idioma",theme:"Tema de la interfaz",close:"Cerrar filtros"}};
- const moveControls=()=>{
-  const visible=document.body.dataset.privateReady==="true"
-   && !document.getElementById("dashboard-panel").hidden
-   && !document.getElementById("dashboard-primary").hidden;
-  if(visible){langMount.append(language);}
-  else{top.prepend(language);setOpen(false);}
- };
+ if(!toggle||!panel||!close||!language)return;
+ const labels={pt:{filter:"Filtros",heading:"Controles do mapa",lang:"Idioma",close:"Fechar filtros"},en:{filter:"Filters",heading:"Map controls",lang:"Language",close:"Close filters"},es:{filter:"Filtros",heading:"Controles del mapa",lang:"Idioma",close:"Cerrar filtros"}};
  function setOpen(open){
   const active=Boolean(open);
   panel.hidden=!active;
@@ -457,21 +445,14 @@ else{
   const l=labels[locale]||labels.pt;
   document.getElementById("map-filters-toggle-label").textContent=l.filter;
   document.getElementById("map-filters-heading").textContent=l.heading;
-  document.getElementById("map-language-label").textContent=l.lang;
   close.setAttribute("aria-label",l.close);close.title=l.close;
   language.setAttribute("aria-label",l.lang);
   refreshInterfaceThemeLabel();
  };
- toggle.addEventListener("click",()=>{setOpen(panel.hidden);if(!panel.hidden)language.focus({preventScroll:true});});
+ toggle.addEventListener("click",()=>{setOpen(panel.hidden);if(!panel.hidden)document.getElementById("explorer-search")?.focus({preventScroll:true});});
  close.addEventListener("click",()=>{setOpen(false);toggle.focus({preventScroll:true});});
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panel.hidden){setOpen(false);toggle.focus({preventScroll:true});}});
  document.addEventListener("pointerdown",e=>{if(!panel.hidden&&!panel.contains(e.target)&&!toggle.contains(e.target))setOpen(false);});
- const obs=new MutationObserver(moveControls);
- obs.observe(document.body,{attributes:true,attributeFilter:["data-private-ready"]});
- for(const id of ["dashboard-panel","dashboard-primary"]){
-  const el=document.getElementById(id);if(el)obs.observe(el,{attributes:true,attributeFilter:["hidden"]});
- }
  window.__nimfMapFilterTranslate=translateDrawer;
- window.__nimfMapFilterSync=moveControls;
- moveControls();translateDrawer();
+ translateDrawer();
 })();
