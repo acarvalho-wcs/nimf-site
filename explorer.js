@@ -1,8 +1,9 @@
+import {viewportSignature,needsViewportFit} from "./explorer-viewport.js";
 import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
-const rasterCache=new Map();let rasterFrame=null;
+const rasterCache=new Map();let rasterFrame=null,lastViewportSignature=null;
 const el=id=>document.getElementById(id);
 const trans={
  pt:{k:"EXPLORADOR GEOGRÁFICO",title:"Mercados de fauna: mapa e filtros",desc:"Mapeamento aproximado, não a localização de vendedores. Combine os filtros para explorar anúncios.",reset:"Limpar filtros",search:"Busca livre",species:"Espécie",state:"Estado / região",city:"Município",source:"Fonte",status:"Verificação",product:"Produto",matches:"registros correspondentes",map:"no mapa",unmapped:"sem localização mapeável",results:"Resultados",notice:"Marcadores indicam posições aproximadas, nunca endereços de vendedores.",searchPlaceholder:"Espécie, fonte, cidade, produto...",fallbackLabel:"Texto disponível em outro idioma",resetMap:"Centralizar registros",mapUnavailable:"O mapa está parcialmente indisponível. O restante do painel permanece acessível.",empty:"Nenhum registro corresponde aos filtros.",all:"Todos",more:"Detalhes",close:"Fechar",link:"Fonte original",precision:"Precisão geográfica",price:"Preço anunciado",quantity:"Quantidade",review:"Situação",observation:"Contexto da observação",noDate:"Data não informada",country:"País",unlocated:"Sem coordenadas verificadas para este registro. O mapa permanece na posição atual.",layers:"Camadas",fullscreen:"Tela cheia",exitFullscreen:"Sair da tela cheia",layerNames:{advertisement:"Anúncios",platform:"Plataformas",fair:"Feiras",physical_market:"Vendedores físicos"},layersHeading:"Camadas do mapa",layersHint:"Selecione as categorias exibidas no mapa.",layersLegend:"Categorias de registros",layersSafety:"Localizações aproximadas de registros revisados; não identificam pessoas nem comprovam irregularidades.",layersClose:"Fechar camadas",evidence:"Evidência",corroborated:"Corroborada",sourceDraft:"Registro administrativo revisado"},
@@ -385,13 +386,16 @@ function drawMarkers(rows,fit=false){
   dot.addEventListener("click",()=>focusRecord(r));
   pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
  }
- if(fit && rows.length===1)map.easeTo({center:bounds.getCenter(),zoom:7,duration:350});
- else if(fit && rows.length>1)map.fitBounds(bounds,{padding:75,maxZoom:8,duration:400});
+ if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
+ else if(fit && rows.length>1){map.stop();map.fitBounds(bounds,{padding:75,maxZoom:8,duration:0});}
  // With zero mappable records, remove the pins without moving to a fake area.
  requestAnimationFrame(()=>map.resize());
 }
 function render(fitMap=false){
  const f=dataset.filter(matches),m=f.filter(r=>coords(r)),T=trans[language];
+ const viewKey=viewportSignature({search:el("explorer-search").value,filters:Object.keys(controls).map(id=>el("explorer-"+id).value),layers:[...activeLayers()],locations:m});
+ const fitNow=needsViewportFit(fitMap,lastViewportSignature,viewKey);
+ lastViewportSignature=viewKey;
  updateLayerCounts();
  el("explorer-map").dataset.visibleMarkerCount=String(m.length);
  el("explorer-count").textContent=String(f.length);
@@ -408,8 +412,8 @@ function render(fitMap=false){
  if(activeId&&!f.some(r=>r.id===activeId)){closeMapCard();}
  if(activeId){const item=f.find(r=>r.id===activeId);if(item)showDetail(item);}
  setupMap();
- if(fallbackLayer)renderRasterMarkers(m,fitMap);
- if(mapReady)drawMarkers(m,fitMap);
+ if(fallbackLayer)renderRasterMarkers(m,fitNow);
+ if(mapReady)drawMarkers(m,fitNow);
 }
 export function initExplorer(rows,lang="pt"){
  language=trans[lang]?lang:"pt";
@@ -442,7 +446,7 @@ export function setExplorerLanguage(lang){
  options();render();
 }
 export function clearExplorer(){
- dataset=[];canonicalRecords=[];reviewedPoints=[];closeMapCard();setLayersPanel(false);if(document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
+ dataset=[];canonicalRecords=[];reviewedPoints=[];lastViewportSignature=null;closeMapCard();setLayersPanel(false);if(document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
 }
 function resizeDisplayedMap(){
  const visible=dataset.filter(matches).filter(r=>coords(r));
