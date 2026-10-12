@@ -1,5 +1,5 @@
+import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
-function appendScientific(parent,value,taxon=""){const text=String(value??"");parent.replaceChildren();const name=String(taxon||"").trim();let at=name?text.indexOf(name):-1;if(at<0){const m=text.match(/(?:\b(?:de|do|da|of)\s+)([A-Z][a-z]{2,}\s+[a-z][a-z-]{2,})/u);if(m){at=m.index+m[0].length-m[1].length;}}if(at<0){parent.textContent=text;return parent;}if(at>0)parent.append(document.createTextNode(text.slice(0,at)));const el=document.createElement("i");el.className="scientific-name";el.textContent=name&&text.includes(name)?name:text.slice(at).match(/^[A-Z][a-z]{2,}\s+[a-z][a-z-]{2,}/u)?.[0]||"";parent.append(el);const end=at+el.textContent.length;if(end<text.length)parent.append(document.createTextNode(text.slice(end)));return parent;}
 
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null;
@@ -43,13 +43,13 @@ function refreshSpeciesPicker(){
  if(!select||!trigger||!menu)return;
  const active=select.value,selected=select.options[select.selectedIndex];
  trigger.replaceChildren();
- if(active)trigger.append(textNode("i",selected?.textContent||active,"scientific-name"));
+ if(active)trigger.append(appendScientificTerm(document.createElement("span"),selected?.textContent||active));
  else trigger.append(document.createTextNode(trans[language].all));
  menu.replaceChildren();
  for(const choice of select.options){
   const btn=document.createElement("button");btn.type="button";btn.role="option";
   btn.setAttribute("aria-selected",String(choice.value===active));
-  if(choice.value)btn.append(textNode("i",choice.textContent,"scientific-name"));
+  if(choice.value)btn.append(appendScientificTerm(document.createElement("span"),choice.textContent));
   else btn.textContent=trans[language].all;
   btn.addEventListener("click",()=>{
     select.value=choice.value;menu.hidden=true;trigger.setAttribute("aria-expanded","false");
@@ -149,9 +149,9 @@ function showDetail(r){
   if(context.sourceLanguage!==language)d.append(textNode("small",trans[language].fallbackLabel+" ("+context.sourceLanguage.toUpperCase()+")"));
   d.append(appendScientific(document.createElement("p"),context.text,r.scientific_name));
  }
- if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
- if(Array.isArray(r.species_additional)&&r.species_additional.length){const h={pt:"Outros táxons registrados",en:"Other recorded taxa",es:"Otros taxones registrados"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(textNode("i",name,"scientific-name"));});d.append(p);}
- if(r.social_profile_url&&/^https:\/\//.test(r.social_profile_url)){const a=textNode("a",r.social_handle||"Instagram");a.href=r.social_profile_url;a.target="_blank";a.rel="noopener noreferrer";d.append(a);}
+ if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
+ if(Array.isArray(r.species_additional)&&r.species_additional.length){const h={pt:"Outros táxons registrados",en:"Other recorded taxa",es:"Otros taxones registrados"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
+ const externalLinks=document.createElement("div");externalLinks.className="explorer-external-links";if(r.social_profile_url&&/^https:\/\//.test(r.social_profile_url)){const a=textNode("a",r.social_handle||"Instagram");a.href=r.social_profile_url;a.target="_blank";a.rel="noopener noreferrer";externalLinks.append(a);}
  appendLegalCard(d,r);
  if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
@@ -159,8 +159,9 @@ function showDetail(r){
  }
  if(!coords(r))d.append(textNode("p",trans[language].unlocated,"explorer-map-no-location"));
  if(typeof r.source_url==="string"&&/^https:\/\/[^/]+/.test(r.source_url)){
-  const link=textNode("a",trans[language].link+" ↗");link.href=r.source_url;link.target="_blank";link.rel="noopener noreferrer";d.append(link);
+  const link=textNode("a",trans[language].link+" ↗");link.href=r.source_url;link.target="_blank";link.rel="noopener noreferrer";externalLinks.append(link);
  }
+ if(externalLinks.childElementCount)d.append(externalLinks);
  d.hidden=false;
 }
 function focusRecord(r){
