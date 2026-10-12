@@ -272,6 +272,8 @@ function refreshInterfaceThemeLabel(){
 }
 $("secure-theme").addEventListener("click",()=>{document.body.dataset.theme=document.body.dataset.theme==="dark"?"light":"dark";refreshInterfaceThemeLabel();});
 refreshInterfaceThemeLabel();
+$("map-toolbar-theme")?.addEventListener("change",event=>{const desired=event.target.value;if(desired!=="dark"&&desired!=="light")return;document.body.dataset.theme=desired;refreshInterfaceThemeLabel();});
+$("secure-theme")?.addEventListener("click",()=>{const selector=$("map-toolbar-theme");if(selector)selector.value=document.body.dataset.theme==="light"?"light":"dark";});
 $("login-tab").addEventListener("click",()=>switchMode("login"));
 $("signup-tab").addEventListener("click",()=>switchMode("signup"));
 $("record-search").addEventListener("input",drawRecords);
@@ -449,6 +451,9 @@ else{
   const l=labels[locale]||labels.pt;
   document.getElementById("map-filters-toggle-label").textContent=l.filter;
   document.getElementById("map-filters-heading").textContent=l.heading;
+  const toolbarTheme=document.getElementById("map-toolbar-theme");
+  if(toolbarTheme){toolbarTheme.value=document.body.dataset.theme==="light"?"light":"dark";toolbarTheme.setAttribute("aria-label",l.theme);}
+  const themeLabel=document.getElementById("map-toolbar-theme-label");if(themeLabel)themeLabel.textContent=l.theme;
   document.getElementById("map-language-label").textContent=l.lang;
   document.getElementById("map-interface-theme-label").textContent=l.theme;
   close.setAttribute("aria-label",l.close);close.title=l.close;
