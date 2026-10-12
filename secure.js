@@ -145,7 +145,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=locale36");
+   const mod=await import("./explorer.js?v=mobile40");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
@@ -175,7 +175,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./intake.js?v=locale36");
+   const mod=await import("./intake.js?v=mobile40");
    if(!valid())return;
    intakeModule=mod;
    await mod.openIntake(db,user,approvalAdmin,locale,tip=>mapModule?.promoteTip(tip));
@@ -354,21 +354,21 @@ else{
 (function initializeUtilityPanels(){
  const container=document.getElementById("utility-panel-grid"),compare=document.getElementById("utility-compare");
  if(!container||!compare)return;
- const definitions=[["triage","admin-review","utility-open-triage"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
+ const definitions=[["mine","my-contributions-panel","utility-open-mine"],["triage","admin-review","utility-open-triage"],["layers","admin-map-panel","utility-open-layers"],["records","private-records-panel","utility-open-records"]];
  const open=new Set(), nodes=definitions.map(([key,id,buttonId])=>({key,node:document.getElementById(id),button:document.getElementById(buttonId)}));
  for(const entry of nodes){
   if(!entry.node||!entry.button)continue;
-  if(entry.key!=="records")entry.node.dataset.adminAvailable="false";
+  if(entry.key==="triage"||entry.key==="layers")entry.node.dataset.adminAvailable="false";
   entry.node.dataset.collapsed="true";
   entry.node.classList.add("utility-managed");
   container.append(entry.node);
  }
- const labels={pt:{triage:"Triagem",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{triage:"Review queue",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{triage:"Revisión",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
+ const labels={pt:{mine:"Minhas contribuições",triage:"Triagem",layers:"Cadastro de camadas",records:"Registros privados",compare:"Comparar lado a lado"},en:{mine:"My contributions",triage:"Review queue",layers:"Layer administration",records:"Private records",compare:"Compare side by side"},es:{mine:"Mis contribuciones",triage:"Revisión",layers:"Administrar capas",records:"Registros privados",compare:"Comparar lado a lado"}};
  const redraw=()=>{
   const lang=typeof locale==="string"&&labels[locale]?locale:"pt";
   for(const entry of nodes){
    if(!entry.node||!entry.button)continue;
-   const available=entry.key==="records"||entry.node.dataset.adminAvailable==="true";
+   const available=entry.key==="records"||entry.key==="mine"||entry.node.dataset.adminAvailable==="true";
    entry.button.hidden=!available;
    if(!available)open.delete(entry.key);
    const expanded=available&&open.has(entry.key);
@@ -388,7 +388,7 @@ else{
    else{if(!compare.checked)open.clear();open.add(entry.key);}
    redraw();
   });
-  if(entry.key!=="records"){
+  if(entry.key==="triage"||entry.key==="layers"){
    const observer=new MutationObserver(()=>{
     if(!entry.node.hidden){entry.node.dataset.adminAvailable="true";entry.node.hidden=false;}
     else if(entry.node.dataset.adminAvailable==="true"){entry.node.dataset.adminAvailable="false";open.delete(entry.key);}
