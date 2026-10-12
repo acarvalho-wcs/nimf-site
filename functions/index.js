@@ -3,18 +3,17 @@ const {onDocumentCreated}=require("firebase-functions/v2/firestore");
 const {onRequest}=require("firebase-functions/v2/https");
 const {defineSecret}=require("firebase-functions/params");
 const admin=require("firebase-admin");
-const nodemailer=require("nodemailer");
+const {sendGraphMail}=require("./graph-mail");
 admin.initializeApp();
-const smtpHost=defineSecret("NIMF_SMTP_HOST");
-const smtpPort=defineSecret("NIMF_SMTP_PORT");
-const smtpUser=defineSecret("NIMF_SMTP_USER");
-const smtpPassword=defineSecret("NIMF_SMTP_PASSWORD");
-const smtpFrom=defineSecret("NIMF_SMTP_FROM");
+const msTenant=defineSecret("NIMF_MS_TENANT_ID");
+const msClient=defineSecret("NIMF_MS_CLIENT_ID");
+const msSecret=defineSecret("NIMF_MS_CLIENT_SECRET");
+const msSender=defineSecret("NIMF_MS_SENDER");
 const ADMIN_EMAIL="acarvalho@wcs.org";
 const NOTICE_EMAIL="inteligencia@wcs.org";
 const APP_URL="https://acarvalho-wcs.github.io/nimf-site/secure.html";
 const REGION="us-central1";
-const mailSecrets=[smtpHost,smtpPort,smtpUser,smtpPassword,smtpFrom];
+const mailSecrets=[msTenant,msClient,msSecret,msSender];
 
 exports.notifyAccessRequest=onDocumentCreated({document:"access_requests/{uid}",region:REGION,secrets:mailSecrets,retry:false},async event=>{
  const data=event.data?.data();if(!data || data.status!=="pending")return;
@@ -22,19 +21,19 @@ exports.notifyAccessRequest=onDocumentCreated({document:"access_requests/{uid}",
  // Notification occurs only after creation by a verified Firebase user.
  const user=await admin.auth().getUser(uid);
  if(!user.emailVerified || user.email?.toLowerCase()!==String(data.email||"").toLowerCase())return;
- const settings={host:smtpHost.value(),port:Number(smtpPort.value()),secure:Number(smtpPort.value())===465,auth:{user:smtpUser.value(),pass:smtpPassword.value()}};
- const mail=nodemailer.createTransport(settings);
  const link=APP_URL+"?request="+encodeURIComponent(uid);
- await mail.sendMail({
-   from:smtpFrom.value(),to:NOTICE_EMAIL,
+ await sendGraphMail({
+   tenantId:msTenant.value(),clientId:msClient.value(),clientSecret:msSecret.value(),
+   sender:msSender.value(),recipient:NOTICE_EMAIL,
    subject:"[Investigação de Mercados de Fauna] Nova solicitação de acesso",
-   text:["Nova solicitação de acesso ao painel restrito.","","E-mail verificado: "+String(data.email||""),
+   body:["Nova solicitação de acesso ao painel restrito.","","E-mail verificado: "+String(data.email||""),
      "Instituição: "+String(data.institution||""),
      "Justificativa: "+String(data.justification||""),
      "Status: Aguardando aprovação","",
      "Revisar solicitação (login administrativo obrigatório): "+link,
      "","Abrir o link não concede acesso. Confirme a decisão na plataforma."].join("\n")
  });
+
 });
 
 exports.approveAccessRequest=onRequest({region:REGION,cors:[/^https:\/\/acarvalho-wcs\.github\.io$/],invoker:"public",maxInstances:3},async(req,res)=>{
