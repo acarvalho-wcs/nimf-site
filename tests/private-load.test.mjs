@@ -47,6 +47,10 @@ try{
 
  console.log("PASS: "+browserName+" private login loads with no credentials or map dependency");
  // Use consistent image tiles so tests validate geographic positioning, not external tile uptime.
+ await page.route("https://basemaps.cartocdn.com/**",route=>route.fulfill({
+  status:200,contentType:"image/svg+xml",
+  body:'<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#629fc4"/></svg>'
+ }));
  await page.route("https://tile.openstreetmap.org/**",route=>route.fulfill({
   status:200,contentType:"image/svg+xml",
   body:'<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#629fc4"/><path d="M0 140L90 90L170 105L256 50L256 256L0 256Z" fill="#dce4c8"/></svg>'
