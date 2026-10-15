@@ -418,7 +418,8 @@ function renderRasterMarkers(rows,fit=false){
  rasterFrame={cells,width,height};
  drawRasterFrame();
  fallbackPins.replaceChildren();
- for(const r of rows){
+ for(const group of markerGroups(rows)){
+  const r=group[0],count=group.length;
   const [px,py]=projection(r.longitude,r.latitude,fallbackZoom);
   let sx=px-left;const dx=sx-width/2;
   if(dx>scale/2)sx-=scale;
@@ -427,9 +428,12 @@ function renderRasterMarkers(rows,fit=false){
   if(sx < -20 || sx>width+20 || sy< -20 || sy>height+20)continue;
   const pin=document.createElement("button");pin.type="button";pin.className="nimf-raster-pin";
   pin.style.left=sx+"px";pin.style.top=sy+"px";
-  pin.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
-  pin.setAttribute("aria-label",pin.title);pin.dataset.layer=r.layer_type||"advertisement";
-  pin.addEventListener("click",()=>focusRecord(r));fallbackPins.append(pin);
+  pin.dataset.layer=r.layer_type||"advertisement";
+  pin.dataset.count=String(count);
+  pin.textContent=count>1?String(count):"";
+  pin.title=count>1?count+" "+trans[language].matches:[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  pin.setAttribute("aria-label",pin.title);
+  pin.addEventListener("click",()=>selectMarkerGroup(group));fallbackPins.append(pin);
  }
  fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"° · Z"+fallbackZoom;
  host.dataset.centerLongitude=String(fallbackCenter[0]);host.dataset.centerLatitude=String(fallbackCenter[1]);
@@ -568,13 +572,18 @@ function drawMarkers(rows,fit=false){
  if(!mapReady||!mapLoaded)return;
  for(const p of pins)p.remove();pins=[];
  const bounds=new window.maplibregl.LngLatBounds();
- for(const r of rows){
+ for(const group of markerGroups(rows)){
+  const r=group[0],count=group.length;
   const [lat,lng]=coords(r);
   const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";
-  dot.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");dot.dataset.layer=r.layer_type||"advertisement";
-  dot.style.cssText="border-radius:100%;width:12px;height:12px;cursor:pointer;box-shadow:0 1px 9px #0006";
-  dot.addEventListener("click",()=>focusRecord(r));
-  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
+  dot.dataset.layer=r.layer_type||"advertisement";
+  dot.dataset.count=String(count);
+  dot.textContent=count>1?String(count):"";
+  dot.title=count>1?count+" "+trans[language].matches:[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  dot.setAttribute("aria-label",dot.title);
+  dot.addEventListener("click",()=>selectMarkerGroup(group));
+  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));
+  bounds.extend([lng,lat]);
  }
  if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
  else if(fit && rows.length>1){map.stop();map.fitBounds(bounds,{padding:75,maxZoom:8,duration:0});}
