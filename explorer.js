@@ -254,6 +254,14 @@ function showDetail(r){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
   d.append(textNode("p",labels[language],"explorer-map-no-location"));
  }
+ if(r.record_kind==="listing"&&r.location_precision==="country"){
+  const notes={
+   pt:"Ponto representativo do país informado no anúncio histórico. Não indica a localização confirmada da oferta, do estabelecimento, dos exemplares ou da transação.",
+   en:"Representative point for the country reported in the historical advertisement; not a verified location of the offer, business, specimens or transaction.",
+   es:"Punto representativo del país indicado en el anuncio histórico, no una ubicación verificada de la oferta, comercio, ejemplares o transacción."
+  };
+  d.append(textNode("p",notes[language],"explorer-map-no-location"));
+ }
  if(!coords(r))d.append(textNode("p",trans[language].unlocated,"explorer-map-no-location"));
  if(typeof r.source_url==="string"&&/^https:\/\/[^/]+/.test(r.source_url)){
   const link=textNode("a",trans[language].link+" ↗");link.href=r.source_url;link.target="_blank";link.rel="noopener noreferrer";externalLinks.append(link);
