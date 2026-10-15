@@ -91,7 +91,10 @@ function updateLinkRequirement(){
 export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromote=null){
  db=database;user=currentUser;admin=isAdmin===true&&currentUser?.email?.trim().toLowerCase()==="acarvalho@wcs.org";promote=onPromote;ownItems=[];adminItems=[];
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();unsubOwn=null;unsubAdmin=null;
- $("admin-review").hidden=!admin;$("admin-history").hidden=!admin;setIntakeLanguage(lang);
+ const reviewPanel=$("admin-review"),historyPanel=$("admin-history");
+ if(reviewPanel)reviewPanel.hidden=!admin;
+ if(historyPanel)historyPanel.hidden=!admin;
+ setIntakeLanguage(lang);
  if(unsubContacts){unsubContacts();unsubContacts=null;}authorEmails.clear();
  if(admin){unsubContacts=onSnapshot(query(collection(db,"access_requests"),limit(500)),snap=>{
   authorEmails=new Map(snap.docs.map(d=>[d.id,d.data()?.email]).filter(([,email])=>typeof email==="string"&&email.includes("@")));
