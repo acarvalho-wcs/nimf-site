@@ -399,3 +399,13 @@ body[data-private-ready="true"] .secure-top-right #secure-theme{display:none!imp
 body[data-theme="light"] .secure-top-right .secure-language-switch #secure-language{color:#e6f5eb}
 @media(max-width:640px){.secure-top-right .secure-language-switch{flex:0 1 auto;min-width:0}.secure-top-right .secure-language-switch #secure-language{min-width:108px;max-width:100%;font-size:11px;padding:6px}}
 @media(max-width:380px){.secure-top-right .secure-language-switch #secure-language{min-width:95px;font-size:10px}}
+
+/* Multiple historic listings may share one approximate country-reference point.
+   Show a count and cycle entries on activation, without inventing precise locations. */
+.nimf-raster-pin[data-count]:not([data-count="1"]),
+.nimf-map-dot[data-count]:not([data-count="1"]){
+ width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ font-size:11px!important;font-weight:800!important;line-height:1!important;color:#153b2b!important;
+ border-width:2px!important;z-index:2;
+}
