@@ -23,8 +23,7 @@ function scientificSpans(text,taxon){
  const value=String(text??""),ranges=[];
  // Historical records may lack verified taxon metadata. Recognize this specific
  // reported binomial and abbreviated genus in multilingual evidence safely.
- const known=/\\b(?:Ceratophrys\\s+ornata|C\\.\\s*ornata)\\b/giu;
- const knownFull=/\\bCeratophrys\\s+ornata\\b/giu;
+ const knownFull=/\bCeratophrys\s+ornata\b/giu;
  const add=(start,end)=>{if(!ranges.some(r=>start<r[1]&&end>r[0]))ranges.push([start,end]);};
  for(const match of value.matchAll(knownFull))add(match.index,match.index+match[0].length);
  for(const match of value.matchAll(/\bC\.\s*ornata\b/giu))add(match.index,match.index+match[0].length);
