@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>IWT Global Observatory map integration test</title>
+<head><meta charset="utf-8"><script>window.__nimfDisableMapLibre=true;</script><title>IWT Global Observatory map integration test</title>
 <link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../secure.css">
 <style>body{margin:0;padding:28px} .explorer{max-width:1000px}#explorer-map{height:530px}</style>
 </head>
@@ -18,6 +18,9 @@
 </div>
 <div class="explorer-summary"><strong id="explorer-count"></strong><span id="explorer-count-label"></span><span id="explorer-map-count"></span><span id="explorer-unmapped-count"></span></div>
 <div class="explorer-layout"><div class="explorer-map-wrap"><div class="explorer-map-toolbar">
+              <div id="map-toolbar-projection" class="explorer-mode-switch"><button id="map-toolbar-mode-map" type="button" aria-pressed="true">MAP</button><button id="map-toolbar-mode-globe" type="button" aria-pressed="false">GLOBE</button></div>
+              <div id="map-color-switch" class="explorer-mode-switch"><button id="map-color-dark" type="button" aria-pressed="true">Escuro</button><button id="map-color-light" type="button" aria-pressed="false">Claro</button></div>
+              <div class="explorer-mode-switch"><button id="explorer-mode-map" type="button" aria-pressed="true">MAP</button><button id="explorer-mode-globe" type="button" aria-pressed="false">GLOBE</button></div>
               <button id="layers-toggle" type="button" class="secure-secondary map-toolbar-button" aria-controls="explorer-layers" aria-expanded="false"><span class="layers-icon" aria-hidden="true">☷</span><span id="layers-toggle-label">Camadas</span></button>
               <button id="explorer-fullscreen" type="button" class="secure-secondary map-toolbar-button" aria-pressed="false">Tela cheia</button>
             </div>
