@@ -216,7 +216,7 @@ function showDetail(r){
  const d=el("explorer-map-card");d.replaceChildren();
  d.dataset.recordId=r.id;
  const header=document.createElement("div");header.className="explorer-detail-head";
- const head=appendScientific(document.createElement("h3"),r.layer_type && r.layer_type!=="advertisement" ? (r.title||r.source||r.id) : (localizedTitle(r,language)||r.id),r.scientific_name);
+ const head=appendScientific(document.createElement("h3"),r.layer_type && r.layer_type!=="advertisement" ? (r.title||r.source||r.id) : (localizedTitle(r,language)||r.id),r.scientific_name||r.reported_scientific_name);
  head.id="explorer-map-card-title";
  header.append(head);
  const close=textNode("button","×","explorer-map-card-close");close.type="button";
@@ -236,8 +236,9 @@ function showDetail(r){
    ["status",trans[language].review],
    ["location_precision",trans[language].precision]
  ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,localizedField(r,key,language));}
- if(Number.isFinite(r.advertised_price)){
-  try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency||"BRL"}).format(r.advertised_price));}catch{}
+ if(typeof r.advertised_price_display==="string" && r.advertised_price_display.trim())addField(info,trans[language].price,r.advertised_price_display);
+ else if(Number.isFinite(r.advertised_price)&&typeof r.currency==="string"&&/^[A-Z]{3}$/.test(r.currency)){
+  try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency}).format(r.advertised_price));}catch{}
  }
  if(Number.isFinite(r.advertised_quantity))addField(info,trans[language].quantity,r.advertised_quantity);
  d.append(info);
