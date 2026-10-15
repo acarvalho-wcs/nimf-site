@@ -17,17 +17,20 @@
   body[data-private-ready="true"] #reports-nav{display:flex!important}
  </style>
  <script>
- // Ensure a broken remote module can never leave all panels invisible.
+ // The login form is rendered by HTML; Firebase grants access to private data.
+ // If any dependency fails, keep the form visible and explain why sign-in is unavailable.
  setTimeout(function(){
   if(window.__nimfAppStarted)return;
-  const panel=document.getElementById("config-panel");
-  if(!panel)return;
-  panel.hidden=false;
-  document.getElementById("config-title").textContent="Não foi possível iniciar o acesso";
-  document.getElementById("config-body").textContent="O aplicativo não terminou de carregar. Recarregue a página; se persistir, informe o administrador. Seus dados não foram alterados.";
- },9000);
+  const panel=document.getElementById("auth-panel");
+  const error=document.getElementById("auth-error");
+  if(panel)panel.hidden=false;
+  if(error){
+   error.textContent="A autenticação não terminou de carregar. Tente atualizar a página. Se persistir, informe a equipe técnica; seus dados não foram alterados.";
+   error.hidden=false;
+  }
+ },7000);
  </script>
- <script type="module" src="./secure.js?v=search49"></script>
+ <script type="module" src="./secure.js?v=login-recovery-20261015-2"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -61,7 +64,7 @@
    </header>
    <main class="secure-content">
     <div id="config-panel" class="secure-card" hidden><span class="secure-label">SETUP</span><h2 id="config-title">Área restrita em configuração</h2><p id="config-body">O administrador precisa conectar o Firebase e aplicar as regras de segurança. Nenhuma informação privada está disponível neste momento.</p></div>
-    <section id="auth-panel" class="secure-card" hidden>
+    <section id="auth-panel" class="secure-card">
       <span class="secure-label" id="auth-kicker">INVESTIGAÇÃO DE MERCADOS DE FAUNA / ACESSO</span>
       <h2 id="auth-title">Acessar Investigação de Mercados de Fauna</h2>
       <p id="auth-subtitle">Seu e-mail e sua senha são administrados pelo serviço de autenticação, nunca pelo GitHub Pages.</p>
