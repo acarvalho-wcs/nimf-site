@@ -473,10 +473,22 @@ function setMapColorMode(color){
  if(fallbackLayer){fallbackLayer.dataset.mapColor=color;drawRasterFrame();}
 }
 for(const [id,mode] of [["map-color-dark","dark"],["map-color-light","light"]])el(id)?.addEventListener("click",()=>setMapColorMode(mode));
+function reportGlobeUnavailable(){
+ maplibreLoadFailed=true;
+ if(projectionMode==="globe"){projectionMode="map";applyProjection(false);}
+ const notice=el("explorer-map-notice");
+ if(notice)notice.textContent={pt:"GLOBE 3D indisponível no navegador ou na rede. O mapa 2D continua funcional.",en:"3D globe unavailable in this browser or network. The 2D map remains available.",es:"Globo 3D no disponible en el navegador o la red. El mapa 2D sigue disponible."}[language];
+}
 function setupMap(){
  if(!fallbackLayer)initializeRasterFallback();
- if(mapReady||mapAttempted||!window.maplibregl)return;
- if(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported()){el("explorer-map").dataset.mapError="webgl-unavailable";return;}
+ if(mapReady||mapAttempted)return;
+ if(!window.maplibregl){
+  if(maplibreLoadStarted||maplibreLoadFailed||window.__nimfDisableMapLibre)return;
+  maplibreLoadStarted=true;
+  import(MAPLIBRE_MODULE_URL).then(engine=>{window.maplibregl=engine;setupMap();}).catch(()=>reportGlobeUnavailable());
+  return;
+ }
+ if(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported()){el("explorer-map").dataset.mapError="webgl-unavailable";reportGlobeUnavailable();return;}
  mapAttempted=true;
  const host=el("explorer-map"),glHost=document.createElement("div");
  glHost.className="nimf-gl-map";glHost.style.opacity="0";glHost.setAttribute("aria-hidden","true");
@@ -488,7 +500,9 @@ function setupMap(){
   if(mapLoaded || loadTimedOut)return;
   loadTimedOut=true;
   if(map){try{map.remove();}catch(e){}map=null;}
+  mapReady=false;mapLoaded=false;
   glHost.remove();fallbackLayer.style.display="";
+  reportGlobeUnavailable();
   el("explorer-map").dataset.activeEngine="raster";el("explorer-map").dataset.mapError="webgl-load-failed";
   renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
  };
@@ -597,7 +611,8 @@ function drawMarkers(rows,fit=false){
   pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));
   bounds.extend([lng,lat]);
  }
- if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
+ if(fit && rows.length && projectionMode==="globe"){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:Math.min(map.getZoom(),2.1)});}
+ else if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
  else if(fit && rows.length>1){map.stop();map.fitBounds(bounds,{padding:75,maxZoom:8,duration:0});}
  // Record the actual on-screen camera for functional verification.
  const mapHost=el("explorer-map"),center=map.getCenter();
