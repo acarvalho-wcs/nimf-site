@@ -194,7 +194,7 @@ function enablePrivateWidgets(user,epoch){
 }
 
 async function loadPrivateRecords(user,epoch){
- const snap=await getDocs(query(collection(db,"records"),limit(200)));
+ const snap=await getDocs(collection(db,"records"));
  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
  records=snap.docs.filter(d=>d.id!=="abelhas-org-30683").map(d=>({id:d.id,...d.data()}));
  $("account-email").textContent=user.email||"";
