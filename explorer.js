@@ -3,6 +3,8 @@ import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
 let projectionMode="map", mapColorMode="dark";
+const MAPLIBRE_MODULE_URL="https://cdn.jsdelivr.net/npm/maplibre-gl@6.13.0/dist/maplibre-gl.mjs";
+let maplibreLoadStarted=false,maplibreLoadFailed=false;
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null,lastViewportSignature=null;
 const el=id=>document.getElementById(id);
@@ -312,7 +314,7 @@ function initializeRasterFallback(){
  const reset=document.createElement("button");reset.type="button";reset.textContent="◎";reset.id="nimf-map-reset";
  reset.addEventListener("click",()=>renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),true));
  controls.append(reset);
- const credit=textNode("div","© OpenStreetMap contributors","nimf-raster-attribution");
+ const credit=textNode("div","© OpenStreetMap contributors · © CARTO","nimf-raster-attribution");
  const at=textNode("div","","nimf-raster-coordinates");
  layer.append(tiles,pinsLayer,controls,credit,at);host.append(layer);
  fallbackLayer=layer;fallbackTiles=tiles;fallbackPins=pinsLayer;
@@ -350,22 +352,24 @@ function drawRasterFrame(){
  fallbackTiles.style.width=width+"px";fallbackTiles.style.height=height+"px";
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,width,height);
- ctx.fillStyle="#b9d8de";ctx.fillRect(0,0,width,height);
+ ctx.fillStyle=mapColorMode==="dark"?"#101e2b":"#dbe8ef";ctx.fillRect(0,0,width,height);
+ el("explorer-map").dataset.rasterTileset=mapColorMode;
  let loaded=0;
  for(const cell of cells){
-  let entry=rasterCache.get(cell.key);
+  const key=mapColorMode+":"+cell.key;
+  let entry=rasterCache.get(key);
   if(!entry){
    const image=new Image();image.decoding="async";
    entry={image,ready:false,failed:false};
-   rasterCache.set(cell.key,entry);
+   rasterCache.set(key,entry);
    // Keep cache bounded for extended browsing sessions.
    if(rasterCache.size>240)rasterCache.delete(rasterCache.keys().next().value);
    image.onload=()=>{entry.ready=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
    image.onerror=()=>{entry.failed=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
-   image.src="https://tile.openstreetmap.org/"+cell.key+".png";
+   image.src="https://basemaps.cartocdn.com/"+(mapColorMode==="dark"?"dark_all":"light_all")+"/"+cell.key+".png";
   }
   if(entry.ready){loaded++;ctx.drawImage(entry.image,Math.round(cell.left),Math.round(cell.top),257,257);}
-  else{ctx.fillStyle="#e5e7e0";ctx.fillRect(cell.left,cell.top,256,256);}
+  else{ctx.fillStyle=mapColorMode==="dark"?"#1e2d39":"#f0f0eb";ctx.fillRect(cell.left,cell.top,256,256);}
  }
  el("explorer-map").dataset.loadedTiles=String(loaded);
 }
@@ -466,7 +470,7 @@ function setMapColorMode(color){
   try{map.setStyle(mapStyleUrl(),{diff:false});}
   catch(e){try{map.setStyle({version:8,sources:{basemap:{type:"raster",tiles:["https://basemaps.cartocdn.com/"+(color==="light"?"light_all":"dark_all")+"/{z}/{x}/{y}.png"],tileSize:256}},layers:[{id:"safe-raster",type:"raster",source:"basemap"}]});}catch(ignore){}}
  }
- if(fallbackLayer)fallbackLayer.dataset.mapColor=color;
+ if(fallbackLayer){fallbackLayer.dataset.mapColor=color;drawRasterFrame();}
 }
 for(const [id,mode] of [["map-color-dark","dark"],["map-color-light","light"]])el(id)?.addEventListener("click",()=>setMapColorMode(mode));
 function setupMap(){
