@@ -125,5 +125,9 @@ export async function openIntake(database,currentUser,isAdmin,lang="pt",onPromot
 export function closeIntake(){
  if(unsubOwn)unsubOwn();if(unsubAdmin)unsubAdmin();if(unsubContacts)unsubContacts();unsubOwn=null;unsubAdmin=null;unsubContacts=null;authorEmails.clear();
  user=null;db=null;admin=false;promote=null;ownItems=[];adminItems=[];
- $("my-tips").replaceChildren();$("admin-tips").replaceChildren();$("admin-history-tips")?.replaceChildren();$("admin-review").hidden=true;$("admin-history").hidden=true;feedback("");
+ $("my-tips")?.replaceChildren();$("admin-tips")?.replaceChildren();$("admin-history-tips")?.replaceChildren();
+ const reviewPanel=$("admin-review"),historyPanel=$("admin-history");
+ if(reviewPanel)reviewPanel.hidden=true;
+ if(historyPanel)historyPanel.hidden=true;
+ feedback("");
 }
