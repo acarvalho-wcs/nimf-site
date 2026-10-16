@@ -85,36 +85,40 @@ const internalReportRecord={
  titles:{pt:"Relatório de evolução mensal — Observatório Global de Tráfico de Animais",en:"Monthly evolution report — Illegal Wildlife Trafficking Global Observatory",es:"Informe de evolución mensual — Observatorio Global del Tráfico de Animales"},
  descriptions:{pt:"Edição inaugural sobre a evolução tecnológica e metodológica de 21/09 a 15/10/2026: dados, repositórios, mapas 2D/3D, inteligência de mercados, auditorias e próximas etapas com Aurum.",en:"Inaugural account of technological and methodological progress, 21 September–15 October 2026: datasets, repositories, 2D/3D mapping, market intelligence, quality assurance and Aurum integration plans.",es:"Edición inaugural sobre los avances tecnológicos y metodológicos, del 21 de septiembre al 15 de octubre de 2026: datos, repositorios, mapas 2D/3D, inteligencia de mercados, auditorías e integración prevista con Aurum."}
 };
-const internalFileNames={pt:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_PT.pdf",en:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_EN.pdf",es:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_ES.pdf"};
-const internalDownloadLabels={pt:["Baixar PDF em português","O download protegido ainda não está disponível."],en:["Download English PDF","The protected download is not available yet."],es:["Descargar PDF en español","La descarga protegida aún no está disponible."]};
+const publicReportCatalogUrl="https://raw.githubusercontent.com/acarvalho-wcs/wildlife-trafficking-reports/main/reports-internal.json";
+const publicReportBase="https://raw.githubusercontent.com/acarvalho-wcs/wildlife-trafficking-reports/main/";
+let internalLibrary=[];
+const internalLabels={
+ pt:{download:"Baixar PDF em português",unavailable:"PDF em português ainda não disponível",error:"Não foi possível carregar o catálogo de relatórios."},
+ en:{download:"Download English PDF",unavailable:"English PDF not yet available",error:"Could not load the report catalogue."},
+ es:{download:"Descargar PDF en español",unavailable:"PDF en español aún no disponible",error:"No se pudo cargar el catálogo de informes."}
+};
 function renderInternalReport(){
- const list=$("internal-reports-folders");if(!list)return;
- list.replaceChildren();
+ const box=$("internal-reports-folders");if(!box)return;
+ box.replaceChildren();
  const lang=["pt","en","es"].includes(locale)?locale:"pt";
- const card=document.createElement("article");card.className="reports-folder-card";
- const heading=document.createElement("h3");heading.textContent=internalReportRecord.titles[lang];card.append(heading);
- const summary=document.createElement("p");summary.textContent=internalReportRecord.descriptions[lang];card.append(summary);
- const status=document.createElement("p");status.className="reports-empty-description";status.setAttribute("role","status");
- const download=document.createElement("button");download.className="secure-button";download.type="button";download.textContent=internalDownloadLabels[lang][0];
- download.addEventListener("click",async()=>{
-  if(!auth?.currentUser?.emailVerified||!activeUser)return;
-  download.disabled=true;status.textContent="";
-  try{
-   const token=await auth.currentUser.getIdToken();
-   const response=await fetch("https://us-central1-"+firebaseConfig.projectId+".cloudfunctions.net/downloadInternalReport",{
-    method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
-    body:JSON.stringify({reportId:"evolution-2026-09-21-2026-10-15",lang}),cache:"no-store"
-   });
-   if(!response.ok)throw new Error("Protected report download unavailable");
-   const file=await response.blob();
-   if(file.type!=="application/pdf")throw new Error("Invalid PDF response");
-   const objectUrl=URL.createObjectURL(file),link=document.createElement("a");
-   link.href=objectUrl;link.download=internalFileNames[lang];document.body.append(link);link.click();link.remove();
-   setTimeout(()=>URL.revokeObjectURL(objectUrl),30000);
-  }catch(error){status.textContent=internalDownloadLabels[lang][1];console.warn("Report download unavailable",error);}
-  finally{download.disabled=false;}
- });
- card.append(download,status);list.append(card);$("internal-reports-empty").hidden=true;
+ for(const item of internalLibrary){
+  const card=document.createElement("article");card.className="reports-folder-card";
+  const title=document.createElement("h3");title.textContent=item.title?.[lang]||item.title?.pt||item.id;card.append(title);
+  const description=document.createElement("p");description.textContent=item.description?.[lang]||item.description?.pt||"";card.append(description);
+  const file=item.files?.[lang],valid=file?.available===true&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path);
+  if(valid){
+   const link=document.createElement("a");link.href=publicReportBase+file.path.split("/").map(encodeURIComponent).join("/");link.target="_blank";link.rel="noopener noreferrer";link.download="";link.className="secure-secondary";link.textContent=internalLabels[lang].download;card.append(link);
+  }else{
+   const status=document.createElement("p");status.className="reports-empty-description";status.textContent=internalLabels[lang].unavailable;card.append(status);
+  }
+  box.append(card);
+ }
+ $("internal-reports-empty").hidden=internalLibrary.length>0;
+}
+async function loadInternalReports(){
+ try{
+  const response=await fetch(publicReportCatalogUrl+"?v="+Date.now(),{cache:"no-store"});
+  if(!response.ok)throw new Error("Catalogue fetch failed");
+  const payload=await response.json();
+  internalLibrary=Array.isArray(payload.reports)?payload.reports:[];
+ }catch(error){console.warn(internalLabels[locale]?.error||"Internal catalog unavailable",error);internalLibrary=[];}
+ renderInternalReport();
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
@@ -247,7 +251,7 @@ async function loadPrivateRecords(user,epoch){
  records=snap.docs.filter(d=>d.id!=="abelhas-org-30683").map(d=>({id:d.id,...d.data()}));
  $("account-email").textContent=user.email||"";
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
- renderInternalReport();
+ void loadInternalReports();
  $("record-search").value="";show("dashboard-panel");switchWorkspace("dashboard");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);void loadReportGrants(user,epoch);void loadAdminApplications(user,epoch);
 }
 async function ensureApplication(user){
