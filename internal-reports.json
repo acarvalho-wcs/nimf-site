@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "reports": [
+    {
+      "id": "evolution-2026-09-21-2026-10-15",
+      "date": "2026-10-15",
+      "period_start": "2026-09-21",
+      "period_end": "2026-10-15",
+      "category": "internal_progress",
+      "titles": {
+        "pt": "Relatório de evolução mensal — Observatório Global de Tráfico de Animais",
+        "en": "Monthly evolution report — Illegal Wildlife Trafficking Global Observatory",
+        "es": "Informe de evolución mensual — Observatorio Global del Tráfico de Animales"
+      },
+      "descriptions": {
+        "pt": "Edição inaugural que documenta a evolução tecnológica e metodológica entre 21/09 e 15/10/2026, incluindo arquitetura de dados, repositórios, mapas 2D/3D, inteligência de mercados, auditorias e próximas etapas com Aurum.",
+        "en": "Inaugural edition documenting technological and methodological progress from 21 September to 15 October 2026, including data architecture, repositories, 2D/3D maps, market intelligence, quality assurance and next steps involving Aurum.",
+        "es": "Edición inaugural que documenta avances tecnológicos y metodológicos del 21 de septiembre al 15 de octubre de 2026, incluida la arquitectura de datos, repositorios, mapas 2D/3D, inteligencia de mercados, auditorías y próximos pasos con Aurum."
+      },
+      "files": {
+        "pt": "Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_PT.pdf",
+        "en": "Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_EN.pdf",
+        "es": "Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_ES.pdf"
+      },
+      "availability": "awaiting_protected_upload"
+    }
+  ]
+}
