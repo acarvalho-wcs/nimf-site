@@ -117,8 +117,8 @@ function renderInternalReport(){
  const items=internalLibrary.filter(item=>(item.category||"evolution")===internalCategory);
  for(const item of items){
   const card=document.createElement("article");card.className="internal-document-card";
-  const title=document.createElement("h4");title.textContent=localInternal(item.title,lang)||item.id;card.append(title);
-  const desc=document.createElement("p");desc.className="internal-document-description";desc.textContent=localInternal(item.description,lang);card.append(desc);
+  const title=document.createElement("h4");appendScientific(title,localInternal(item.title,lang)||item.id,item.scientific_name||"");card.append(title);
+  const desc=document.createElement("p");desc.className="internal-document-description";appendScientific(desc,localInternal(item.description,lang),item.scientific_name||"");card.append(desc);
   const meta=document.createElement("dl");meta.className="internal-document-meta";
   const dateFormat=lang==="en"?"en-GB":lang==="es"?"es-ES":"pt-BR";
   const start=item.period_start,end=item.period_end;
