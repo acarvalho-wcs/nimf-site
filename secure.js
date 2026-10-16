@@ -74,10 +74,24 @@ function translate(){
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  if(intakeModule){try{intakeModule.setIntakeLanguage(locale);}catch(e){console.warn("Intake locale update failed",e);}}
   if(mapModule){try{mapModule.setMapPointLanguage(locale);}catch(e){console.warn("Map admin locale update failed",e);}}
+ renderInternalReport();
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
  if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule){try{explorerModule.setExplorerLanguage(locale);}catch(e){console.warn("Explorer locale update failed",e);}}} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels(); if(window.__nimfMapFilterTranslate)window.__nimfMapFilterTranslate();
+}
+const internalReportRecord={
+ titles:{pt:"Relatório de evolução mensal — Observatório Global de Tráfico de Animais",en:"Monthly evolution report — Illegal Wildlife Trafficking Global Observatory",es:"Informe de evolución mensual — Observatorio Global del Tráfico de Animales"},
+ descriptions:{pt:"Edição inaugural sobre a evolução tecnológica e metodológica de 21/09 a 15/10/2026: dados, repositórios, mapas 2D/3D, inteligência de mercados, auditorias e próximas etapas com Aurum.",en:"Inaugural account of technological and methodological progress, 21 September–15 October 2026: datasets, repositories, 2D/3D mapping, market intelligence, quality assurance and Aurum integration plans.",es:"Edición inaugural sobre los avances tecnológicos y metodológicos, del 21 de septiembre al 15 de octubre de 2026: datos, repositorios, mapas 2D/3D, inteligencia de mercados, auditorías e integración prevista con Aurum."}
+};
+function renderInternalReport(){
+ const list=$("internal-reports-folders");if(!list)return;
+ list.replaceChildren();
+ const card=document.createElement("article");card.className="reports-folder-card";
+ const heading=document.createElement("h3");heading.textContent=internalReportRecord.titles[locale];card.append(heading);
+ const summary=document.createElement("p");summary.textContent=internalReportRecord.descriptions[locale];card.append(summary);
+ const note=document.createElement("p");note.textContent=({pt:"21/09–15/10/2026 · Edição inaugural · PDFs em preparação para distribuição protegida.",en:"21 Sep–15 Oct 2026 · Inaugural edition · PDFs awaiting protected distribution.",es:"21/09–15/10/2026 · Edición inaugural · PDF pendientes de distribución protegida."})[locale];card.append(note);
+ list.append(card);$("internal-reports-empty").hidden=true;
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
