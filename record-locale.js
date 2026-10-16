@@ -37,7 +37,13 @@ export function localizedField(record,key,lang="pt"){
  return String(raw);
 }
 export function localizedTitle(record,lang="pt"){
- const sci=record?.scientific_name;
+ const sci=record?.scientific_name || record?.reported_scientific_name;
+ if(record?.record_kind==="listing" &&
+    ["oferta_historica_anfibio_vivo","proposta_troca_anfibio_vivo"].includes(record?.product_type)){
+  const names={pt:record.product_type.startsWith("proposta")?"Proposta de troca de anfíbio":"Anúncio histórico de anfíbio",en:record.product_type.startsWith("proposta")?"Amphibian exchange proposal":"Historical amphibian listing",es:record.product_type.startsWith("proposta")?"Propuesta de intercambio de anfibio":"Anuncio histórico de anfibio"};
+  const qualifier=record.scientific_name?"":({pt:" (identificação pendente)",en:" (identification pending)",es:" (identificación pendiente)"}[useLang(lang)]);
+  return names[useLang(lang)]+": "+(sci||({pt:"espécie não identificada",en:"species not identified",es:"especie no identificada"}[useLang(lang)]))+qualifier;
+ }
  if(sci && typeof sci==="string"){
   // The canonical title is specifically generated for advertised colonies;
   // retain unknown titles instead of inferring product types.

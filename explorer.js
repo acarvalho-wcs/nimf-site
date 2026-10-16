@@ -3,6 +3,8 @@ import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
 let projectionMode="map", mapColorMode="dark";
+const MAPLIBRE_MODULE_URL="https://cdn.jsdelivr.net/npm/maplibre-gl@6.13.0/dist/maplibre-gl.mjs";
+let maplibreLoadStarted=false,maplibreLoadFailed=false;
 let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null,lastViewportSignature=null;
 const el=id=>document.getElementById(id);
@@ -214,7 +216,7 @@ function showDetail(r){
  const d=el("explorer-map-card");d.replaceChildren();
  d.dataset.recordId=r.id;
  const header=document.createElement("div");header.className="explorer-detail-head";
- const head=appendScientific(document.createElement("h3"),r.layer_type && r.layer_type!=="advertisement" ? (r.title||r.source||r.id) : (localizedTitle(r,language)||r.id),r.scientific_name);
+ const head=appendScientific(document.createElement("h3"),r.layer_type && r.layer_type!=="advertisement" ? (r.title||r.source||r.id) : (localizedTitle(r,language)||r.id),r.scientific_name||r.reported_scientific_name);
  head.id="explorer-map-card-title";
  header.append(head);
  const close=textNode("button","×","explorer-map-card-close");close.type="button";
@@ -234,8 +236,9 @@ function showDetail(r){
    ["status",trans[language].review],
    ["location_precision",trans[language].precision]
  ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,localizedField(r,key,language));}
- if(Number.isFinite(r.advertised_price)){
-  try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency||"BRL"}).format(r.advertised_price));}catch{}
+ if(typeof r.advertised_price_display==="string" && r.advertised_price_display.trim())addField(info,trans[language].price,r.advertised_price_display);
+ else if(Number.isFinite(r.advertised_price)&&typeof r.currency==="string"&&/^[A-Z]{3}$/.test(r.currency)){
+  try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency}).format(r.advertised_price));}catch{}
  }
  if(Number.isFinite(r.advertised_quantity))addField(info,trans[language].quantity,r.advertised_quantity);
  d.append(info);
@@ -253,6 +256,14 @@ function showDetail(r){
  if(["platform_store_municipality","platform_store_address"].includes(r.location_basis)){
   const labels={pt:"Localização aproximada da loja física; não indica origem ou localização dos exemplares.",en:"Approximate physical shop location; not the origin or location of specimens.",es:"Ubicación aproximada de la tienda física; no indica origen ni ubicación de ejemplares."};
   d.append(textNode("p",labels[language],"explorer-map-no-location"));
+ }
+ if(r.record_kind==="listing"&&r.location_precision==="country"){
+  const notes={
+   pt:"Ponto representativo do país informado no anúncio histórico. Não indica a localização confirmada da oferta, do estabelecimento, dos exemplares ou da transação.",
+   en:"Representative point for the country reported in the historical advertisement; not a verified location of the offer, business, specimens or transaction.",
+   es:"Punto representativo del país indicado en el anuncio histórico, no una ubicación verificada de la oferta, comercio, ejemplares o transacción."
+  };
+  d.append(textNode("p",notes[language],"explorer-map-no-location"));
  }
  if(!coords(r))d.append(textNode("p",trans[language].unlocated,"explorer-map-no-location"));
  if(typeof r.source_url==="string"&&/^https:\/\/[^/]+/.test(r.source_url)){
@@ -304,7 +315,7 @@ function initializeRasterFallback(){
  const reset=document.createElement("button");reset.type="button";reset.textContent="◎";reset.id="nimf-map-reset";
  reset.addEventListener("click",()=>renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),true));
  controls.append(reset);
- const credit=textNode("div","© OpenStreetMap contributors","nimf-raster-attribution");
+ const credit=textNode("div","© OpenStreetMap contributors · © CARTO","nimf-raster-attribution");
  const at=textNode("div","","nimf-raster-coordinates");
  layer.append(tiles,pinsLayer,controls,credit,at);host.append(layer);
  fallbackLayer=layer;fallbackTiles=tiles;fallbackPins=pinsLayer;
@@ -342,22 +353,24 @@ function drawRasterFrame(){
  fallbackTiles.style.width=width+"px";fallbackTiles.style.height=height+"px";
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,width,height);
- ctx.fillStyle="#b9d8de";ctx.fillRect(0,0,width,height);
+ ctx.fillStyle=mapColorMode==="dark"?"#101e2b":"#dbe8ef";ctx.fillRect(0,0,width,height);
+ el("explorer-map").dataset.rasterTileset=mapColorMode;
  let loaded=0;
  for(const cell of cells){
-  let entry=rasterCache.get(cell.key);
+  const key=mapColorMode+":"+cell.key;
+  let entry=rasterCache.get(key);
   if(!entry){
    const image=new Image();image.decoding="async";
    entry={image,ready:false,failed:false};
-   rasterCache.set(cell.key,entry);
+   rasterCache.set(key,entry);
    // Keep cache bounded for extended browsing sessions.
    if(rasterCache.size>240)rasterCache.delete(rasterCache.keys().next().value);
    image.onload=()=>{entry.ready=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
    image.onerror=()=>{entry.failed=true;if(fallbackLayer && fallbackLayer.style.display!=="none")drawRasterFrame();};
-   image.src="https://tile.openstreetmap.org/"+cell.key+".png";
+   image.src="https://basemaps.cartocdn.com/"+(mapColorMode==="dark"?"dark_all":"light_all")+"/"+cell.key+".png";
   }
   if(entry.ready){loaded++;ctx.drawImage(entry.image,Math.round(cell.left),Math.round(cell.top),257,257);}
-  else{ctx.fillStyle="#e5e7e0";ctx.fillRect(cell.left,cell.top,256,256);}
+  else{ctx.fillStyle=mapColorMode==="dark"?"#1e2d39":"#f0f0eb";ctx.fillRect(cell.left,cell.top,256,256);}
  }
  el("explorer-map").dataset.loadedTiles=String(loaded);
 }
@@ -418,7 +431,8 @@ function renderRasterMarkers(rows,fit=false){
  rasterFrame={cells,width,height};
  drawRasterFrame();
  fallbackPins.replaceChildren();
- for(const r of rows){
+ for(const group of markerGroups(rows)){
+  const r=group[0],count=group.length;
   const [px,py]=projection(r.longitude,r.latitude,fallbackZoom);
   let sx=px-left;const dx=sx-width/2;
   if(dx>scale/2)sx-=scale;
@@ -427,9 +441,12 @@ function renderRasterMarkers(rows,fit=false){
   if(sx < -20 || sx>width+20 || sy< -20 || sy>height+20)continue;
   const pin=document.createElement("button");pin.type="button";pin.className="nimf-raster-pin";
   pin.style.left=sx+"px";pin.style.top=sy+"px";
-  pin.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
-  pin.setAttribute("aria-label",pin.title);pin.dataset.layer=r.layer_type||"advertisement";
-  pin.addEventListener("click",()=>focusRecord(r));fallbackPins.append(pin);
+  pin.dataset.layer=r.layer_type||"advertisement";
+  pin.dataset.count=String(count);
+  pin.textContent=count>1?String(count):"";
+  pin.title=count>1?count+" "+trans[language].matches:[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  pin.setAttribute("aria-label",pin.title);
+  pin.addEventListener("click",()=>selectMarkerGroup(group));fallbackPins.append(pin);
  }
  fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"° · Z"+fallbackZoom;
  host.dataset.centerLongitude=String(fallbackCenter[0]);host.dataset.centerLatitude=String(fallbackCenter[1]);
@@ -454,13 +471,25 @@ function setMapColorMode(color){
   try{map.setStyle(mapStyleUrl(),{diff:false});}
   catch(e){try{map.setStyle({version:8,sources:{basemap:{type:"raster",tiles:["https://basemaps.cartocdn.com/"+(color==="light"?"light_all":"dark_all")+"/{z}/{x}/{y}.png"],tileSize:256}},layers:[{id:"safe-raster",type:"raster",source:"basemap"}]});}catch(ignore){}}
  }
- if(fallbackLayer)fallbackLayer.dataset.mapColor=color;
+ if(fallbackLayer){fallbackLayer.dataset.mapColor=color;drawRasterFrame();}
 }
 for(const [id,mode] of [["map-color-dark","dark"],["map-color-light","light"]])el(id)?.addEventListener("click",()=>setMapColorMode(mode));
+function reportGlobeUnavailable(){
+ maplibreLoadFailed=true;
+ if(projectionMode==="globe"){projectionMode="map";applyProjection(false);}
+ const notice=el("explorer-map-notice");
+ if(notice)notice.textContent={pt:"GLOBE 3D indisponível no navegador ou na rede. O mapa 2D continua funcional.",en:"3D globe unavailable in this browser or network. The 2D map remains available.",es:"Globo 3D no disponible en el navegador o la red. El mapa 2D sigue disponible."}[language];
+}
 function setupMap(){
  if(!fallbackLayer)initializeRasterFallback();
- if(mapReady||mapAttempted||!window.maplibregl)return;
- if(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported()){el("explorer-map").dataset.mapError="webgl-unavailable";return;}
+ if(mapReady||mapAttempted)return;
+ if(!window.maplibregl){
+  if(maplibreLoadStarted||maplibreLoadFailed||window.__nimfDisableMapLibre)return;
+  maplibreLoadStarted=true;
+  import(MAPLIBRE_MODULE_URL).then(engine=>{window.maplibregl=engine;setupMap();}).catch(()=>reportGlobeUnavailable());
+  return;
+ }
+ if(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported()){el("explorer-map").dataset.mapError="webgl-unavailable";reportGlobeUnavailable();return;}
  mapAttempted=true;
  const host=el("explorer-map"),glHost=document.createElement("div");
  glHost.className="nimf-gl-map";glHost.style.opacity="0";glHost.setAttribute("aria-hidden","true");
@@ -472,7 +501,9 @@ function setupMap(){
   if(mapLoaded || loadTimedOut)return;
   loadTimedOut=true;
   if(map){try{map.remove();}catch(e){}map=null;}
+  mapReady=false;mapLoaded=false;
   glHost.remove();fallbackLayer.style.display="";
+  reportGlobeUnavailable();
   el("explorer-map").dataset.activeEngine="raster";el("explorer-map").dataset.mapError="webgl-load-failed";
   renderRasterMarkers(dataset.filter(matches).filter(r=>coords(r)),true);
  };
@@ -568,15 +599,21 @@ function drawMarkers(rows,fit=false){
  if(!mapReady||!mapLoaded)return;
  for(const p of pins)p.remove();pins=[];
  const bounds=new window.maplibregl.LngLatBounds();
- for(const r of rows){
+ for(const group of markerGroups(rows)){
+  const r=group[0],count=group.length;
   const [lat,lng]=coords(r);
   const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";
-  dot.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");dot.dataset.layer=r.layer_type||"advertisement";
-  dot.style.cssText="border-radius:100%;width:12px;height:12px;cursor:pointer;box-shadow:0 1px 9px #0006";
-  dot.addEventListener("click",()=>focusRecord(r));
-  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
+  dot.dataset.layer=r.layer_type||"advertisement";
+  dot.dataset.count=String(count);
+  dot.textContent=count>1?String(count):"";
+  dot.title=count>1?count+" "+trans[language].matches:[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  dot.setAttribute("aria-label",dot.title);
+  dot.addEventListener("click",()=>selectMarkerGroup(group));
+  pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));
+  bounds.extend([lng,lat]);
  }
- if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
+ if(fit && rows.length && projectionMode==="globe"){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:Math.min(map.getZoom(),2.1)});}
+ else if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
  else if(fit && rows.length>1){map.stop();map.fitBounds(bounds,{padding:75,maxZoom:8,duration:0});}
  // Record the actual on-screen camera for functional verification.
  const mapHost=el("explorer-map"),center=map.getCenter();
