@@ -14,7 +14,7 @@
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
   body[data-private-ready="true"] #side-navigation{display:flex!important}
   body[data-private-ready="true"] #dashboard-nav,
-  body[data-private-ready="true"] #reports-nav{display:flex!important}
+  body[data-private-ready="true"] #reports-nav, body[data-private-ready="true"] #internal-reports-nav{display:flex!important}
  </style>
  <script>
  // The login form is rendered by HTML; Firebase grants access to private data.
@@ -44,6 +44,7 @@
    <nav class="secure-side-navigation" aria-label="Navegação da área restrita" id="side-navigation">
      <button id="dashboard-nav" class="secure-side-nav-item active" type="button" disabled aria-controls="dashboard-primary"><span aria-hidden="true">◉</span><span id="dashboard-nav-label">Painel</span></button>
      <button id="reports-nav" class="secure-side-nav-item" type="button" disabled aria-controls="intelligence-reports-view"><span aria-hidden="true">▤</span><span id="reports-nav-label">Relatórios de inteligência</span><span class="secure-nav-lock" aria-hidden="true">◈</span></button>
+     <button id="internal-reports-nav" class="secure-side-nav-item" type="button" disabled aria-controls="internal-reports-view"><span aria-hidden="true">▤</span><span id="internal-reports-nav-label">Relatórios Internos</span><span class="secure-nav-lock" aria-hidden="true">◈</span></button>
    </nav>
    <div class="secure-side-contact">
      <strong id="contact-label">Entre em contato com os desenvolvedores</strong>
@@ -254,6 +255,17 @@
         </div>
         <div id="reports-folders" class="reports-folders" aria-live="polite"></div>
         <p id="reports-empty-description" class="reports-empty-description" hidden>Nenhum relatório foi disponibilizado para sua conta.</p>
+      </section>
+      <section id="internal-reports-view" class="intelligence-reports-view" aria-labelledby="internal-reports-title" hidden tabindex="-1">
+        <span id="internal-reports-kicker" class="secure-label">BIBLIOTECA INTERNA</span>
+        <h2 id="internal-reports-title">Relatórios Internos</h2>
+        <p id="internal-reports-description">Documentos de evolução do Observatório e outros produtos para distribuição interna aos membros da WCS e parceiros autorizados.</p>
+        <div class="reports-method" role="note">
+          <h3 id="internal-reports-method-title">Finalidade e acesso</h3>
+          <p id="internal-reports-method-body">Esta seção reúne relatórios de evolução da plataforma, documentação técnica, balanços de atividades e outros produtos institucionais de circulação interna. O acesso exige autenticação e autorização; a redistribuição depende de permissão expressa.</p>
+        </div>
+        <div id="internal-reports-folders" class="reports-folders" aria-live="polite"></div>
+        <p id="internal-reports-empty" class="reports-empty-description">Nenhum documento interno foi disponibilizado para sua conta.</p>
       </section>
     </section>
    </main>
