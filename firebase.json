@@ -15,5 +15,8 @@
       "source": "functions",
       "codebase": "nimf-access"
     }
-  ]
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
 }
