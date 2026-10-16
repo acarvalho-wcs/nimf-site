@@ -64,3 +64,58 @@ exports.approveAccessRequest=onRequest({region:REGION,cors:[/^https:\/\/acarvalh
   res.status(409).json({error:"Approval could not be completed"});
  }
 });
+
+
+const githubReportsToken=defineSecret("NIMF_GITHUB_READ_TOKEN");
+const INTERNAL_REPORTS={
+ "evolution-2026-09-21-2026-10-15":{
+  pt:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_PT.pdf",
+  en:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_EN.pdf",
+  es:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_ES.pdf"
+ }
+};
+const INTERNAL_REPORT_REPO="acarvalho-wcs/wildlife-market-intelligence";
+exports.downloadInternalReport=onRequest({
+ region:REGION,cors:[/^https:\/\/acarvalho-wcs\.github\.io$/],
+ invoker:"public",maxInstances:3,timeoutSeconds:30,secrets:[githubReportsToken]
+},async(req,res)=>{
+ res.set("Cache-Control","private, no-store");
+ res.set("X-Content-Type-Options","nosniff");
+ if(req.method!=="POST"){res.set("Allow","POST");res.status(405).send("Method not allowed");return;}
+ try{
+  const bearer=String(req.headers.authorization||"");
+  if(!bearer.startsWith("Bearer ")){res.status(401).json({error:"Authentication required"});return;}
+  const identity=await admin.auth().verifyIdToken(bearer.slice(7),true);
+  if(identity.email_verified!==true){res.status(403).json({error:"Email verification required"});return;}
+  const permission=await admin.firestore().collection("access").doc(identity.uid).get();
+  if(!permission.exists||permission.data().approved!==true){res.status(403).json({error:"Approved access required"});return;}
+  const reportId=req.body?.reportId,lang=req.body?.lang;
+  if(typeof reportId!=="string"||typeof lang!=="string"||
+    !Object.prototype.hasOwnProperty.call(INTERNAL_REPORTS,reportId)||
+    !Object.prototype.hasOwnProperty.call(INTERNAL_REPORTS[reportId],lang)){
+   res.status(400).json({error:"Unknown report or language"});return;
+  }
+  const filename=INTERNAL_REPORTS[reportId][lang];
+  const path=["reports","internal",reportId,filename].map(encodeURIComponent).join("/");
+  const token=githubReportsToken.value();
+  if(!token){console.error("Internal report token is unconfigured");res.status(503).json({error:"Reports temporarily unavailable"});return;}
+  const url="https://api.github.com/repos/"+INTERNAL_REPORT_REPO+"/contents/"+path+"?ref=main";
+  const response=await fetch(url,{
+   headers:{Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"nimf-internal-reports"},
+   signal:AbortSignal.timeout(15000)
+  });
+  if(!response.ok){console.error("Internal report GitHub fetch failed",response.status);res.status(502).json({error:"Report temporarily unavailable"});return;}
+  const payload=await response.json();
+  if(payload.encoding!=="base64"||typeof payload.content!=="string"){res.status(502).json({error:"Invalid report response"});return;}
+  const bytes=Buffer.from(payload.content.replace(/\\s/g,""),"base64");
+  if(bytes.length>10*1024*1024||bytes.subarray(0,5).toString("ascii")!=="%PDF-"){
+   res.status(502).json({error:"Invalid report format"});return;
+  }
+  res.set("Content-Type","application/pdf");
+  res.set("Content-Disposition",'attachment; filename="'+filename+'"');
+  res.status(200).send(bytes);
+ }catch(error){
+  console.error("Internal report delivery failed",error?.name||"error");
+  res.status(503).json({error:"Report temporarily unavailable"});
+ }
+});
