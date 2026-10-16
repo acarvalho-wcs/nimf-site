@@ -2,6 +2,7 @@ import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs, limit, query, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getStorage, ref as storageRef, getBlob, uploadBytes } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 import { firebaseConfig } from "./firebase-config.js";
 import {localizedField, localizedTitle} from "./record-locale.js?v=login-recovery-20261015-2";
 // Load optional map and intake modules only after authentication and authorization.
@@ -16,6 +17,7 @@ const txt={
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false,reportGrants=[];
 let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[];
 let workspaceView="dashboard";
+let reportStorage=null;
 function switchWorkspace(view){
  if($("dashboard-panel").hidden || !auth?.currentUser || !auth.currentUser.emailVerified || !activeUser || auth.currentUser.uid!==activeUser.uid)return;
  workspaceView=["reports","internal"].includes(view)?view:"dashboard";
@@ -84,14 +86,48 @@ const internalReportRecord={
  titles:{pt:"Relatório de evolução mensal — Observatório Global de Tráfico de Animais",en:"Monthly evolution report — Illegal Wildlife Trafficking Global Observatory",es:"Informe de evolución mensual — Observatorio Global del Tráfico de Animales"},
  descriptions:{pt:"Edição inaugural sobre a evolução tecnológica e metodológica de 21/09 a 15/10/2026: dados, repositórios, mapas 2D/3D, inteligência de mercados, auditorias e próximas etapas com Aurum.",en:"Inaugural account of technological and methodological progress, 21 September–15 October 2026: datasets, repositories, 2D/3D mapping, market intelligence, quality assurance and Aurum integration plans.",es:"Edición inaugural sobre los avances tecnológicos y metodológicos, del 21 de septiembre al 15 de octubre de 2026: datos, repositorios, mapas 2D/3D, inteligencia de mercados, auditorías e integración prevista con Aurum."}
 };
+const internalFileNames={pt:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_PT.pdf",en:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_EN.pdf",es:"Observatorio_Relatorio_Evolucao_2026-09-21_a_10-15_ES.pdf"};
+const internalReportLabels={
+ pt:{download:"Baixar PDF em português",upload:"Enviar PDF em português",waiting:"PDF ainda não enviado ao armazenamento privado.",error:"Falha ao acessar o PDF protegido.",success:"PDF enviado. O download está disponível para usuários aprovados.",invalid:"Selecione o PDF original correspondente ao idioma."},
+ en:{download:"Download English PDF",upload:"Upload English PDF",waiting:"The PDF has not been uploaded to private storage yet.",error:"Could not access the protected PDF.",success:"PDF uploaded. Approved users can download it.",invalid:"Select the original PDF for this language."},
+ es:{download:"Descargar PDF en español",upload:"Subir PDF en español",waiting:"El PDF aún no se ha cargado al almacenamiento privado.",error:"No se pudo acceder al PDF protegido.",success:"PDF cargado. Los usuarios aprobados pueden descargarlo.",invalid:"Seleccione el PDF original de este idioma."}
+};
 function renderInternalReport(){
  const list=$("internal-reports-folders");if(!list)return;
  list.replaceChildren();
+ const lang=["pt","en","es"].includes(locale)?locale:"pt";
+ const labels=internalReportLabels[lang],filename=internalFileNames[lang];
+ const path="internal-reports/evolution-2026-09-21-2026-10-15/"+filename;
  const card=document.createElement("article");card.className="reports-folder-card";
- const heading=document.createElement("h3");heading.textContent=internalReportRecord.titles[locale];card.append(heading);
- const summary=document.createElement("p");summary.textContent=internalReportRecord.descriptions[locale];card.append(summary);
- const note=document.createElement("p");note.textContent=({pt:"21/09–15/10/2026 · Edição inaugural · PDFs em preparação para distribuição protegida.",en:"21 Sep–15 Oct 2026 · Inaugural edition · PDFs awaiting protected distribution.",es:"21/09–15/10/2026 · Edición inaugural · PDF pendientes de distribución protegida."})[locale];card.append(note);
- list.append(card);$("internal-reports-empty").hidden=true;
+ const heading=document.createElement("h3");heading.textContent=internalReportRecord.titles[lang];card.append(heading);
+ const summary=document.createElement("p");summary.textContent=internalReportRecord.descriptions[lang];card.append(summary);
+ const status=document.createElement("p");status.className="reports-empty-description";status.setAttribute("role","status");
+ const download=document.createElement("button");download.className="secure-button";download.type="button";download.textContent=labels.download;
+ download.addEventListener("click",async()=>{
+  if(!reportStorage||!auth?.currentUser?.emailVerified||!activeUser)return;
+  download.disabled=true;status.textContent="";
+  try{
+   const file=await getBlob(storageRef(reportStorage,path),10485760);
+   const objectUrl=URL.createObjectURL(file),link=document.createElement("a");
+   link.href=objectUrl;link.download=filename;document.body.append(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(objectUrl),30000);
+  }catch(error){status.textContent=error?.code==="storage/object-not-found"?labels.waiting:labels.error;}
+  finally{download.disabled=false;}
+ });
+ card.append(download);
+ if(approvalAdmin){
+  const picker=document.createElement("input");picker.type="file";picker.accept=".pdf,application/pdf";picker.hidden=true;
+  const upload=document.createElement("button");upload.className="secure-secondary";upload.type="button";upload.textContent=labels.upload;upload.addEventListener("click",()=>picker.click());
+  picker.addEventListener("change",async()=>{
+   const file=picker.files?.[0];if(!file)return;
+   if(file.name!==filename||file.size>10485760){status.textContent=labels.invalid;return;}
+   upload.disabled=true;status.textContent="";
+   try{await uploadBytes(storageRef(reportStorage,path),file,{contentType:"application/pdf",cacheControl:"private, no-store"});status.textContent=labels.success;}
+   catch(error){status.textContent=labels.error;}finally{upload.disabled=false;picker.value="";}
+  });
+  card.append(upload,picker);
+ }
+ card.append(status);list.append(card);$("internal-reports-empty").hidden=true;
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
@@ -224,6 +260,7 @@ async function loadPrivateRecords(user,epoch){
  records=snap.docs.filter(d=>d.id!=="abelhas-org-30683").map(d=>({id:d.id,...d.data()}));
  $("account-email").textContent=user.email||"";
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
+ renderInternalReport();
  $("record-search").value="";show("dashboard-panel");switchWorkspace("dashboard");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);void loadReportGrants(user,epoch);void loadAdminApplications(user,epoch);
 }
 async function ensureApplication(user){
@@ -353,7 +390,7 @@ if(!readyConfig()){show("config-panel");window.__nimfAppStarted=true;}
 else{
  try{
   const app=initializeApp(firebaseConfig);
-  auth=getAuth(app);db=getFirestore(app);
+  auth=getAuth(app);db=getFirestore(app);reportStorage=getStorage(app);
   show("auth-panel");window.__nimfAppStarted=true;
   onAuthStateChanged(auth,user=>{
    const epoch=++authEpoch;void evaluateUser(user,epoch);
