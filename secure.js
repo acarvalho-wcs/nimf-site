@@ -47,9 +47,9 @@ const reportStrings={
  es:{methodTitle:"Cómo se elaboran",methodBody:"Los informes de inteligencia organizan evidencias de fuentes abiertas, documentos y registros verificados, contrastan información, registran incertidumbres y distinguen observaciones de comercio o infracciones comprobadas. La información sensible está sujeta a controles adicionales.",none:"No hay informes disponibles para su cuenta.",open:"Consultar informe"}
 };
 const internalStrings={
- pt:{nav:"Relatórios Internos",kicker:"BIBLIOTECA INTERNA",title:"Relatórios Internos",description:"Relatórios de evolução do Observatório e outros produtos destinados à distribuição interna para membros da WCS e parceiros autorizados.",methodTitle:"Finalidade e acesso",methodBody:"Esta seção reúne relatórios de evolução do Observatório, documentação técnica, balanços de atividades e outros produtos institucionais de circulação interna. O acesso exige autenticação e autorização. A redistribuição requer permissão expressa.",empty:"Nenhum documento interno foi disponibilizado para sua conta."},
- en:{nav:"Internal Reports",kicker:"INTERNAL LIBRARY",title:"Internal Reports",description:"Observatory progress reports and other products intended for internal distribution to WCS staff and authorized partners.",methodTitle:"Purpose and access",methodBody:"This section brings together Observatory progress reports, technical documentation, activity reviews and other institutional products for internal circulation. Access requires authentication and authorization. Redistribution requires explicit permission.",empty:"No internal documents have been made available to your account."},
- es:{nav:"Informes Internos",kicker:"BIBLIOTECA INTERNA",title:"Informes Internos",description:"Informes de evolución del Observatorio y otros productos destinados a la distribución interna entre miembros de WCS y socios autorizados.",methodTitle:"Finalidad y acceso",methodBody:"Esta sección reúne informes de evolución del Observatorio, documentación técnica, balances de actividades y otros productos institucionales de circulación interna. El acceso requiere autenticación y autorización. La redistribución requiere permiso expreso.",empty:"No se han puesto documentos internos a disposición de su cuenta."}
+ pt:{nav:"Relatórios Internos",kicker:"BIBLIOTECA INTERNA",title:"Relatórios Internos",description:"Relatórios e análises do Programa de Inteligência para Conservação da WCS Brasil, organizados por tema.",tabsLabel:"Categorias de relatórios internos",evolution:"Relatórios de evolução do Observatório",territorial:"Relatórios territoriais",species:"Relatórios de espécies",descriptions:{evolution:"Relatórios que documentam a evolução tecnológica, metodológica e operacional do Observatório, incluindo seus resultados e próximos desenvolvimentos.",territorial:"Análises do Programa de Inteligência para Conservação da WCS Brasil sobre territórios e áreas prioritárias para a conservação, suas dinâmicas e os desafios associados ao tráfico de fauna.",species:"Análises de espécies visadas pelo tráfico de fauna, abordando padrões de comércio, ameaças, evidências documentadas e prioridades para a conservação."},empty:"Nenhum relatório disponível nesta categoria.",loading:"Carregando relatórios...",error:"Não foi possível carregar os relatórios. Tente atualizar a página.",period:"Período",year:"Ano",available:"Idioma disponível",download:"Ver relatório",notAvailable:"Arquivo indisponível no idioma selecionado."},
+ en:{nav:"Internal Reports",kicker:"INTERNAL LIBRARY",title:"Internal Reports",description:"Reports and analyses from WCS Brasil's Conservation Intelligence Program, organized by topic.",tabsLabel:"Internal report categories",evolution:"Observatory evolution reports",territorial:"Territorial reports",species:"Species reports",descriptions:{evolution:"Reports documenting the Observatory's technological, methodological and operational development, including results and next steps.",territorial:"Analyses by WCS Brasil's Conservation Intelligence Program concerning territories and priority conservation areas, their dynamics and wildlife trafficking challenges.",species:"Analyses of species targeted by wildlife trafficking, addressing trade patterns, threats, documented evidence and conservation priorities."},empty:"No reports are available in this category.",loading:"Loading reports...",error:"Reports could not be loaded. Please refresh the page.",period:"Period",year:"Year",available:"Available language",download:"View report",notAvailable:"The selected language edition is not available."},
+ es:{nav:"Informes Internos",kicker:"BIBLIOTECA INTERNA",title:"Informes Internos",description:"Informes y análisis del Programa de Inteligencia para la Conservación de WCS Brasil, organizados por tema.",tabsLabel:"Categorías de informes internos",evolution:"Informes de evolución del Observatorio",territorial:"Informes territoriales",species:"Informes sobre especies",descriptions:{evolution:"Informes que documentan el desarrollo tecnológico, metodológico y operativo del Observatorio, incluidos sus resultados y próximos pasos.",territorial:"Análisis del Programa de Inteligencia para la Conservación de WCS Brasil sobre territorios y áreas prioritarias para la conservación, sus dinámicas y los desafíos relacionados con el tráfico de fauna.",species:"Análisis sobre especies afectadas por el tráfico de fauna, incluidos patrones comerciales, amenazas, evidencias documentadas y prioridades para la conservación."},empty:"No hay informes disponibles en esta categoría.",loading:"Cargando informes...",error:"No se pudieron cargar los informes. Actualice la página.",period:"Período",year:"Año",available:"Idioma disponible",download:"Ver informe",notAvailable:"El archivo en el idioma seleccionado no está disponible."}
 };
 const accessStrings={
 pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação"},
@@ -67,7 +67,7 @@ function translate(){
  items["private-kicker"]="privateKicker";
  Object.assign(items,{"side-brand-name":"brand","side-kicker":"sideKicker","dashboard-nav-label":"dashboardNav","reports-nav-label":"reportsNav","contact-label":"contact","program-name":"program","reports-page-kicker":"reportsKicker","reports-page-title":"reportsTitle","reports-page-description":"reportsDesc","reports-empty-description":"reportsEmptyDesc","auth-kicker":"authKicker","intake-kicker":"intakeKicker","admin-map-kicker":"mapKicker"});
  for(const [id,key] of Object.entries(items))$(id).textContent=t(key);
- for(const [id,key] of Object.entries({"internal-reports-nav-label":"nav","internal-reports-kicker":"kicker","internal-reports-title":"title","internal-reports-description":"description","internal-reports-method-title":"methodTitle","internal-reports-method-body":"methodBody","internal-reports-empty":"empty"}))$(id).textContent=internalStrings[locale][key];
+ for(const [id,key] of Object.entries({"internal-reports-nav-label":"nav","internal-reports-kicker":"kicker","internal-reports-title":"title","internal-reports-description":"description"}))$(id).textContent=internalStrings[locale][key];
  $("record-search").placeholder=t("searchPlaceholder");
  $("auth-email").placeholder=t("authEmailPlaceholder");$("auth-institution").placeholder=t("institutionPlaceholder");$("auth-justification").placeholder=t("justificationPlaceholder");$("retry-request-title").textContent=t("retryTitle");
  for(const [id,key] of [["institution-label","institution"],["justification-label","justification"],["signup-privacy-note","privacy"],["retry-institution-label","institution"],["retry-justification-label","justification"],["retry-request-button","send"],["admin-requests-title","adminTitle"],["admin-requests-description","adminDescription"]]){const target=$(id);if(target)target.textContent=accessStrings[locale][key];}
@@ -75,50 +75,90 @@ function translate(){
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  if(intakeModule){try{intakeModule.setIntakeLanguage(locale);}catch(e){console.warn("Intake locale update failed",e);}}
   if(mapModule){try{mapModule.setMapPointLanguage(locale);}catch(e){console.warn("Map admin locale update failed",e);}}
- renderInternalReport();
+ showInternalCategory(internalCategory);
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
  $("auth-password").autocomplete=mode==="signup"?"new-password":"current-password";
  if(activeUser && $("waiting-panel").hidden===false)displayWaiting(activeUser,!activeUser.emailVerified,false);
  if(!$("dashboard-panel").hidden){drawRecords();if(explorerModule){try{explorerModule.setExplorerLanguage(locale);}catch(e){console.warn("Explorer locale update failed",e);}}} if(window.__nimfRefreshUtilityPanels)window.__nimfRefreshUtilityPanels(); if(window.__nimfMapFilterTranslate)window.__nimfMapFilterTranslate();
 }
-const internalReportRecord={
- titles:{pt:"Relatório de evolução mensal — Observatório Global de Tráfico de Animais",en:"Monthly evolution report — Illegal Wildlife Trafficking Global Observatory",es:"Informe de evolución mensual — Observatorio Global del Tráfico de Animales"},
- descriptions:{pt:"Edição inaugural sobre a evolução tecnológica e metodológica de 21/09 a 15/10/2026: dados, repositórios, mapas 2D/3D, inteligência de mercados, auditorias e próximas etapas com Aurum.",en:"Inaugural account of technological and methodological progress, 21 September–15 October 2026: datasets, repositories, 2D/3D mapping, market intelligence, quality assurance and Aurum integration plans.",es:"Edición inaugural sobre los avances tecnológicos y metodológicos, del 21 de septiembre al 15 de octubre de 2026: datos, repositorios, mapas 2D/3D, inteligencia de mercados, auditorías e integración prevista con Aurum."}
-};
 const publicReportCatalogUrl="https://raw.githubusercontent.com/acarvalho-wcs/wildlife-trafficking-reports/main/reports-internal.json";
 const publicReportBase="https://raw.githubusercontent.com/acarvalho-wcs/wildlife-trafficking-reports/main/";
-let internalLibrary=[];
-const internalLabels={
- pt:{download:"Baixar PDF em português",unavailable:"PDF em português ainda não disponível",error:"Não foi possível carregar o catálogo de relatórios."},
- en:{download:"Download English PDF",unavailable:"English PDF not yet available",error:"Could not load the report catalogue."},
- es:{download:"Descargar PDF en español",unavailable:"PDF en español aún no disponible",error:"No se pudo cargar el catálogo de informes."}
-};
-function renderInternalReport(){
- const box=$("internal-reports-folders");if(!box)return;
- box.replaceChildren();
- const lang=["pt","en","es"].includes(locale)?locale:"pt";
- for(const item of internalLibrary){
-  const card=document.createElement("article");card.className="reports-folder-card";
-  const title=document.createElement("h3");title.textContent=item.title?.[lang]||item.title?.pt||item.id;card.append(title);
-  const description=document.createElement("p");description.textContent=item.description?.[lang]||item.description?.pt||"";card.append(description);
-  const file=item.files?.[lang],valid=file?.available===true&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path);
-  if(valid){
-   const link=document.createElement("a");link.href=publicReportBase+file.path.split("/").map(encodeURIComponent).join("/");link.target="_blank";link.rel="noopener noreferrer";link.download="";link.className="secure-secondary";link.textContent=internalLabels[lang].download;card.append(link);
-  }else{
-   const status=document.createElement("p");status.className="reports-empty-description";status.textContent=internalLabels[lang].unavailable;card.append(status);
-  }
-  box.append(card);
+let internalLibrary=[],internalCatalogLoaded=false,internalCatalogError=false,internalCategory="evolution";
+const internalCategories=["evolution","territorial","species"];
+function localInternal(value,lang){return typeof value==="string"?value:(value?.[lang]||value?.pt||"");}
+function showInternalCategory(category,focus=false){
+ if(!internalCategories.includes(category))return;
+ internalCategory=category;
+ const l=internalStrings[locale],tablist=$("internal-reports-tabs"),panel=$("internal-reports-panel");
+ tablist.setAttribute("aria-label",l.tabsLabel);
+ for(const key of internalCategories){
+  const button=$("internal-category-"+key);
+  button.setAttribute("aria-selected",String(key===category));
+  button.classList.toggle("active",key===category);
+  button.tabIndex=key===category?0:-1;
+  $("internal-category-"+key+"-label").textContent=l[key];
  }
- $("internal-reports-empty").hidden=internalLibrary.length>0;
+ panel.setAttribute("aria-labelledby","internal-category-"+category);
+ $("internal-reports-panel-title").textContent=l[category];
+ $("internal-reports-panel-description").textContent=l.descriptions[category];
+ renderInternalReport();
+ if(focus)$("internal-category-"+category).focus();
+}
+function renderInternalReport(){
+ const list=$("internal-reports-folders");if(!list)return;
+ list.replaceChildren();
+ const lang=["pt","en","es"].includes(locale)?locale:"pt",labels=internalStrings[lang];
+ const empty=$("internal-reports-empty");
+ if(!internalCatalogLoaded){
+  empty.textContent=internalCatalogError?labels.error:labels.loading;
+  empty.hidden=false;return;
+ }
+ const items=internalLibrary.filter(item=>(item.category||"evolution")===internalCategory);
+ for(const item of items){
+  const card=document.createElement("article");card.className="internal-document-card";
+  const title=document.createElement("h4");title.textContent=localInternal(item.title,lang)||item.id;card.append(title);
+  const desc=document.createElement("p");desc.className="internal-document-description";desc.textContent=localInternal(item.description,lang);card.append(desc);
+  const meta=document.createElement("dl");meta.className="internal-document-meta";
+  const dateFormat=lang==="en"?"en-GB":lang==="es"?"es-ES":"pt-BR";
+  const start=item.period_start,end=item.period_end;
+  const formatDate=value=>{if(typeof value!=="string"||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value))return "";const parts=value.split("-");return new Intl.DateTimeFormat(dateFormat,{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(+parts[0],+parts[1]-1,+parts[2])));};
+  for(const [term,detail] of [[labels.period,[formatDate(start),formatDate(end)].filter(Boolean).join(" – ")],[labels.year,(item.date||"").slice(0,4)],[labels.available,lang==="pt"?"Português":lang==="en"?"English":"Español"]]){
+   if(!detail)continue;const group=document.createElement("div"),dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=term;dd.textContent=detail;group.append(dt,dd);meta.append(group);
+  }
+  card.append(meta);
+  const file=item.files?.[lang];
+  const valid=file?.available===true&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path);
+  if(valid){
+   const link=document.createElement("a");
+   link.href=publicReportBase+file.path.split("/").map(encodeURIComponent).join("/");
+   link.target="_blank";link.rel="noopener noreferrer";link.className="internal-document-link";
+   link.textContent=labels.download+" ↗";
+   card.append(link);
+  }else{
+   const unavailable=document.createElement("p");unavailable.className="reports-empty-description";unavailable.textContent=labels.notAvailable;card.append(unavailable);
+  }
+  list.append(card);
+ }
+ empty.textContent=labels.empty;empty.hidden=items.length>0;
 }
 async function loadInternalReports(){
+ internalCatalogLoaded=false;internalCatalogError=false;renderInternalReport();
  try{
   const response=await fetch(publicReportCatalogUrl+"?v="+Date.now(),{cache:"no-store"});
-  if(!response.ok)throw new Error("Catalogue fetch failed");
+  if(!response.ok)throw Error("Catalogue fetch failed");
   const payload=await response.json();
   internalLibrary=Array.isArray(payload.reports)?payload.reports:[];
- }catch(error){console.warn(internalLabels[locale]?.error||"Internal catalog unavailable",error);internalLibrary=[];}
- renderInternalReport();
+ }catch(error){console.warn("Internal catalog unavailable",error);internalLibrary=[];internalCatalogError=true;}
+ finally{internalCatalogLoaded=true;renderInternalReport();}
+}
+for(const key of internalCategories){
+ $("internal-category-"+key).addEventListener("click",()=>showInternalCategory(key));
+ $("internal-category-"+key).addEventListener("keydown",event=>{
+  if(!["ArrowRight","ArrowLeft","Home","End"].includes(event.key))return;
+  event.preventDefault();
+  const i=internalCategories.indexOf(key),next=event.key==="Home"?0:event.key==="End"?internalCategories.length-1:(i+(event.key==="ArrowRight"?1:-1)+internalCategories.length)%internalCategories.length;
+  showInternalCategory(internalCategories[next],true);
+ });
 }
 function renderGrantedReports(){
  const box=$("reports-folders");box.replaceChildren();
