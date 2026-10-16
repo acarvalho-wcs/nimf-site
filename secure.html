@@ -8,7 +8,7 @@
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css?v=language48">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=language48">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=internal-categories-20261016-1">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
@@ -30,7 +30,7 @@
   }
  },7000);
  </script>
- <script type="module" src="./secure.js?v=public-internal-reports-20261016-1"></script>
+ <script type="module" src="./secure.js?v=internal-categories-20261016-1"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -259,13 +259,18 @@
       <section id="internal-reports-view" class="intelligence-reports-view" aria-labelledby="internal-reports-title" hidden tabindex="-1">
         <span id="internal-reports-kicker" class="secure-label">BIBLIOTECA INTERNA</span>
         <h2 id="internal-reports-title">Relatórios Internos</h2>
-        <p id="internal-reports-description">Documentos de evolução do Observatório e outros produtos para distribuição interna aos membros da WCS e parceiros autorizados.</p>
-        <div class="reports-method" role="note">
-          <h3 id="internal-reports-method-title">Finalidade e acesso</h3>
-          <p id="internal-reports-method-body">Esta seção reúne relatórios de evolução da plataforma, documentação técnica, balanços de atividades e outros produtos institucionais de circulação interna. O acesso exige autenticação e autorização; a redistribuição depende de permissão expressa.</p>
+        <p id="internal-reports-description">Relatórios e análises produzidos pelo Programa de Inteligência para Conservação da WCS Brasil, organizados por tema.</p>
+        <div id="internal-reports-tabs" class="internal-report-tabs" role="tablist" aria-label="Categorias de relatórios internos">
+          <button id="internal-category-evolution" class="internal-report-tab" type="button" role="tab" data-report-category="evolution" aria-selected="true" aria-controls="internal-reports-panel" tabindex="0"><span id="internal-category-evolution-label">Relatórios de evolução do Observatório</span><span class="internal-report-chevron" aria-hidden="true">›</span></button>
+          <button id="internal-category-territorial" class="internal-report-tab" type="button" role="tab" data-report-category="territorial" aria-selected="false" aria-controls="internal-reports-panel" tabindex="-1"><span id="internal-category-territorial-label">Relatórios territoriais</span><span class="internal-report-chevron" aria-hidden="true">›</span></button>
+          <button id="internal-category-species" class="internal-report-tab" type="button" role="tab" data-report-category="species" aria-selected="false" aria-controls="internal-reports-panel" tabindex="-1"><span id="internal-category-species-label">Relatórios de espécies</span><span class="internal-report-chevron" aria-hidden="true">›</span></button>
         </div>
-        <div id="internal-reports-folders" class="reports-folders" aria-live="polite"></div>
-        <p id="internal-reports-empty" class="reports-empty-description">Nenhum documento interno foi disponibilizado para sua conta.</p>
+        <section id="internal-reports-panel" class="internal-report-panel" role="tabpanel" aria-labelledby="internal-category-evolution" tabindex="0">
+          <h3 id="internal-reports-panel-title">Relatórios de evolução do Observatório</h3>
+          <p id="internal-reports-panel-description">Documentação da evolução tecnológica, metodológica e operacional do Observatório.</p>
+          <div id="internal-reports-folders" class="internal-document-list" aria-live="polite"></div>
+          <p id="internal-reports-empty" class="reports-empty-description" hidden>Nenhum relatório disponível nesta categoria.</p>
+        </section>
       </section>
     </section>
    </main>
