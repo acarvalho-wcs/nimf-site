@@ -113,6 +113,7 @@ function renderInternalReport(){
   empty.textContent=internalCatalogError?labels.error:labels.loading;
   empty.hidden=false;return;
  }
+ if(internalCatalogError){empty.textContent=labels.error;empty.hidden=false;return;}
  const items=internalLibrary.filter(item=>(item.category||"evolution")===internalCategory);
  for(const item of items){
   const card=document.createElement("article");card.className="internal-document-card";
@@ -121,13 +122,13 @@ function renderInternalReport(){
   const meta=document.createElement("dl");meta.className="internal-document-meta";
   const dateFormat=lang==="en"?"en-GB":lang==="es"?"es-ES":"pt-BR";
   const start=item.period_start,end=item.period_end;
+  const file=item.files?.[lang];
+  const valid=file?.available===true&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path);
   const formatDate=value=>{if(typeof value!=="string"||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value))return "";const parts=value.split("-");return new Intl.DateTimeFormat(dateFormat,{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(+parts[0],+parts[1]-1,+parts[2])));};
-  for(const [term,detail] of [[labels.period,[formatDate(start),formatDate(end)].filter(Boolean).join(" – ")],[labels.year,(item.date||"").slice(0,4)],[labels.available,lang==="pt"?"Português":lang==="en"?"English":"Español"]]){
+  for(const [term,detail] of [[labels.period,[formatDate(start),formatDate(end)].filter(Boolean).join(" – ")],[labels.year,(item.date||"").slice(0,4)],[labels.available,valid?(lang==="pt"?"Português":lang==="en"?"English":"Español"):""]]){
    if(!detail)continue;const group=document.createElement("div"),dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=term;dd.textContent=detail;group.append(dt,dd);meta.append(group);
   }
   card.append(meta);
-  const file=item.files?.[lang];
-  const valid=file?.available===true&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path);
   if(valid){
    const link=document.createElement("a");
    link.href=publicReportBase+file.path.split("/").map(encodeURIComponent).join("/");
