@@ -137,7 +137,8 @@ function translate(){
   const desc=$("osint-desc-"+tool);if(desc)desc.textContent=osint.tools[key];
  }
  document.querySelectorAll(".osint-tool-link-label").forEach(node=>node.textContent=osint.open+" ↗");
-  updateOsintLibrary();
+ // OSINT enhancements must never block Firebase initialization.
+ try{updateOsintLibrary();}catch(error){console.warn("OSINT library filtering failed",error);}
  $("record-search").placeholder=t("searchPlaceholder");
  $("auth-email").placeholder=t("authEmailPlaceholder");$("auth-institution").placeholder=t("institutionPlaceholder");$("auth-justification").placeholder=t("justificationPlaceholder");$("retry-request-title").textContent=t("retryTitle");
  for(const [id,key] of [["institution-label","institution"],["justification-label","justification"],["signup-privacy-note","privacy"],["retry-institution-label","institution"],["retry-justification-label","justification"],["retry-request-button","send"],["admin-requests-title","adminTitle"],["admin-requests-description","adminDescription"]]){const target=$(id);if(target)target.textContent=accessStrings[locale][key];}
@@ -523,7 +524,7 @@ $("resend-verification").addEventListener("click",async()=>{
 for(const id of ["waiting-logout","private-logout"]){
  $(id).addEventListener("click",async()=>{if(auth)await signOut(auth);});
 }
-translate();
+// Start Firebase authentication before any nonessential interface translations.
 if(!readyConfig()){show("config-panel");window.__nimfAppStarted=true;}
 else{
  try{
@@ -538,8 +539,12 @@ else{
     message("auth-error",loginFeedback(error));
    });
   },error=>{show("auth-panel");message("auth-error",loginFeedback(error));});
- }catch(e){show("config-panel");window.__nimfAppStarted=true;}
+ }catch(e){
+  console.error("Firebase startup failed",e?.code||e);
+  show("config-panel");window.__nimfAppStarted=true;
+ }
 }
+try{translate();}catch(error){console.warn("Optional interface translation failed",error);}
 
 /* Mobile sign-in: show institutional disclaimer and WCS identity after the login card. */
 (function arrangeMobileLoginInstitutional(){
