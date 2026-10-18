@@ -64,6 +64,7 @@ jobs:
           cp index.html styles.css app.js secure.html secure.css restricted-shell-v3.css secure.js explorer.js explorer-viewport.js intake.js map-points.js record-locale.js scientific-format.js firebase-config.js public/
           test -f assets/Logo_observat.png
           mkdir -p public/assets
+          cp assets/observatory-icon-*.png public/assets/
           cp assets/Logo_observat.png public/assets/Logo_observat.png
           cp assets/wcs-brasil-institucional.png public/assets/wcs-brasil-institucional.png
           test -s public/assets/wcs-brasil-institucional.png
