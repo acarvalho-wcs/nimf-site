@@ -8,13 +8,13 @@
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css?v=language48">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=territorial-documents-20261016-1">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-tools-20261018">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
   body[data-private-ready="true"] #side-navigation{display:flex!important}
   body[data-private-ready="true"] #dashboard-nav,
-  body[data-private-ready="true"] #reports-nav, body[data-private-ready="true"] #internal-reports-nav{display:flex!important}
+  body[data-private-ready="true"] #reports-nav, body[data-private-ready="true"] #internal-reports-nav, body[data-private-ready="true"] #osint-tools-nav{display:flex!important}
  </style>
  <script>
  // The login form is rendered by HTML; Firebase grants access to private data.
@@ -30,7 +30,7 @@
   }
  },7000);
  </script>
- <script type="module" src="./secure.js?v=territorial-infographic-fix-20261017"></script>
+ <script type="module" src="./secure.js?v=osint-tools-20261018"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -45,6 +45,7 @@
      <button id="dashboard-nav" class="secure-side-nav-item active" type="button" disabled aria-controls="dashboard-primary"><span aria-hidden="true">◉</span><span id="dashboard-nav-label">Painel</span></button>
      <button id="reports-nav" class="secure-side-nav-item" type="button" disabled aria-controls="intelligence-reports-view"><span aria-hidden="true">▤</span><span id="reports-nav-label">Relatórios de inteligência</span><span class="secure-nav-lock" aria-hidden="true">◈</span></button>
      <button id="internal-reports-nav" class="secure-side-nav-item" type="button" disabled aria-controls="internal-reports-view"><span aria-hidden="true">▤</span><span id="internal-reports-nav-label">Relatórios Internos</span><span class="secure-nav-lock" aria-hidden="true">◈</span></button>
+     <button id="osint-tools-nav" class="secure-side-nav-item" type="button" disabled aria-controls="osint-tools-view"><span aria-hidden="true">⌕</span><span id="osint-tools-nav-label">Ferramentas OSINT</span><span class="secure-nav-lock" aria-hidden="true">◈</span></button>
    </nav>
    <div class="secure-side-contact">
      <strong id="contact-label">Entre em contato com os desenvolvedores</strong>
@@ -271,6 +272,49 @@
           <div id="internal-reports-folders" class="internal-document-list" aria-live="polite"></div>
           <p id="internal-reports-empty" class="reports-empty-description" hidden>Nenhum relatório disponível nesta categoria.</p>
         </section>
+      </section>
+      <section id="osint-tools-view" class="intelligence-reports-view osint-tools-view" aria-labelledby="osint-tools-title" hidden tabindex="-1">
+        <span id="osint-tools-kicker" class="secure-label">FONTES ABERTAS / FERRAMENTAS</span>
+        <h2 id="osint-tools-title">Ferramentas OSINT</h2>
+        <p id="osint-tools-description">Acesso rápido a serviços externos úteis para pesquisa, preservação de páginas, análise de embarcações, pesca, domínios e investigação em fontes abertas.</p>
+        <div class="osint-tools-note" role="note"><p id="osint-tools-note">Os serviços abaixo são externos ao Observatório. Use-os de acordo com suas políticas de uso, a legislação aplicável e a finalidade institucional da investigação.</p></div>
+        <div class="osint-tools-grid" aria-live="polite">
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://web.archive.org/favicon.ico" alt="" loading="lazy"><h3>Wayback Machine</h3></div>
+            <p id="osint-desc-wayback">Consulte versões arquivadas de páginas e acompanhe mudanças históricas em sites.</p>
+            <a class="internal-document-link" href="https://web.archive.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://www.marinetraffic.com/favicon.ico" alt="" loading="lazy"><h3>MarineTraffic</h3></div>
+            <p id="osint-desc-marineTraffic">Pesquise embarcações, posições, movimentos, portos e informações de tráfego marítimo.</p>
+            <a class="internal-document-link" href="https://www.marinetraffic.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://gisis.imo.org/favicon.ico" alt="" loading="lazy"><h3>IMO GISIS</h3></div>
+            <p id="osint-desc-gisis">Consulte o Global Integrated Shipping Information System da Organização Marítima Internacional.</p>
+            <a class="internal-document-link" href="https://gisis.imo.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://globalfishingwatch.org/favicon.ico" alt="" loading="lazy"><h3>Global Fishing Watch</h3></div>
+            <p id="osint-desc-gfw">Explore atividade de embarcações, pesca aparente, encontros e presença no mar em mapas interativos.</p>
+            <a class="internal-document-link" href="https://globalfishingwatch.org/map/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://whoisxmlapi.com/favicon.ico" alt="" loading="lazy"><h3>WHOIS API</h3></div>
+            <p id="osint-desc-whois">Investigue registros de domínio e informações técnicas associadas à infraestrutura de sites.</p>
+            <a class="internal-document-link" href="https://whoisxmlapi.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://osintframework.com/favicon.ico" alt="" loading="lazy"><h3>OSINT Framework</h3></div>
+            <p id="osint-desc-osintFramework">Navegue por um diretório estruturado de recursos e técnicas de investigação em fontes abertas.</p>
+            <a class="internal-document-link" href="https://osintframework.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card">
+            <div class="osint-tool-brand"><img src="https://www.google.com/favicon.ico" alt="" loading="lazy"><h3>Google Dorks</h3></div>
+            <p id="osint-desc-googleDorks">Use operadores avançados de busca para localizar páginas, documentos, domínios e termos específicos no Google.</p>
+            <a class="internal-document-link" href="https://www.google.com/advanced_search" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+        </div>
       </section>
     </section>
    </main>
