@@ -144,6 +144,8 @@ function renderInternalReport(){
    const heading=document.createElement("h5");heading.textContent=labels.supplementary;attachments.append(heading);
    const links=document.createElement("div");links.className="internal-report-attachment-links";
    for(const material of item.materials){
+    // Keep the triple-border infographic exclusive to its own territorial dossier.
+    if(item.id==="territorial-guapore-itenez-2026-10-09" && /Infogra/i.test(material.path||"") && /Fronteira/i.test(material.path||""))continue;
     if(material.available!==true||material.type!=="image"||typeof material.path!=="string"||!material.path.startsWith("reports/internal/")||!/[.](png|jpe?g)$/.test(material.path.toLowerCase())||material.path.split("/").includes(".."))continue;
     const link=document.createElement("a");link.className="internal-report-attachment";
     link.href=publicReportBase+material.path.split("/").map(encodeURIComponent).join("/");
