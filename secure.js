@@ -19,21 +19,26 @@ let workspaceView="dashboard";
 
 function switchWorkspace(view){
  if($("dashboard-panel").hidden || !auth?.currentUser || !auth.currentUser.emailVerified || !activeUser || auth.currentUser.uid!==activeUser.uid)return;
- workspaceView=["reports","internal"].includes(view)?view:"dashboard";
+ workspaceView=["reports","internal","osint"].includes(view)?view:"dashboard";
  $("dashboard-primary").hidden=workspaceView!=="dashboard";
  $("intelligence-reports-view").hidden=workspaceView!=="reports";
  $("internal-reports-view").hidden=workspaceView!=="internal";
+ $("osint-tools-view").hidden=workspaceView!=="osint";
  $("reports-nav").classList.toggle("active",workspaceView==="reports");
  $("internal-reports-nav").classList.toggle("active",workspaceView==="internal");
+ $("osint-tools-nav").classList.toggle("active",workspaceView==="osint");
  $("dashboard-nav").classList.toggle("active",workspaceView==="dashboard");
  $("dashboard-nav").setAttribute("aria-current",workspaceView==="dashboard"?"page":"false");
  $("reports-nav").setAttribute("aria-current",workspaceView==="reports"?"page":"false");
  $("internal-reports-nav").setAttribute("aria-current",workspaceView==="internal"?"page":"false");
+ $("osint-tools-nav").setAttribute("aria-current",workspaceView==="osint"?"page":"false");
  if(workspaceView==="reports")$("intelligence-reports-view").focus({preventScroll:true});
  if(workspaceView==="internal")$("internal-reports-view").focus({preventScroll:true});
+ if(workspaceView==="osint")$("osint-tools-view").focus({preventScroll:true});
 }
 $("reports-nav").addEventListener("click",()=>switchWorkspace("reports"));
 $("internal-reports-nav").addEventListener("click",()=>switchWorkspace("internal"));
+$("osint-tools-nav").addEventListener("click",()=>switchWorkspace("osint"));
 $("dashboard-nav").addEventListener("click",()=>switchWorkspace("dashboard"));
 
 for(const [language,translations] of Object.entries({"pt":{"sideTitle":"Sobre esta seção de investigação","sideCopy":"A Investigação de Mercados de Fauna integra o Observatório Global de Tráfico de Animais. O acesso às ferramentas, análises e informações desta seção é restrito a usuários autorizados pela administração do projeto.","sideFooter":"Criado e gerenciado pelo Programa de Inteligência para Conservação da WCS Brasil.","brand":"Investigação de Mercados de Fauna","sideKicker":"SEÇÃO RESTRITA","reportsNav":"Relatórios de inteligência","contact":"Entre em contato com os desenvolvedores","program":"Programa de Inteligência para Conservação","reportsKicker":"BIBLIOTECA RESTRITA","reportsTitle":"Relatórios de inteligência","reportsDesc":"Página interna para organização de relatórios, pastas e arquivos de inteligência, disponíveis somente a usuários autorizados.","reportsEmptyTitle":"Biblioteca em preparação","reportsEmptyDesc":"Pastas e documentos serão adicionados em uma próxima etapa. Nenhum arquivo está disponível no momento.","authTitle":"Acessar Investigação de Mercados de Fauna","authKicker":"INVESTIGAÇÃO DE MERCADOS DE FAUNA / ACESSO","intakeKicker":"INVESTIGAÇÃO DE MERCADOS DE FAUNA / CONTRIBUIÇÕES","mapKicker":"INVESTIGAÇÃO DE MERCADOS DE FAUNA / MAPA REVISADO"},"en":{"sideTitle":"About this investigation section","sideCopy":"Wildlife Market Investigations is part of the Illegal Wildlife Trafficking Global Observatory. Access to the tools, analyses and information in this section is restricted to users authorized by the project's administration.","sideFooter":"Created and managed by the WCS Brazil Conservation Intelligence Program.","brand":"Wildlife Market Investigations","sideKicker":"RESTRICTED SECTION","reportsNav":"Intelligence reports","contact":"Contact the developers","program":"Conservation Intelligence Program","reportsKicker":"RESTRICTED LIBRARY","reportsTitle":"Intelligence reports","reportsDesc":"Internal page for organizing intelligence reports, folders and files, available only to authorized users.","reportsEmptyTitle":"Library in preparation","reportsEmptyDesc":"Folders and documents will be added at a later stage. No files are currently available.","authTitle":"Access Wildlife Market Investigations","authKicker":"WILDLIFE MARKET INVESTIGATIONS / ACCESS","intakeKicker":"WILDLIFE MARKET INVESTIGATIONS / CONTRIBUTIONS","mapKicker":"WILDLIFE MARKET INVESTIGATIONS / REVIEWED MAP"},"es":{"sideTitle":"Sobre esta sección de investigación","sideCopy":"Investigación de Mercados de Fauna forma parte del Observatorio Global de Tráfico de Animales. El acceso a las herramientas, los análisis y la información de esta sección está restringido a usuarios autorizados por la administración del proyecto.","sideFooter":"Creado y gestionado por el Programa de Inteligencia para la Conservación de WCS Brasil.","brand":"Investigación de Mercados de Fauna","sideKicker":"SECCIÓN RESTRINGIDA","reportsNav":"Informes de inteligencia","contact":"Contacte a los desarrolladores","program":"Programa de Inteligencia para la Conservación","reportsKicker":"BIBLIOTECA RESTRINGIDA","reportsTitle":"Informes de inteligencia","reportsDesc":"Página interna para organizar informes, carpetas y archivos de inteligencia, disponibles únicamente para usuarios autorizados.","reportsEmptyTitle":"Biblioteca en preparación","reportsEmptyDesc":"Las carpetas y los documentos se agregarán en una próxima etapa. Actualmente no hay archivos disponibles.","authTitle":"Acceder a Investigación de Mercados de Fauna","authKicker":"INVESTIGACIÓN DE MERCADOS DE FAUNA / ACCESO","intakeKicker":"INVESTIGACIÓN DE MERCADOS DE FAUNA / CONTRIBUCIONES","mapKicker":"INVESTIGACIÓN DE MERCADOS DE FAUNA / MAPA REVISADO"}}))Object.assign(txt[language],translations);
@@ -51,13 +56,59 @@ const internalStrings={
  en:{nav:"Internal Reports",kicker:"INTERNAL LIBRARY",title:"Internal Reports",description:"Reports and analyses from WCS Brasil's Conservation Intelligence Program, organized by topic.",tabsLabel:"Internal report categories",evolution:"Observatory evolution reports",territorial:"Territorial reports",species:"Species reports",descriptions:{evolution:"Reports documenting the Observatory's technological, methodological and operational development, including results and next steps.",territorial:"Analyses by WCS Brasil's Conservation Intelligence Program concerning territories and priority conservation areas, their dynamics and wildlife trafficking challenges.",species:"Analyses of species targeted by wildlife trafficking, addressing trade patterns, threats, documented evidence and conservation priorities."},empty:"No reports are available in this category.",loading:"Loading reports...",error:"Reports could not be loaded. Please refresh the page.",period:"Period",year:"Year",available:"Available language",download:"View report",notAvailable:"The selected language edition is not available.",pdfOriginal:"Original PDF in Portuguese",supplementary:"Supplementary graphics"},
  es:{nav:"Informes Internos",kicker:"BIBLIOTECA INTERNA",title:"Informes Internos",description:"Informes y análisis del Programa de Inteligencia para la Conservación de WCS Brasil, organizados por tema.",tabsLabel:"Categorías de informes internos",evolution:"Informes de evolución del Observatorio",territorial:"Informes territoriales",species:"Informes sobre especies",descriptions:{evolution:"Informes que documentan el desarrollo tecnológico, metodológico y operativo del Observatorio, incluidos sus resultados y próximos pasos.",territorial:"Análisis del Programa de Inteligencia para la Conservación de WCS Brasil sobre territorios y áreas prioritarias para la conservación, sus dinámicas y los desafíos relacionados con el tráfico de fauna.",species:"Análisis sobre especies afectadas por el tráfico de fauna, incluidos patrones comerciales, amenazas, evidencias documentadas y prioridades para la conservación."},empty:"No hay informes disponibles en esta categoría.",loading:"Cargando informes...",error:"No se pudieron cargar los informes. Actualice la página.",period:"Período",year:"Año",available:"Idioma disponible",download:"Ver informe",notAvailable:"El archivo en el idioma seleccionado no está disponible.",pdfOriginal:"PDF original en portugués",supplementary:"Material gráfico complementario"}
 };
+const osintStrings={
+ pt:{
+  nav:"Ferramentas OSINT",kicker:"FONTES ABERTAS / FERRAMENTAS",title:"Ferramentas OSINT",
+  description:"Acesso rápido a serviços externos úteis para pesquisa, preservação de páginas, análise de embarcações, pesca, domínios e investigação em fontes abertas.",
+  note:"Os serviços abaixo são externos ao Observatório. Use-os de acordo com suas políticas de uso, a legislação aplicável e a finalidade institucional da investigação.",
+  open:"Abrir ferramenta",
+  tools:{
+   wayback:"Consulte versões arquivadas de páginas e acompanhe mudanças históricas em sites.",
+   marineTraffic:"Pesquise embarcações, posições, movimentos, portos e informações de tráfego marítimo.",
+   gisis:"Consulte o Global Integrated Shipping Information System da Organização Marítima Internacional.",
+   gfw:"Explore atividade de embarcações, pesca aparente, encontros e presença no mar em mapas interativos.",
+   whois:"Investigue registros de domínio e informações técnicas associadas à infraestrutura de sites.",
+   osintFramework:"Navegue por um diretório estruturado de recursos e técnicas de investigação em fontes abertas.",
+   googleDorks:"Use operadores avançados de busca para localizar páginas, documentos, domínios e termos específicos no Google."
+  }
+ },
+ en:{
+  nav:"OSINT Tools",kicker:"OPEN SOURCES / TOOLS",title:"OSINT Tools",
+  description:"Quick access to external services for web preservation, vessel and fishing analysis, domain research and open-source investigations.",
+  note:"The services below are external to the Observatory. Use them in accordance with their terms, applicable law and the institutional purpose of the investigation.",
+  open:"Open tool",
+  tools:{
+   wayback:"Review archived versions of web pages and track historical changes to websites.",
+   marineTraffic:"Research vessels, positions, movements, ports and maritime traffic information.",
+   gisis:"Access the International Maritime Organization's Global Integrated Shipping Information System.",
+   gfw:"Explore vessel activity, apparent fishing activity, encounters and presence at sea on interactive maps.",
+   whois:"Investigate domain registration records and technical information associated with website infrastructure.",
+   osintFramework:"Browse a structured directory of open-source investigation resources and techniques.",
+   googleDorks:"Use advanced search operators to locate pages, documents, domains and specific terms in Google."
+  }
+ },
+ es:{
+  nav:"Herramientas OSINT",kicker:"FUENTES ABIERTAS / HERRAMIENTAS",title:"Herramientas OSINT",
+  description:"Acceso rápido a servicios externos para preservación web, análisis de embarcaciones y pesca, investigación de dominios y fuentes abiertas.",
+  note:"Los servicios que aparecen a continuación son externos al Observatorio. Úselos conforme a sus políticas, la legislación aplicable y la finalidad institucional de la investigación.",
+  open:"Abrir herramienta",
+  tools:{
+   wayback:"Consulte versiones archivadas de páginas y siga cambios históricos en sitios web.",
+   marineTraffic:"Investigue embarcaciones, posiciones, movimientos, puertos e información de tráfico marítimo.",
+   gisis:"Acceda al Global Integrated Shipping Information System de la Organización Marítima Internacional.",
+   gfw:"Explore actividad de embarcaciones, pesca aparente, encuentros y presencia en el mar mediante mapas interactivos.",
+   whois:"Investigue registros de dominios e información técnica asociada a la infraestructura de sitios web.",
+   osintFramework:"Explore un directorio estructurado de recursos y técnicas de investigación en fuentes abiertas.",
+   googleDorks:"Use operadores avanzados de búsqueda para localizar páginas, documentos, dominios y términos específicos en Google."
+  }
+};
 const accessStrings={
 pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação"},
 en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request"},
 es:{institution:"Institución / organización",justification:"Motivo de la solicitud de acceso",privacy:"Esta información se utiliza únicamente para evaluar su solicitud.",retry:"Complete su solicitud para la evaluación administrativa.",send:"Enviar solicitud",adminTitle:"Solicitudes de nuevos usuarios",adminDescription:"Revise institución y justificación. El acceso a informes requiere autorización independiente.",approve:"Aprobar acceso",emailVerified:"Correo verificado",confirm:"¿Aprueba el acceso de este usuario al panel? Esto no autoriza informes de inteligencia.",pending:"Pendiente de aprobación",submitted:"Solicitud registrada. Espere la evaluación administrativa.",error:"No fue posible registrar la solicitud. Inténtelo nuevamente.",approved:"Acceso aprobado.",review:"Abrir solicitud"}
 };
 const t=k=>txt[locale][k]||k;
-function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("internal-reports-nav").disabled=!allowed;$("dashboard-nav").disabled=!allowed;document.body.dataset.privateReady=allowed?"true":"false";if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("internal-reports-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;$("internal-reports-view").hidden=true;}}
+function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("internal-reports-nav").disabled=!allowed;$("osint-tools-nav").disabled=!allowed;$("dashboard-nav").disabled=!allowed;document.body.dataset.privateReady=allowed?"true":"false";if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("internal-reports-nav").classList.remove("active");$("osint-tools-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;$("internal-reports-view").hidden=true;$("osint-tools-view").hidden=true;}}
 function message(id,text){$(id).textContent=text;$(id).hidden=!text;}
 function translate(){
  document.documentElement.lang=locale==="pt"?"pt-BR":locale;
@@ -68,6 +119,12 @@ function translate(){
  Object.assign(items,{"side-brand-name":"brand","side-kicker":"sideKicker","dashboard-nav-label":"dashboardNav","reports-nav-label":"reportsNav","contact-label":"contact","program-name":"program","reports-page-kicker":"reportsKicker","reports-page-title":"reportsTitle","reports-page-description":"reportsDesc","reports-empty-description":"reportsEmptyDesc","auth-kicker":"authKicker","intake-kicker":"intakeKicker","admin-map-kicker":"mapKicker"});
  for(const [id,key] of Object.entries(items))$(id).textContent=t(key);
  for(const [id,key] of Object.entries({"internal-reports-nav-label":"nav","internal-reports-kicker":"kicker","internal-reports-title":"title","internal-reports-description":"description"}))$(id).textContent=internalStrings[locale][key];
+ const osint=osintStrings[locale];
+ for(const [id,key] of Object.entries({"osint-tools-nav-label":"nav","osint-tools-kicker":"kicker","osint-tools-title":"title","osint-tools-description":"description","osint-tools-note":"note"}))$(id).textContent=osint[key];
+ for(const [tool,key] of Object.entries({wayback:"wayback",marineTraffic:"marineTraffic",gisis:"gisis",gfw:"gfw",whois:"whois",osintFramework:"osintFramework",googleDorks:"googleDorks"})){
+  const desc=$("osint-desc-"+tool);if(desc)desc.textContent=osint.tools[key];
+ }
+ document.querySelectorAll(".osint-tool-link-label").forEach(node=>node.textContent=osint.open+" ↗");
  $("record-search").placeholder=t("searchPlaceholder");
  $("auth-email").placeholder=t("authEmailPlaceholder");$("auth-institution").placeholder=t("institutionPlaceholder");$("auth-justification").placeholder=t("justificationPlaceholder");$("retry-request-title").textContent=t("retryTitle");
  for(const [id,key] of [["institution-label","institution"],["justification-label","justification"],["signup-privacy-note","privacy"],["retry-institution-label","institution"],["retry-justification-label","justification"],["retry-request-button","send"],["admin-requests-title","adminTitle"],["admin-requests-description","adminDescription"]]){const target=$(id);if(target)target.textContent=accessStrings[locale][key];}
