@@ -101,6 +101,7 @@ const osintStrings={
    osintFramework:"Explore un directorio estructurado de recursos y técnicas de investigación en fuentes abiertas.",
    googleDorks:"Use operadores avanzados de búsqueda para localizar páginas, documentos, dominios y términos específicos en Google."
   }
+ }
 };
 const accessStrings={
 pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação"},
