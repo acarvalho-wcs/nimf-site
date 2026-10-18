@@ -294,3 +294,11 @@ body[data-theme="light"] .internal-report-tab[aria-selected="true"]{background:#
 .osint-tool-card .internal-document-link{align-self:flex-start}
 body[data-theme="light"] .osint-tools-note,body[data-theme="light"] .osint-tool-card{background:#fff}
 @media(max-width:720px){.osint-tools-grid{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Brand assets: preserve official logo proportions and never display broken-image icons. */
+.osint-tool-brand img.osint-wayback-logo{width:64px;height:34px;padding:5px 2px;object-fit:contain}
+.osint-logo-fallback{display:none;align-items:center;justify-content:center;min-width:34px;height:34px;
+ box-sizing:border-box;border-radius:7px;background:#edf1ed;color:#1b3429;font-size:10px;font-weight:800;letter-spacing:.025em}
+.osint-tool-brand.osint-logo-unavailable img{display:none}
+.osint-tool-brand.osint-logo-unavailable .osint-logo-fallback{display:flex}
