@@ -16,6 +16,9 @@ const txt={
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false,reportGrants=[];
 let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[];
 let workspaceView="dashboard";
+/* Initialize OSINT filters before the first translate() call and Firebase startup. */
+const osintCategoryKeys=["all","wildlifeTrade","digital","transport","species","geospatial","companies"];
+let osintActiveCategory="all";
 
 function switchWorkspace(view){
  if($("dashboard-panel").hidden || !auth?.currentUser || !auth.currentUser.emailVerified || !activeUser || auth.currentUser.uid!==activeUser.uid)return;
@@ -679,8 +682,6 @@ else{
 
 
 /* Search, category filters and counts for the OSINT library. */
-const osintCategoryKeys=["all","wildlifeTrade","digital","transport","species","geospatial","companies"];
-let osintActiveCategory="all";
 function normalizeOsint(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}
 function updateOsintLibrary(){
  const strings=osintStrings[locale]||osintStrings.pt, input=$("osint-search-input"),grid=$("osint-tools-grid");
