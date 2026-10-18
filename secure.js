@@ -450,22 +450,42 @@ refreshInterfaceThemeLabel();
 $("login-tab").addEventListener("click",()=>switchMode("login"));
 $("signup-tab").addEventListener("click",()=>switchMode("signup"));
 $("record-search").addEventListener("input",drawRecords);
+function loginFeedback(error){
+ const code=String(error?.code||"");
+ const messages={
+  pt:{"auth/invalid-credential":"E-mail ou senha incorretos.","auth/invalid-email":"Verifique o endereço de e-mail.","auth/too-many-requests":"Muitas tentativas. Aguarde antes de tentar novamente.","auth/network-request-failed":"Não foi possível conectar ao Firebase. Verifique sua conexão."},
+  en:{"auth/invalid-credential":"Incorrect email or password.","auth/invalid-email":"Check the email address.","auth/too-many-requests":"Too many attempts. Try again later.","auth/network-request-failed":"Could not connect to Firebase. Check your connection."},
+  es:{"auth/invalid-credential":"Correo o contraseña incorrectos.","auth/invalid-email":"Compruebe la dirección de correo.","auth/too-many-requests":"Demasiados intentos. Inténtelo más tarde.","auth/network-request-failed":"No se pudo conectar a Firebase. Compruebe su conexión."}
+ };
+ return messages[locale]?.[code]||t("genericError");
+}
 $("auth-form").addEventListener("submit",async e=>{
- e.preventDefault();if(!auth)return;
+ e.preventDefault();
+ if(!auth){message("auth-error",locale==="en"?"Authentication has not initialized. Reload the page.":locale==="es"?"La autenticación no se ha inicializado. Actualice la página.":"A autenticação não inicializou. Atualize a página.");return;}
  const email=$("auth-email").value.trim(),password=$("auth-password").value;
  message("auth-error","");
  if(password.length<8){message("auth-error",t("weak"));return;}
  if(mode==="signup" && password!==$("auth-confirm").value){message("auth-error",t("mismatch"));return;}
  busy(true);
+ let finished=false;
+ const watchdog=setTimeout(()=>{
+  if(finished)return;
+  busy(false);
+  message("auth-error",locale==="en"?"Sign-in is taking too long. Check your connection and reload the page before retrying.":locale==="es"?"La autenticación está tardando demasiado. Compruebe la conexión y actualice la página antes de reintentar.":"O login está demorando além do esperado. Verifique a conexão e atualize a página antes de tentar novamente.");
+ },12000);
  try{
   if(mode==="signup"){
    const credential=await createUserWithEmailAndPassword(auth,email,password);
    await sendEmailVerification(credential.user);
    $("auth-password").value="";$("auth-confirm").value="";
    displayWaiting(credential.user,true);
-  }else{await signInWithEmailAndPassword(auth,email,password);}
- }catch(e){message("auth-error",t("genericError"));}
- finally{busy(false);}
+  }else{
+   const credential=await signInWithEmailAndPassword(auth,email,password);
+   const epoch=++authEpoch;
+   await evaluateUser(credential.user,epoch);
+  }
+ }catch(error){message("auth-error",loginFeedback(error));console.warn("Firebase sign-in failed",error?.code||error);}
+ finally{finished=true;clearTimeout(watchdog);busy(false);}
 });
 $("forgot-password").addEventListener("click",async()=>{
  if(!auth)return;const email=$("auth-email").value.trim();
@@ -498,8 +518,13 @@ else{
   auth=getAuth(app);db=getFirestore(app);
   show("auth-panel");window.__nimfAppStarted=true;
   onAuthStateChanged(auth,user=>{
-   const epoch=++authEpoch;void evaluateUser(user,epoch);
-  },()=>show("auth-panel"));
+   const epoch=++authEpoch;
+   void evaluateUser(user,epoch).catch(error=>{
+    console.warn("Auth state evaluation failed",error?.code||error);
+    show("auth-panel");
+    message("auth-error",loginFeedback(error));
+   });
+  },error=>{show("auth-panel");message("auth-error",loginFeedback(error));});
  }catch(e){show("config-panel");window.__nimfAppStarted=true;}
 }
 
