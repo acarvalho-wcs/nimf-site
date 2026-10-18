@@ -8,7 +8,7 @@
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css?v=language48">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-brand-fix-20261018-1">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-library-20261018-1">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
@@ -30,7 +30,7 @@
   }
  },7000);
  </script>
- <script type="module" src="./secure.js?v=osint-brand-fix-20261018-1"></script>
+ <script type="module" src="./secure.js?v=osint-library-20261018-1"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -278,43 +278,107 @@
         <h2 id="osint-tools-title">Ferramentas OSINT</h2>
         <p id="osint-tools-description">Acesso rápido a serviços externos úteis para pesquisa, preservação de páginas, análise de embarcações, pesca, domínios e investigação em fontes abertas.</p>
         <div class="osint-tools-note" role="note"><p id="osint-tools-note">Os serviços abaixo são externos ao Observatório. Use-os de acordo com suas políticas de uso, a legislação aplicável e a finalidade institucional da investigação.</p></div>
-        <div class="osint-tools-grid" aria-live="polite">
-          <article class="osint-tool-card">
+        <div class="osint-library-controls">
+          <div id="osint-filter-categories" class="osint-category-filters" role="group" aria-label="Categorias de ferramentas OSINT">
+            <button class="osint-category-button active" type="button" data-osint-category="all" aria-pressed="true"><span class="osint-category-name">Todas</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="wildlifeTrade" aria-pressed="false"><span class="osint-category-name">Comércio de fauna</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="digital" aria-pressed="false"><span class="osint-category-name">Investigação digital</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="transport" aria-pressed="false"><span class="osint-category-name">Transporte e rotas</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="species" aria-pressed="false"><span class="osint-category-name">Espécies e biodiversidade</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="geospatial" aria-pressed="false"><span class="osint-category-name">Geoespacial</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="companies" aria-pressed="false"><span class="osint-category-name">Empresas e vínculos</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+          </div>
+          <div class="osint-search-toolbar">
+            <label id="osint-search-label" for="osint-search-input">Buscar ferramenta</label>
+            <input id="osint-search-input" type="search" autocomplete="off" placeholder="Nome, espécie, rota ou finalidade" maxlength="140">
+            <button id="osint-reset-filters" class="secure-secondary" type="button">Limpar filtros</button>
+          </div>
+          <p id="osint-tool-count" class="osint-tool-count" role="status" aria-live="polite">16 ferramentas disponíveis</p>
+        </div>
+        <div id="osint-tools-grid" class="osint-tools-grid" aria-live="polite">
+          <article class="osint-tool-card" data-osint-categories="digital">
             <div class="osint-tool-brand"><img class="osint-wayback-logo" src="https://upload.wikimedia.org/wikipedia/commons/0/01/Wayback_Machine_logo_2010.svg" alt="" loading="lazy"><h3>Wayback Machine</h3></div>
             <p id="osint-desc-wayback">Consulte versões arquivadas de páginas e acompanhe mudanças históricas em sites.</p>
             <a class="internal-document-link" href="https://web.archive.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
-          <article class="osint-tool-card">
+          <article class="osint-tool-card" data-osint-categories="transport">
             <div class="osint-tool-brand"><img src="https://www.marinetraffic.com/favicon.ico" alt="" loading="lazy"><h3>MarineTraffic</h3></div>
             <p id="osint-desc-marineTraffic">Pesquise embarcações, posições, movimentos, portos e informações de tráfego marítimo.</p>
             <a class="internal-document-link" href="https://www.marinetraffic.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
-          <article class="osint-tool-card">
+          <article class="osint-tool-card" data-osint-categories="transport">
             <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=imo.org&amp;sz=64" alt="" loading="lazy"><h3>IMO GISIS</h3></div>
             <p id="osint-desc-gisis">Consulte o Global Integrated Shipping Information System da Organização Marítima Internacional.</p>
             <a class="internal-document-link" href="https://gisis.imo.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
-          <article class="osint-tool-card">
+          <article class="osint-tool-card" data-osint-categories="transport geospatial">
             <div class="osint-tool-brand"><img src="https://globalfishingwatch.org/favicon.ico" alt="" loading="lazy"><h3>Global Fishing Watch</h3></div>
             <p id="osint-desc-gfw">Explore atividade de embarcações, pesca aparente, encontros e presença no mar em mapas interativos.</p>
             <a class="internal-document-link" href="https://globalfishingwatch.org/map/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
-          <article class="osint-tool-card">
+          <article class="osint-tool-card" data-osint-categories="digital companies">
             <div class="osint-tool-brand"><img src="https://www.maltego.com/images/uploads/whoisxml-api-logo.png" alt="" loading="lazy"><h3>WHOIS API</h3></div>
             <p id="osint-desc-whois">Investigue registros de domínio e informações técnicas associadas à infraestrutura de sites.</p>
             <a class="internal-document-link" href="https://whoisxmlapi.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
-          <article class="osint-tool-card">
+          <article class="osint-tool-card" data-osint-categories="digital">
             <div class="osint-tool-brand"><img src="./assets/osint-framework-icon.svg" alt="" loading="lazy"><h3>OSINT Framework</h3></div>
             <p id="osint-desc-osintFramework">Navegue por um diretório estruturado de recursos e técnicas de investigação em fontes abertas.</p>
             <a class="internal-document-link" href="https://osintframework.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
-          <article class="osint-tool-card">
+          <article class="osint-tool-card" data-osint-categories="digital">
             <div class="osint-tool-brand"><img src="https://www.google.com/favicon.ico" alt="" loading="lazy"><h3>Google Dorks</h3></div>
             <p id="osint-desc-googleDorks">Use operadores avançados de busca para localizar páginas, documentos, domínios e termos específicos no Google.</p>
             <a class="internal-document-link" href="https://www.google.com/advanced_search" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
+
+          <article class="osint-tool-card" data-osint-categories="wildlifeTrade species">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=cites.org&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>CITES Trade Database</h3></div>
+            <p id="osint-desc-citesTrade">Consulte registros oficiais de comércio internacional declarado sob a CITES por espécie, país e período. Não é uma base de tráfico ilegal.</p>
+            <a class="internal-document-link" href="https://trade.cites.org/en/cites_trade" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="wildlifeTrade species">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=speciesplus.net&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Species+</h3></div>
+            <p id="osint-desc-speciesPlus">Verifique enquadramento CITES e CMS, taxonomia, distribuição e informações regulatórias de espécies.</p>
+            <a class="internal-document-link" href="https://www.speciesplus.net/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital species">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=lens.google&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Google Lens</h3></div>
+            <p id="osint-desc-googleLens">Pesquise imagens semelhantes para examinar fotografias de animais e possíveis reutilizações em anúncios.</p>
+            <a class="internal-document-link" href="https://lens.google/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=tineye.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>TinEye</h3></div>
+            <p id="osint-desc-tineye">Localize cópias de fotografias em diferentes sites para avaliar a reutilização de imagens em anúncios.</p>
+            <a class="internal-document-link" href="https://tineye.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="companies">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=opencorporates.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>OpenCorporates</h3></div>
+            <p id="osint-desc-openCorporates">Consulte registros públicos de empresas para contextualizar importadores, exportadores e estabelecimentos comerciais.</p>
+            <a class="internal-document-link" href="https://opencorporates.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="transport geospatial">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=adsbexchange.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>ADS-B Exchange</h3></div>
+            <p id="osint-desc-adsbExchange">Examine posições e trajetórias de aeronaves reportadas por ADS-B; cobertura e históricos podem variar.</p>
+            <a class="internal-document-link" href="https://globe.adsbexchange.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="species geospatial">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=gbif.org&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>GBIF</h3></div>
+            <p id="osint-desc-gbif">Consulte registros de ocorrência e dados georreferenciados de biodiversidade para contextualizar a distribuição de espécies.</p>
+            <a class="internal-document-link" href="https://www.gbif.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="species geospatial">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=inaturalist.org&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>iNaturalist</h3></div>
+            <p id="osint-desc-iNaturalist">Explore observações, imagens e identificações colaborativas de espécies; dados devem ser verificados antes do uso investigativo.</p>
+            <a class="internal-document-link" href="https://www.inaturalist.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="species">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=iucnredlist.org&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>IUCN Red List</h3></div>
+            <p id="osint-desc-iucnRedList">Consulte categorias de ameaça, avaliações de conservação e informações sobre distribuição de espécies na Lista Vermelha da IUCN.</p>
+            <a class="internal-document-link" href="https://www.iucnredlist.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
         </div>
+        <p id="osint-empty" class="osint-empty" hidden>Nenhuma ferramenta encontrada para os filtros selecionados.</p>
       </section>
     </section>
    </main>
