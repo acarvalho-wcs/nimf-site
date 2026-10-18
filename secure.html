@@ -8,7 +8,7 @@
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css?v=language48">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-library-20261018-1">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-expanded-20261018-1">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
@@ -30,7 +30,7 @@
   }
  },7000);
  </script>
- <script type="module" src="./secure.js?v=osint-login-fix-20261018-2"></script>
+ <script type="module" src="./secure.js?v=osint-expanded-20261018-1"></script>
 </head>
 <body data-theme="dark" data-private-ready="false">
  <div class="secure-layout">
@@ -287,13 +287,15 @@
             <button class="osint-category-button" type="button" data-osint-category="species" aria-pressed="false"><span class="osint-category-name">Espécies e biodiversidade</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
             <button class="osint-category-button" type="button" data-osint-category="geospatial" aria-pressed="false"><span class="osint-category-name">Geoespacial</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
             <button class="osint-category-button" type="button" data-osint-category="companies" aria-pressed="false"><span class="osint-category-name">Empresas e vínculos</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="media" aria-pressed="false"><span class="osint-category-name">Mídia e monitoramento</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
+            <button class="osint-category-button" type="button" data-osint-category="cyber" aria-pressed="false"><span class="osint-category-name">Cibersegurança</span><span class="osint-filter-count" aria-hidden="true">0</span></button>
           </div>
           <div class="osint-search-toolbar">
             <label id="osint-search-label" for="osint-search-input">Buscar ferramenta</label>
             <input id="osint-search-input" type="search" autocomplete="off" placeholder="Nome, espécie, rota ou finalidade" maxlength="140">
             <button id="osint-reset-filters" class="secure-secondary" type="button">Limpar filtros</button>
           </div>
-          <p id="osint-tool-count" class="osint-tool-count" role="status" aria-live="polite">16 ferramentas disponíveis</p>
+          <p id="osint-tool-count" class="osint-tool-count" role="status" aria-live="polite">33 ferramentas disponíveis</p>
         </div>
         <div id="osint-tools-grid" class="osint-tools-grid" aria-live="polite">
           <article class="osint-tool-card" data-osint-categories="digital">
@@ -376,6 +378,92 @@
             <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=iucnredlist.org&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>IUCN Red List</h3></div>
             <p id="osint-desc-iucnRedList">Consulte categorias de ameaça, avaliações de conservação e informações sobre distribuição de espécies na Lista Vermelha da IUCN.</p>
             <a class="internal-document-link" href="https://www.iucnredlist.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+
+          <article class="osint-tool-card" data-osint-categories="media transport geospatial digital">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=osirisai.live&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>OSIRIS</h3></div>
+            <p id="osint-desc-osiris">Painel global de fontes abertas com camadas de voos, embarcações, satélites e câmeras; confira a origem e a atualização dos dados.</p>
+            <a class="internal-document-link" href="https://osirisai.live/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="media geospatial">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=worldcam.eu&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>WorldCam</h3></div>
+            <p id="osint-desc-worldCam">Localize câmeras públicas de cidades, portos e aeroportos para obter contexto visual de localidades.</p>
+            <a class="internal-document-link" href="https://worldcam.eu/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="media geospatial">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=radio.garden&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Radio Garden</h3></div>
+            <p id="osint-desc-radioGarden">Encontre emissoras de rádio de diferentes regiões e acompanhe relatos e notícias locais em áudio.</p>
+            <a class="internal-document-link" href="https://radio.garden/search" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="transport geospatial">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=flightradar24.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Flightradar24</h3></div>
+            <p id="osint-desc-flightradar24">Consulte voos e trajetórias disponíveis no mapa; histórico detalhado e cobertura podem depender do plano.</p>
+            <a class="internal-document-link" href="https://www.flightradar24.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber companies">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=github.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>theHarvester</h3></div>
+            <p id="osint-desc-theHarvester">Software para coletar informações públicas sobre domínios, subdomínios e infraestrutura digital; requer instalação.</p>
+            <a class="internal-document-link" href="https://github.com/laramies/theHarvester" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber companies">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=securitytrails.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>SecurityTrails API</h3></div>
+            <p id="osint-desc-securityTrails">Consulte registros e histórico DNS, IPs e domínios por API; exige chave e pode ter limites comerciais.</p>
+            <a class="internal-document-link" href="https://docs.securitytrails.com/docs/overview" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=bgpview.io&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>BGPView</h3></div>
+            <p id="osint-desc-bgpView">Explore informações públicas sobre ASNs, endereços IP e rotas BGP para contextualizar infraestrutura de rede.</p>
+            <a class="internal-document-link" href="https://bgpview.io/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=recordedfuture.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Recorded Future Vulnerability Database</h3></div>
+            <p id="osint-desc-rfVulnerabilities">Consulte informações de vulnerabilidades e CVEs para avaliar riscos de infraestrutura e plataformas digitais.</p>
+            <a class="internal-document-link" href="https://www.recordedfuture.com/resources/trending-vulnerabilities" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=tria.ge&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Triage Malware Sandbox</h3></div>
+            <p id="osint-desc-triageSandbox">Analise arquivos e possíveis ameaças digitais em ambiente controlado; não envie dados investigativos sensíveis.</p>
+            <a class="internal-document-link" href="https://tria.ge/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=github.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Mitaka</h3></div>
+            <p id="osint-desc-mitaka">Extensão de navegador para pesquisar indicadores, domínios e outras entidades em múltiplas fontes OSINT.</p>
+            <a class="internal-document-link" href="https://github.com/ninoseki/mitaka" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=recordedfuture.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Recorded Future Browser Extension</h3></div>
+            <p id="osint-desc-rfExtension">Extensão que contextualiza URLs, domínios, IPs e indicadores de risco; recursos variam conforme a licença.</p>
+            <a class="internal-document-link" href="https://www.recordedfuture.com/platform/browser-extension" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=haveibeenpwned.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Have I Been Pwned</h3></div>
+            <p id="osint-desc-haveIBeenPwned">Verifique se endereços de e-mail sob sua responsabilidade aparecem em vazamentos públicos conhecidos.</p>
+            <a class="internal-document-link" href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber companies">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=builtwith.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>BuiltWith</h3></div>
+            <p id="osint-desc-builtWith">Identifique tecnologias usadas por sites e lojas virtuais para comparar infraestrutura de plataformas comerciais.</p>
+            <a class="internal-document-link" href="https://builtwith.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=shodan.io&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Shodan</h3></div>
+            <p id="osint-desc-shodan">Pesquise informações já indexadas sobre dispositivos e serviços conectados à internet; use apenas para fins autorizados.</p>
+            <a class="internal-document-link" href="https://www.shodan.io/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital cyber companies">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=github.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>SpiderFoot (open source)</h3></div>
+            <p id="osint-desc-spiderFoot">Software de correlação automatizada de fontes OSINT sobre domínios e infraestrutura; código disponível no GitHub.</p>
+            <a class="internal-document-link" href="https://github.com/smicallef/spiderfoot" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="digital companies">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=maltego.com&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Maltego</h3></div>
+            <p id="osint-desc-maltego">Organize conexões entre empresas, sites, domínios e outras entidades em gráficos de vínculos.</p>
+            <a class="internal-document-link" href="https://www.maltego.com/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
+          </article>
+          <article class="osint-tool-card" data-osint-categories="cyber">
+            <div class="osint-tool-brand"><img src="https://www.google.com/s2/favicons?domain=nmap.org&amp;sz=128" alt="" loading="lazy" decoding="async"><h3>Nmap</h3></div>
+            <p id="osint-desc-nmap">Ferramenta instalável para inspeção autorizada de redes e serviços; não é uma busca passiva por padrão.</p>
+            <a class="internal-document-link" href="https://nmap.org/" target="_blank" rel="noopener noreferrer"><span class="osint-tool-link-label">Abrir ferramenta ↗</span></a>
           </article>
         </div>
         <p id="osint-empty" class="osint-empty" hidden>Nenhuma ferramenta encontrada para os filtros selecionados.</p>
