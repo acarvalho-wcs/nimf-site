@@ -649,3 +649,21 @@ else{
  window.__nimfMapFilterTranslate=translateDrawer;
  translateDrawer();
 })();
+
+
+/* Ensure a stable visual identifier when a third-party logo cannot be loaded. */
+(function setupOsintBrandFallbacks(){
+ const identifiers={"Wayback Machine":"WB","MarineTraffic":"MT","IMO GISIS":"IMO",
+  "Global Fishing Watch":"GFW","WHOIS API":"WHO","OSINT Framework":"OS","Google Dorks":"G"};
+ document.querySelectorAll(".osint-tool-brand").forEach(brand=>{
+  const img=brand.querySelector("img"),heading=brand.querySelector("h3");
+  if(!img||!heading)return;
+  const fallback=document.createElement("span");
+  fallback.className="osint-logo-fallback";fallback.setAttribute("aria-hidden","true");
+  fallback.textContent=identifiers[heading.textContent]||"OS";
+  brand.insertBefore(fallback,heading);
+  const failed=()=>brand.classList.add("osint-logo-unavailable");
+  img.addEventListener("error",failed,{once:true});
+  if(img.complete&&img.naturalWidth===0)failed();
+ });
+})();
