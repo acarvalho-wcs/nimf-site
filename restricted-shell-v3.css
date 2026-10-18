@@ -320,3 +320,17 @@ body[data-theme="light"] .osint-tools-note,body[data-theme="light"] .osint-tool-
 .osint-tool-card[hidden],.osint-empty[hidden]{display:none!important}
 .osint-empty{margin:19px 0;padding:22px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:13px}
 @media(max-width:720px){.osint-library-controls{gap:12px}.osint-category-filters{gap:7px}.osint-category-button{font-size:11px}.osint-search-toolbar{align-items:stretch;flex-direction:column}.osint-search-toolbar label,.osint-search-toolbar input,.osint-search-toolbar button{width:100%;max-width:none;flex:auto}}
+
+/* OSINT selected category: same lime green as the Open tool buttons in both themes. */
+.osint-tools-view .osint-category-button.active,
+.osint-tools-view .osint-category-button[aria-pressed="true"],
+body[data-theme="light"] .osint-tools-view .osint-category-button.active,
+body[data-theme="dark"] .osint-tools-view .osint-category-button.active{
+ background:#d3ff54!important;
+ border-color:#bce847!important;
+ color:#102216!important;
+ box-shadow:0 0 0 1px rgba(56,100,22,.08);
+}
+.osint-tools-view .osint-category-button[aria-pressed="true"] .osint-category-name,
+.osint-tools-view .osint-category-button[aria-pressed="true"] .osint-filter-count{color:#102216!important}
+.osint-tools-view .osint-category-button[aria-pressed="true"] .osint-filter-count{background:rgba(16,34,22,.12)}
