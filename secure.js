@@ -103,6 +103,14 @@ const osintStrings={
   }
  }
 };
+
+/* OSINT library localization. */
+Object.assign(osintStrings.pt,{"searchLabel":"Buscar ferramenta","searchPlaceholder":"Nome, espécie, rota ou finalidade","reset":"Limpar filtros","filtersLabel":"Categorias de ferramentas OSINT","count":"{shown} de {total} ferramentas","empty":"Nenhuma ferramenta encontrada para os filtros selecionados.","categories":{"all":"Todas","wildlifeTrade":"Comércio de fauna","digital":"Investigação digital","transport":"Transporte e rotas","species":"Espécies e biodiversidade","geospatial":"Geoespacial","companies":"Empresas e vínculos"}});
+Object.assign(osintStrings.pt.tools,{"citesTrade":"Consulte registros oficiais de comércio internacional declarado sob a CITES por espécie, país e período. Não é uma base de tráfico ilegal.","speciesPlus":"Verifique enquadramento CITES e CMS, taxonomia, distribuição e informações regulatórias de espécies.","googleLens":"Pesquise imagens semelhantes para examinar fotografias de animais e possíveis reutilizações em anúncios.","tineye":"Localize cópias de fotografias em diferentes sites para avaliar a reutilização de imagens em anúncios.","openCorporates":"Consulte registros públicos de empresas para contextualizar importadores, exportadores e estabelecimentos comerciais.","adsbExchange":"Examine posições e trajetórias de aeronaves reportadas por ADS-B; cobertura e históricos podem variar.","gbif":"Consulte registros de ocorrência e dados georreferenciados de biodiversidade para contextualizar a distribuição de espécies.","iNaturalist":"Explore observações, imagens e identificações colaborativas de espécies; dados devem ser verificados antes do uso investigativo.","iucnRedList":"Consulte categorias de ameaça, avaliações de conservação e informações sobre distribuição de espécies na Lista Vermelha da IUCN."});
+Object.assign(osintStrings.en,{"searchLabel":"Search tools","searchPlaceholder":"Tool name, species, route or purpose","reset":"Clear filters","filtersLabel":"OSINT tool categories","count":"{shown} of {total} tools","empty":"No tools match the selected filters.","categories":{"all":"All","wildlifeTrade":"Wildlife trade","digital":"Digital investigation","transport":"Transport and routes","species":"Species and biodiversity","geospatial":"Geospatial","companies":"Companies and connections"}});
+Object.assign(osintStrings.en.tools,{"citesTrade":"Review official CITES-reported international trade records by species, country and period. This is not an illegal wildlife trade database.","speciesPlus":"Check CITES and CMS listings, taxonomy, distribution and species-related regulatory information.","googleLens":"Find visually similar images to investigate wildlife photographs and possible reuse across advertisements.","tineye":"Locate copies of photographs across websites to assess image reuse in online listings.","openCorporates":"Search public company records to contextualize importers, exporters and commercial entities.","adsbExchange":"Examine aircraft positions and routes reported through ADS-B; coverage and historical data may vary.","gbif":"Explore biodiversity occurrence and georeferenced records to contextualize species distributions.","iNaturalist":"Browse community observations, photographs and species identifications; validate records before investigative use.","iucnRedList":"Review threat categories, conservation assessments and species distribution information from the IUCN Red List."});
+Object.assign(osintStrings.es,{"searchLabel":"Buscar herramientas","searchPlaceholder":"Nombre, especie, ruta o finalidad","reset":"Limpiar filtros","filtersLabel":"Categorías de herramientas OSINT","count":"{shown} de {total} herramientas","empty":"No se encontraron herramientas con los filtros seleccionados.","categories":{"all":"Todas","wildlifeTrade":"Comercio de fauna","digital":"Investigación digital","transport":"Transporte y rutas","species":"Especies y biodiversidad","geospatial":"Geoespacial","companies":"Empresas y vínculos"}});
+Object.assign(osintStrings.es.tools,{"citesTrade":"Consulte registros oficiales del comercio internacional declarado a la CITES por especie, país y período. No es una base de tráfico ilegal.","speciesPlus":"Verifique listados CITES y CMS, taxonomía, distribución e información normativa sobre especies.","googleLens":"Busque imágenes similares para investigar fotografías de fauna y posibles reutilizaciones en anuncios.","tineye":"Localice copias de fotografías en diferentes sitios para evaluar la reutilización de imágenes en anuncios.","openCorporates":"Consulte registros públicos de empresas para contextualizar importadores, exportadores y establecimientos comerciales.","adsbExchange":"Examine posiciones y rutas de aeronaves registradas mediante ADS-B; cobertura e historiales pueden variar.","gbif":"Consulte registros de presencia y datos georreferenciados de biodiversidad para contextualizar la distribución de especies.","iNaturalist":"Explore observaciones, imágenes e identificaciones colaborativas; verifique los registros antes de usarlos en investigaciones.","iucnRedList":"Consulte categorías de amenaza, evaluaciones de conservación y datos de distribución de especies en la Lista Roja de la UICN."});
 const accessStrings={
 pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação"},
 en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request"},
@@ -122,10 +130,11 @@ function translate(){
  for(const [id,key] of Object.entries({"internal-reports-nav-label":"nav","internal-reports-kicker":"kicker","internal-reports-title":"title","internal-reports-description":"description"}))$(id).textContent=internalStrings[locale][key];
  const osint=osintStrings[locale];
  for(const [id,key] of Object.entries({"osint-tools-nav-label":"nav","osint-tools-kicker":"kicker","osint-tools-title":"title","osint-tools-description":"description","osint-tools-note":"note"}))$(id).textContent=osint[key];
- for(const [tool,key] of Object.entries({wayback:"wayback",marineTraffic:"marineTraffic",gisis:"gisis",gfw:"gfw",whois:"whois",osintFramework:"osintFramework",googleDorks:"googleDorks"})){
+ for(const [tool,key] of Object.entries({wayback:"wayback",marineTraffic:"marineTraffic",gisis:"gisis",gfw:"gfw",whois:"whois",osintFramework:"osintFramework",googleDorks:"googleDorks",citesTrade:"citesTrade",speciesPlus:"speciesPlus",googleLens:"googleLens",tineye:"tineye",openCorporates:"openCorporates",adsbExchange:"adsbExchange",gbif:"gbif",iNaturalist:"iNaturalist",iucnRedList:"iucnRedList"})){
   const desc=$("osint-desc-"+tool);if(desc)desc.textContent=osint.tools[key];
  }
  document.querySelectorAll(".osint-tool-link-label").forEach(node=>node.textContent=osint.open+" ↗");
+  updateOsintLibrary();
  $("record-search").placeholder=t("searchPlaceholder");
  $("auth-email").placeholder=t("authEmailPlaceholder");$("auth-institution").placeholder=t("institutionPlaceholder");$("auth-justification").placeholder=t("justificationPlaceholder");$("retry-request-title").textContent=t("retryTitle");
  for(const [id,key] of [["institution-label","institution"],["justification-label","justification"],["signup-privacy-note","privacy"],["retry-institution-label","institution"],["retry-justification-label","justification"],["retry-request-button","send"],["admin-requests-title","adminTitle"],["admin-requests-description","adminDescription"]]){const target=$(id);if(target)target.textContent=accessStrings[locale][key];}
@@ -654,7 +663,7 @@ else{
 /* Ensure a stable visual identifier when a third-party logo cannot be loaded. */
 (function setupOsintBrandFallbacks(){
  const identifiers={"Wayback Machine":"WB","MarineTraffic":"MT","IMO GISIS":"IMO",
-  "Global Fishing Watch":"GFW","WHOIS API":"WHO","OSINT Framework":"OS","Google Dorks":"G"};
+  "Global Fishing Watch":"GFW","WHOIS API":"WHO","OSINT Framework":"OS","Google Dorks":"G","CITES Trade Database":"CT","Species+":"S+","Google Lens":"GL","TinEye":"TE","OpenCorporates":"OC","ADS-B Exchange":"AD","GBIF":"GB","iNaturalist":"IN","IUCN Red List":"RL"};
  document.querySelectorAll(".osint-tool-brand").forEach(brand=>{
   const img=brand.querySelector("img"),heading=brand.querySelector("h3");
   if(!img||!heading)return;
@@ -666,4 +675,49 @@ else{
   img.addEventListener("error",failed,{once:true});
   if(img.complete&&img.naturalWidth===0)failed();
  });
+})();
+
+
+/* Search, category filters and counts for the OSINT library. */
+const osintCategoryKeys=["all","wildlifeTrade","digital","transport","species","geospatial","companies"];
+let osintActiveCategory="all";
+function normalizeOsint(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}
+function updateOsintLibrary(){
+ const strings=osintStrings[locale]||osintStrings.pt, input=$("osint-search-input"),grid=$("osint-tools-grid");
+ if(!input||!grid)return;
+ const query=normalizeOsint(input.value),cards=[...grid.querySelectorAll(".osint-tool-card")];
+ $("osint-search-label").textContent=strings.searchLabel;
+ input.placeholder=strings.searchPlaceholder;
+ $("osint-reset-filters").textContent=strings.reset;
+ $("osint-filter-categories").setAttribute("aria-label",strings.filtersLabel);
+ let shown=0;
+ for(const card of cards){
+  const categories=(card.dataset.osintCategories||"").split(/\s+/);
+  const haystack=(card.querySelector("h3")?.textContent||"")+" "+(card.querySelector("p")?.textContent||"");
+  const visible=(osintActiveCategory==="all"||categories.includes(osintActiveCategory))&&(!query||normalizeOsint(haystack).includes(query));
+  card.hidden=!visible;if(visible)shown++;
+ }
+ for(const button of $("osint-filter-categories").querySelectorAll("[data-osint-category]")){
+  const key=button.dataset.osintCategory;
+  const count=cards.filter(card=>key==="all"||(card.dataset.osintCategories||"").split(/\s+/).includes(key)).length;
+  button.querySelector(".osint-category-name").textContent=strings.categories[key];
+  button.querySelector(".osint-filter-count").textContent=String(count);
+  button.classList.toggle("active",key===osintActiveCategory);
+  button.setAttribute("aria-pressed",String(key===osintActiveCategory));
+ }
+ $("osint-tool-count").textContent=strings.count.replace("{shown}",shown).replace("{total}",cards.length);
+ $("osint-empty").textContent=strings.empty;
+ $("osint-empty").hidden=shown!==0;
+}
+(function setupOsintFilterEvents(){
+ const group=$("osint-filter-categories"),input=$("osint-search-input"),reset=$("osint-reset-filters");
+ if(!group||!input||!reset)return;
+ group.addEventListener("click",event=>{
+  const button=event.target.closest("button[data-osint-category]");
+  if(!button||!group.contains(button))return;
+  osintActiveCategory=button.dataset.osintCategory;updateOsintLibrary();
+ });
+ input.addEventListener("input",updateOsintLibrary);
+ reset.addEventListener("click",()=>{osintActiveCategory="all";input.value="";updateOsintLibrary();input.focus({preventScroll:true});});
+ updateOsintLibrary();
 })();
