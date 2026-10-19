@@ -244,6 +244,17 @@ async function loadInternalReports(){
   if(!response.ok)throw Error("Catalogue fetch failed");
   const payload=await response.json();
   internalLibrary=Array.isArray(payload.reports)?payload.reports:[];
+  // The Melipona dossier is registered before its manually uploaded PDF exists.
+  // Enable its report link only after the file is accessible in the public report repository.
+  const pendingMelipona=internalLibrary.find(item=>item.id==="species-melipona-capixaba-osint-2026-10-19");
+  const pendingFile=pendingMelipona?.files?.pt;
+  if(pendingFile?.available===false&&typeof pendingFile.path==="string"){
+   try{
+    const pdfUrl=publicReportBase+pendingFile.path.split("/").map(encodeURIComponent).join("/");
+    const pdfCheck=await fetch(pdfUrl+"?v="+Date.now(),{method:"HEAD",cache:"no-store"});
+    if(pdfCheck.ok&&(/application\/pdf/i.test(pdfCheck.headers.get("content-type")||"")||/\.pdf(?:\?|$)/i.test(pdfUrl)))pendingFile.available=true;
+   }catch(error){console.info("Melipona dossier PDF awaits upload or is temporarily unreachable.");}
+  }
  }catch(error){console.warn("Internal catalog unavailable",error);internalLibrary=[];internalCatalogError=true;}
  finally{internalCatalogLoaded=true;renderInternalReport();}
 }
