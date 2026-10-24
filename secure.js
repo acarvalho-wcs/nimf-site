@@ -244,17 +244,15 @@ async function loadInternalReports(){
   if(!response.ok)throw Error("Catalogue fetch failed");
   const payload=await response.json();
   internalLibrary=Array.isArray(payload.reports)?payload.reports:[];
-  // The Melipona dossier is registered before its manually uploaded PDF exists.
-  // Enable its report link only after the file is accessible in the public report repository.
-  const pendingMelipona=internalLibrary.find(item=>item.id==="species-melipona-capixaba-osint-2026-10-19");
-  const pendingFile=pendingMelipona?.files?.pt;
-  if(pendingFile?.available===false&&typeof pendingFile.path==="string"){
+  // Pending PDF links are enabled only when the uploaded file is reachable.
+  const pendingChecks=internalLibrary.flatMap(item=>Object.values(item.files||{}).filter(file=>file?.available===false&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path)));
+  await Promise.all(pendingChecks.map(async file=>{
    try{
-    const pdfUrl=publicReportBase+pendingFile.path.split("/").map(encodeURIComponent).join("/");
-    const pdfCheck=await fetch(pdfUrl+"?v="+Date.now(),{method:"HEAD",cache:"no-store"});
-    if(pdfCheck.ok&&(/application\/pdf/i.test(pdfCheck.headers.get("content-type")||"")||/\.pdf(?:\?|$)/i.test(pdfUrl)))pendingFile.available=true;
-   }catch(error){console.info("Melipona dossier PDF awaits upload or is temporarily unreachable.");}
-  }
+    const pdfUrl=publicReportBase+file.path.split("/").map(encodeURIComponent).join("/");
+    const response=await fetch(pdfUrl+"?v="+Date.now(),{method:"HEAD",cache:"no-store"});
+    if(response.ok)file.available=true;
+   }catch(error){console.info("A report PDF is pending upload or temporarily unavailable.");}
+  }));
  }catch(error){console.warn("Internal catalog unavailable",error);internalLibrary=[];internalCatalogError=true;}
  finally{internalCatalogLoaded=true;renderInternalReport();}
 }
