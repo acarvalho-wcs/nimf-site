@@ -46,13 +46,18 @@ export function localizedTitle(record,lang="pt"){
  return record?.["title_"+useLang(lang)]||record?.title||sci||dictionaries[useLang(lang)].generic;
 }
 export function localizedDescription(record,lang="pt"){
- const value=record?.["description_"+useLang(lang)];
- if(typeof value==="string"&&value.trim())return {text:value,sourceLanguage:useLang(lang)};
- // Do not silently present Portuguese source narratives as English translations.
- const alternatives=["pt","en","es"].filter(l=>l!==useLang(lang));
- for(const l of alternatives){
-  const text=record?.["description_"+l];
-  if(typeof text==="string"&&text.trim())return {text,sourceLanguage:l};
+ const target=useLang(lang);
+ const selected=record?.["description_"+target];
+ if(typeof selected==="string"&&selected.trim())return {text:selected.trim(),sourceLanguage:target};
+ for(const other of langs.filter(l=>l!==target)){
+  const value=record?.["description_"+other];
+  if(typeof value==="string"&&value.trim())return {text:value.trim(),sourceLanguage:other};
+ }
+ // Older Firestore documents may have only a single unlabeled description or note.
+ // Never claim such source text has been translated.
+ for(const key of ["description","notes"]){
+  const value=record?.[key];
+  if(typeof value==="string"&&value.trim())return {text:value.trim(),sourceLanguage:"original"};
  }
  return {text:"",sourceLanguage:null};
 }

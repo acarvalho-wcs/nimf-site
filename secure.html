@@ -212,7 +212,9 @@
           <form id="admin-map-form" class="tip-form">
            <label><span data-map-field="layer">Camada</span><select id="map-layer" required><option value="advertisement">Anúncios</option><option value="platform">Plataformas</option><option value="fair">Feiras livres</option><option value="physical_market">Comércio presencial sob investigação</option></select></label>
            <label><span data-map-field="title">Título genérico, sem identificar pessoas</span><input id="map-title" maxlength="180" required placeholder="Ex.: Ponto sob avaliação — Manaus"></label>
-           <label><span data-map-field="species">Espécie (se conhecida)</span><input id="map-species" maxlength="180"></label>
+           <label><span data-map-field="title_en">Título em inglês</span><input id="map-title-en" maxlength="180"></label>
+            <label><span data-map-field="title_es">Título em espanhol</span><input id="map-title-es" maxlength="180"></label>
+            <label><span data-map-field="species">Espécie (se conhecida)</span><input id="map-species" maxlength="180"></label>
            <label><span data-map-field="country">País</span><input id="map-country" maxlength="100"></label>
            <label><span data-map-field="state">Estado / região</span><input id="map-state" maxlength="120"></label>
            <label><span data-map-field="city">Município</span><input id="map-city" maxlength="120"></label>
@@ -223,10 +225,14 @@
            <label><span data-map-field="url">Link de referência (opcional)</span><input id="map-url" maxlength="1500" type="url" placeholder="https://..."></label>
            <label><span data-map-field="published">Visibilidade</span><select id="map-published"><option value="false">Rascunho — somente administrador</option><option value="true">Publicar para usuários autorizados</option></select></label>
            <label class="tip-wide"><span data-map-field="notes">Contexto verificável, sem dados pessoais</span><textarea id="map-notes" maxlength="1500" rows="3"></textarea></label>
-           <div class="admin-map-actions"><button id="map-save" class="secure-button" type="submit">Salvar ponto</button><button id="map-cancel" class="secure-secondary" type="button">Cancelar edição</button></div>
+           <label class="tip-wide"><span data-map-field="notes_en">Contexto em inglês</span><textarea id="map-notes-en" maxlength="1500" rows="3"></textarea></label>
+            <label class="tip-wide"><span data-map-field="notes_es">Contexto em espanhol</span><textarea id="map-notes-es" maxlength="1500" rows="3"></textarea></label>
+            <p id="map-translation-guidance" class="secure-small tip-wide">Rascunhos podem ter traduções pendentes. Para publicar, preencha os três idiomas.</p>
+            <div class="admin-map-actions"><button id="map-save" class="secure-button" type="submit">Salvar ponto</button><button id="map-cancel" class="secure-secondary" type="button">Cancelar edição</button></div>
            <p id="admin-map-feedback" role="status"></p>
           </form>
           <div id="admin-map-list" class="tip-list" aria-live="polite"></div>
+           <section id="language-audit" class="private-panel" aria-live="polite"></section>
         </section>
       </section>
       <section id="utility-panel-workspace" class="utility-panel-workspace" aria-label="Ferramentas de análise">

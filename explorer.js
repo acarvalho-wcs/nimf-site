@@ -19,8 +19,8 @@ function rebuildDataset(){
   ...r,id:"point-"+r.id,source:trans[language].sourceDraft,
   scientific_name:r.scientific_name||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
   product_type:r.layer_type,
-  description_pt:r.notes||"", // Administrative source note is labelled if no translation is present.
-  description_en:"",description_es:""
+  description_pt:r.description_pt||r.notes||"", // Existing notes stay the original-language fallback.
+  description_en:r.description_en||"",description_es:r.description_es||""
  }));
  dataset=[...canonical,...points];
 }
@@ -214,7 +214,7 @@ function showDetail(r){
  const d=el("explorer-map-card");d.replaceChildren();
  d.dataset.recordId=r.id;
  const header=document.createElement("div");header.className="explorer-detail-head";
- const head=appendScientific(document.createElement("h3"),r.layer_type && r.layer_type!=="advertisement" ? (r.title||r.source||r.id) : (localizedTitle(r,language)||r.id),r.scientific_name);
+ const head=appendScientific(document.createElement("h3"),localizedTitle(r,language)||r.source||r.id,r.scientific_name);
  head.id="explorer-map-card-title";
  header.append(head);
  const close=textNode("button","×","explorer-map-card-close");close.type="button";
@@ -603,7 +603,7 @@ function render(fitMap=false){
  if(!f.length)list.append(textNode("p",T.empty,"secure-small"));
  for(const r of f){
    const card=document.createElement("button");card.type="button";card.className="explorer-card";
-   card.append(appendScientific(document.createElement("strong"),r.layer_type && r.layer_type!=="advertisement" ? r.title : (localizedTitle(r,language)||r.id),r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[trans[language].layerNames[r.layer_type||"advertisement"],r.source,localizedField(r,"status",language)].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
+   card.append(appendScientific(document.createElement("strong"),localizedTitle(r,language)||r.id,r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[trans[language].layerNames[r.layer_type||"advertisement"],r.source,localizedField(r,"status",language)].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
    card.addEventListener("click",()=>focusRecord(r));
    list.append(card);
  }

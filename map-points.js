@@ -1,7 +1,7 @@
 
 import {collection,query,where,limit,onSnapshot,addDoc,doc,updateDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import {useLang} from "./record-locale.js";
-let db=null,currentUser=null,isAdmin=false,unsubscribe=null,items=[],selectedId=null,language="pt",onPoints=null,installed=false;
+import {useLang,localizedTitle} from "./record-locale.js";
+let db=null,currentUser=null,isAdmin=false,unsubscribe=null,items=[],selectedId=null,language="pt",onPoints=null,onAuditPoints=null,installed=false;
 const $=id=>document.getElementById(id);
 const layers=["advertisement","platform","fair","physical_market"];
 const vocab={
@@ -17,8 +17,8 @@ function resetForm(){
 }
 function editPoint(item){
  selectedId=item.id;
- const fields={layer:item.layer_type,title:item.title,species:item.scientific_name,country:item.country,state:item.state,city:item.municipality,latitude:item.latitude,longitude:item.longitude,precision:item.location_precision,evidence:item.evidence_status,url:item.source_url,published:String(item.published),notes:item.notes};
- for(const [key,val] of Object.entries(fields))$("map-"+key).value=val??"";
+ const fields={layer:item.layer_type,title:item.title_pt||item.title,title_en:item.title_en||"",title_es:item.title_es||"",notes_en:item.description_en||"",notes_es:item.description_es||"",notes:item.description_pt||item.notes||"",species:item.scientific_name,country:item.country,state:item.state,city:item.municipality,latitude:item.latitude,longitude:item.longitude,precision:item.location_precision,evidence:item.evidence_status,url:item.source_url,published:String(item.published),notes:item.notes};
+ for(const [key,val] of Object.entries(fields))$("map-"+key.replaceAll("_","-")).value=val??"";
  $("admin-map-panel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 export function promoteTip(item){
@@ -39,7 +39,7 @@ function renderAdminList(){
  if(!items.length)list.append(text("p",T().noItems));
  for(const item of items){
   const card=document.createElement("article");card.className="tip-item";
-  card.append(text("strong",item.title),text("small",T().layerOptions[layers.indexOf(item.layer_type)]+" · "+[item.municipality,item.state].filter(Boolean).join(", ")));
+  card.append(text("strong",localizedTitle(item,language)),text("small",T().layerOptions[layers.indexOf(item.layer_type)]+" · "+[item.municipality,item.state].filter(Boolean).join(", ")));
   card.append(text("span",item.published?T().public:T().draft));
   const edit=text("button",T().edit);edit.type="button";edit.className="secure-secondary";edit.addEventListener("click",()=>editPoint(item));card.append(edit);list.append(card);
  }
@@ -49,24 +49,25 @@ export function setMapPointLanguage(lang){
  const panel=$("admin-map-panel");if(!panel)return;
  panel.querySelector("#admin-map-title").textContent=T().title;
  panel.querySelector("#admin-map-help").textContent=T().help;
- const fields={layer:"layer",title:"name",species:"species",country:"country",state:"state",city:"city",latitude:"lat",longitude:"lon",precision:"precision",evidence:"evidence",url:"url",published:"published",notes:"notes"};
- for(const [id,key] of Object.entries(fields)){const elm=panel.querySelector('[data-map-field="'+id+'"]');if(elm)elm.textContent=T()[key];}
+ const fields={layer:"layer",title:"name",title_en:"title_en",title_es:"title_es",notes_en:"notes_en",notes_es:"notes_es",species:"species",country:"country",state:"state",city:"city",latitude:"lat",longitude:"lon",precision:"precision",evidence:"evidence",url:"url",published:"published",notes:"notes"};
+ for(const [id,key] of Object.entries(fields)){const elm=panel.querySelector('[data-map-field="'+id+'"]');if(elm)elm.textContent=T()[key]||({pt:{title_en:"Título em inglês",title_es:"Título em espanhol",notes_en:"Contexto em inglês",notes_es:"Contexto em espanhol"},en:{title_en:"English title",title_es:"Spanish title",notes_en:"English context",notes_es:"Spanish context"},es:{title_en:"Título en inglés",title_es:"Título en español",notes_en:"Contexto en inglés",notes_es:"Contexto en español"}}[language]?.[key]||key);}
  for(let i=0;i<4;i++)$("map-layer").options[i].textContent=T().layerOptions[i];
  $("map-evidence").options[0].textContent=T().reported;$("map-evidence").options[1].textContent=T().verified;
  $("map-published").options[0].textContent=T().draft;$("map-published").options[1].textContent=T().public;
  $("map-save").textContent=T().save;$("map-cancel").textContent=T().cancel;
  renderAdminList();
 }
-export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
- closeMapPoints();db=database;currentUser=user;isAdmin=admin===true&&user?.email?.trim().toLowerCase()==="acarvalho@wcs.org";onPoints=whenUpdated;language=useLang(lang);
+export function startMapPoints(database,user,admin,whenUpdated,lang="pt",whenAuditUpdated=null){
+ closeMapPoints();db=database;currentUser=user;isAdmin=admin===true&&user?.email?.trim().toLowerCase()==="acarvalho@wcs.org";onPoints=whenUpdated;onAuditPoints=whenAuditUpdated;language=useLang(lang);
  const panel=$("admin-map-panel");panel.hidden=!isAdmin;
  if(isAdmin)setMapPointLanguage(language);
  const ref=collection(db,"map_points");
- const q=isAdmin?query(ref,limit(200)):query(ref,where("published","==",true),limit(200));
+ const q=isAdmin?query(ref):query(ref,where("published","==",true));
  const uid=user.uid;
  unsubscribe=onSnapshot(q,snap=>{
   if(!currentUser||currentUser.uid!==uid)return;
   items=snap.docs.map(d=>({id:d.id,...d.data()}));
+   if(isAdmin&&onAuditPoints)onAuditPoints(items);
   onPoints(items.filter(p=>p.published===true));
   if(isAdmin)renderAdminList();
  },err=>{
@@ -80,7 +81,7 @@ export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
   event.preventDefault();if(!isAdmin||!currentUser)return;
   const save=$("map-save");save.disabled=true;
   const obj={
-   layer_type:$("map-layer").value,title:$("map-title").value.trim(),
+   layer_type:$("map-layer").value,title:$("map-title").value.trim(),title_pt:$("map-title").value.trim(),title_en:$("map-title-en").value.trim(),title_es:$("map-title-es").value.trim(),description_pt:$("map-notes").value.trim(),description_en:$("map-notes-en").value.trim(),description_es:$("map-notes-es").value.trim(),
    scientific_name:$("map-species").value.trim(),country:$("map-country").value.trim(),
    state:$("map-state").value.trim(),municipality:$("map-city").value.trim(),
    latitude:Number($("map-latitude").value),longitude:Number($("map-longitude").value),
@@ -90,7 +91,8 @@ export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
   };
   if(!layers.includes(obj.layer_type)||!https(obj.source_url)||!Number.isFinite(obj.latitude)||!Number.isFinite(obj.longitude)||
      Math.abs(obj.latitude)>85||Math.abs(obj.longitude)>180||obj.title.length<5||
-     (obj.published&&obj.evidence_status!=="corroborated")){
+     (obj.published&&obj.evidence_status!=="corroborated")||
+      (obj.published&&["title_pt","title_en","title_es","description_pt","description_en","description_es"].some(key=>!obj[key]))){
    setMessage(T().mustReview);save.disabled=false;return;
   }
   try{
@@ -102,6 +104,6 @@ export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
  });
 }
 export function closeMapPoints(){
- if(unsubscribe)unsubscribe();unsubscribe=null;db=null;currentUser=null;isAdmin=false;items=[];onPoints=null;selectedId=null;
+ if(unsubscribe)unsubscribe();unsubscribe=null;db=null;currentUser=null;isAdmin=false;items=[];onPoints=null;onAuditPoints=null;selectedId=null;
  $("admin-map-panel").hidden=true;$("admin-map-list").replaceChildren();
 }
