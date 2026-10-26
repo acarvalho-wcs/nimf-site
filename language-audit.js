@@ -4,7 +4,7 @@ const LANGUAGES=["pt","en","es"];
 const FIELDS=["title","description"];
 const translated={pt:{title:"Auditoria PT / EN / ES",summary:"Registros com possíveis problemas de idioma",empty:"Nenhum problema estrutural detectado",missing:"Campo ausente",copied:"Texto possivelmente copiado",legacy:"Texto de origem sem tradução declarada",download:"Exportar CSV (uso interno)",type:"Coleção"},en:{title:"PT / EN / ES audit",summary:"Records with possible language problems",empty:"No structural problems detected",missing:"Missing field",copied:"Possibly copied text",legacy:"Original text without declared translation",download:"Export CSV (internal use)",type:"Collection"},es:{title:"Auditoría PT / EN / ES",summary:"Registros con posibles problemas de idioma",empty:"Ningún problema estructural detectado",missing:"Campo ausente",copied:"Texto posiblemente copiado",legacy:"Texto original sin traducción declarada",download:"Exportar CSV (uso interno)",type:"Colección"}};
 let rows=[],locale="pt";
-function norm(v){return typeof v==="string"?v.normalize("NFKC").trim().replace(/\\s+/g," ").toLowerCase():"";}
+function norm(v){return typeof v==="string"?v.normalize("NFKC").trim().replace(/\s+/g," ").toLowerCase():"";}
 function meaningfullyTranslatable(v){return norm(v).length>=28 && norm(v).split(" ").length>=5;}
 function recordIssues(r,collection){
  const issues=[];
@@ -39,7 +39,7 @@ function render(){
  button.disabled=!rows.length;
  button.addEventListener("click",()=>{
   const q=x=>'"'+String(x).replaceAll('"','""')+'"';
-  const csv="collection,id,issue\\n"+rows.map(r=>[r.collection,r.id,r.issue].map(q).join(",")).join("\\n");
+  const csv="collection,id,issue\n"+rows.map(r=>[r.collection,r.id,r.issue].map(q).join(",")).join("\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);const a=document.createElement("a");
   a.href=url;a.download="nimf-language-audit.csv";a.click();URL.revokeObjectURL(url);
