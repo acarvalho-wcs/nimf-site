@@ -17,8 +17,8 @@ function resetForm(){
 }
 function editPoint(item){
  selectedId=item.id;
- const fields={layer:item.layer_type,title:item.title_pt||item.title,title_en:item.title_en||"",title_es:item.title_es||"",notes_en:item.description_en||"",notes_es:item.description_es||"",species:item.scientific_name,country:item.country,state:item.state,city:item.municipality,latitude:item.latitude,longitude:item.longitude,precision:item.location_precision,evidence:item.evidence_status,url:item.source_url,published:String(item.published),notes:item.notes};
- for(const [key,val] of Object.entries(fields))$("map-"+key).value=val??"";
+ const fields={layer:item.layer_type,title:item.title_pt||item.title,title_en:item.title_en||"",title_es:item.title_es||"",notes_en:item.description_en||"",notes_es:item.description_es||"",notes:item.description_pt||item.notes||"",species:item.scientific_name,country:item.country,state:item.state,city:item.municipality,latitude:item.latitude,longitude:item.longitude,precision:item.location_precision,evidence:item.evidence_status,url:item.source_url,published:String(item.published),notes:item.notes};
+ for(const [key,val] of Object.entries(fields))$("map-"+key.replaceAll("_","-")).value=val??"";
  $("admin-map-panel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 export function promoteTip(item){
