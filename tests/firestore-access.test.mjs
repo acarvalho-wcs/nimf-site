@@ -71,6 +71,12 @@ try {
  await test("administrator browser cannot self-approve applicant",setDoc(doc(admin.firestore(),"access","applicant"),{approved:true}),false);
  await test("anonymous cannot enumerate applications",getDocs(collection(anon.firestore(),"access_requests")),false);
  const point={layer_type:"physical_market",title:"Generic suspected market area in Manaus",
+  title_pt:"Área genérica de mercado sob avaliação em Manaus",
+  title_en:"Generic suspected market area in Manaus",
+  title_es:"Área genérica de mercado bajo evaluación en Manaos",
+  description_pt:"Localização aproximada e sem informações pessoais.",
+  description_en:"Approximate location without personal information.",
+  description_es:"Ubicación aproximada sin información personal.",
   scientific_name:"",country:"BR",state:"AM",municipality:"Manaus",
   latitude:-3.119,longitude:-60.0217,location_precision:"municipality",
   evidence_status:"reported",source_url:"",notes:"Aggregate location; no personal information.",
@@ -83,6 +89,8 @@ try {
  await test("admin can inspect unpublished location",getDoc(doc(admin.firestore(),"map_points","draft-001")),true);
  await test("admin cannot publish uncorroborated allegations",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{published:true,updated_at:serverTimestamp(),updated_by:"admin"}),false);
  await test("admin cannot publish exact geographic precision",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{location_precision:"street",evidence_status:"corroborated",published:true,updated_at:serverTimestamp(),updated_by:"admin"}),false);
+ await test("publication requires an English title",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{title_en:"",evidence_status:"corroborated",published:true,updated_at:serverTimestamp(),updated_by:"admin"}),false);
+ await test("publication requires a Spanish description",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{description_es:"",evidence_status:"corroborated",published:true,updated_at:serverTimestamp(),updated_by:"admin"}),false);
  await test("admin can mark a reviewed approximate point published",updateDoc(doc(admin.firestore(),"map_points","draft-001"),{evidence_status:"corroborated",published:true,updated_at:serverTimestamp(),updated_by:"admin"}),true);
  await test("approved user may read published approximate location",getDoc(doc(bob.firestore(),"map_points","draft-001")),true);
  await test("approved user can query published map points",getDocs(query(collection(bob.firestore(),"map_points"),where("published","==",true))),true);
