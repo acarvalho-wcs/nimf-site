@@ -1,7 +1,7 @@
 
 import {collection,query,where,limit,onSnapshot,addDoc,doc,updateDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {useLang,localizedTitle} from "./record-locale.js";
-let db=null,currentUser=null,isAdmin=false,unsubscribe=null,items=[],selectedId=null,language="pt",onPoints=null,onAuditPoints=null,installed=false;
+let db=null,currentUser=null,isAdmin=false,unsubscribe=null,items=[],selectedId=null,language="pt",onPoints=null,installed=false;
 const $=id=>document.getElementById(id);
 const layers=["advertisement","platform","fair","physical_market"];
 const vocab={
@@ -57,8 +57,8 @@ export function setMapPointLanguage(lang){
  $("map-save").textContent=T().save;$("map-cancel").textContent=T().cancel;
  renderAdminList();
 }
-export function startMapPoints(database,user,admin,whenUpdated,lang="pt",whenAuditUpdated=null){
- closeMapPoints();db=database;currentUser=user;isAdmin=admin===true&&user?.email?.trim().toLowerCase()==="acarvalho@wcs.org";onPoints=whenUpdated;onAuditPoints=whenAuditUpdated;language=useLang(lang);
+export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
+ closeMapPoints();db=database;currentUser=user;isAdmin=admin===true&&user?.email?.trim().toLowerCase()==="acarvalho@wcs.org";onPoints=whenUpdated;language=useLang(lang);
  const panel=$("admin-map-panel");panel.hidden=!isAdmin;
  if(isAdmin)setMapPointLanguage(language);
  const ref=collection(db,"map_points");
@@ -67,7 +67,6 @@ export function startMapPoints(database,user,admin,whenUpdated,lang="pt",whenAud
  unsubscribe=onSnapshot(q,snap=>{
   if(!currentUser||currentUser.uid!==uid)return;
   items=snap.docs.map(d=>({id:d.id,...d.data()}));
-   if(isAdmin&&onAuditPoints)onAuditPoints(items);
   onPoints(items.filter(p=>p.published===true));
   if(isAdmin)renderAdminList();
  },err=>{
@@ -104,6 +103,6 @@ export function startMapPoints(database,user,admin,whenUpdated,lang="pt",whenAud
  });
 }
 export function closeMapPoints(){
- if(unsubscribe)unsubscribe();unsubscribe=null;db=null;currentUser=null;isAdmin=false;items=[];onPoints=null;onAuditPoints=null;selectedId=null;
+ if(unsubscribe)unsubscribe();unsubscribe=null;db=null;currentUser=null;isAdmin=false;items=[];onPoints=null;selectedId=null;
  $("admin-map-panel").hidden=true;$("admin-map-list").replaceChildren();
 }
