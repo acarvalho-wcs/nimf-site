@@ -3,7 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs, limit, query, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js?v=internal-storage-20261016";
-import {inspectLanguageRecords} from "./language-audit.js?v=20261026";
 import {localizedField, localizedTitle} from "./record-locale.js?v=login-recovery-20261015-2";
 // Load optional map and intake modules only after authentication and authorization.
 // A failure in either module must never prevent the login screen from appearing.
@@ -15,7 +14,7 @@ const txt={
  es:{sideTitle:"Inteligencia de mercados de fauna silvestre",sideCopy:"Acceso individual, correo verificado y aprobación administrativa antes de consultar datos privados.",sideFooter:"Solo usuarios autorizados",back:"Regrese al Observatorio Global de Tráfico de Animales",authTitle:"Ingresar a NIMF",authSubtitle:"El correo y la contraseña son administrados por el servicio de autenticación, nunca por GitHub Pages.",login:"Ingresar",signup:"Solicitar acceso",email:"Correo",password:"Contraseña",confirm:"Confirmar contraseña",forgot:"¿Olvidó su contraseña?",note:"Crear una cuenta no otorga acceso. Se requiere aprobación del administrador.",configTitle:"Área restringida sin configurar",configBody:"El administrador debe configurar Firebase y publicar las reglas de seguridad. No hay datos privados disponibles todavía.",unverifiedTitle:"Verifique su correo",unverifiedText:"Enviamos un enlace de confirmación. Verifique su dirección e inténtelo de nuevo.",pendingTitle:"Esperando aprobación",pendingText:"Su correo fue verificado, pero el administrador debe aprobar la cuenta.",blockedTitle:"Acceso no autorizado",blockedText:"Esta cuenta no tiene autorización válida para acceder a los datos.",refresh:"Verificar nuevamente",resend:"Reenviar confirmación",logout:"Salir",privateTitle:"Panel privado",privateDescription:"Los datos se cargan solamente tras autenticación, verificación del correo y autorización en Firestore.",recordsLabel:"Registros disponibles",account:"Cuenta",approved:"Autorizada",roleAdmin:"Administrador de revisión",roleContributor:"Usuario colaborador",recordsTitle:"Registros privados",recordsSubtitle:"Registros accesibles únicamente tras verificación en la base.",search:"Buscar",colTitle:"Título",colType:"Categoría",colSource:"Fuente",colStatus:"Verificación",empty:"No hay registros privados todavía.",footer:"Datos internos. No redistribuir sin autorización.",searchPlaceholder:"Buscar en los registros cargados",privateKicker:"PANEL RESTRINGIDO - SOLO USUARIOS AUTORIZADOS",mapError:"Una parte del servicio cartográfico no está disponible. Los filtros y registros siguen accesibles.",explorerError:"No fue posible abrir el explorador geográfico. Los registros siguen accesibles en la tabla.",intakeError:"Las contribuciones no están disponibles temporalmente. Los demás datos siguen accesibles.",genericError:"No se pudo completar la acción. Revise los datos o inténtelo nuevamente.",mismatch:"Las contraseñas no coinciden.",weak:"Utilice por lo menos 8 caracteres.",resetSent:"Si el correo está registrado, recibirá instrucciones para cambiar la contraseña.",resent:"Si es elegible, se enviará otra verificación.",created:"Cuenta creada. Verifique su correo y espere aprobación.",failedRead:"No fue posible consultar los registros. Revise las reglas de seguridad."}
 };
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false,reportGrants=[];
-let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[],auditPointsBuffer=[];
+let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[];
 let workspaceView="dashboard";
 /* Initialize OSINT filters before the first translate() call and Firebase startup. */
 const osintCategoryKeys=["all","wildlifeTrade","digital","transport","species","geospatial","companies","media","cyber"];
@@ -154,7 +153,6 @@ function translate(){
  document.querySelector(".secure-brand")?.setAttribute("aria-label",t("back"));document.querySelector(".secure-brand")?.setAttribute("title",t("back"));
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  if(intakeModule){try{intakeModule.setIntakeLanguage(locale);}catch(e){console.warn("Intake locale update failed",e);}}
-  if(approvalAdmin)inspectLanguageRecords(records,auditPointsBuffer,locale);
   if(mapModule){try{mapModule.setMapPointLanguage(locale);}catch(e){console.warn("Map admin locale update failed",e);}}
  showInternalCategory(internalCategory);
  $("submit-button").textContent=t(mode);$("auth-confirm").autocomplete=mode==="signup"?"new-password":"off";
@@ -376,7 +374,7 @@ function enablePrivateWidgets(user,epoch){
     if(!valid())return;
     pointsBuffer=items;
     if(explorerModule)explorerModule.setMapPoints(items);
-   },locale,allItems=>{auditPointsBuffer=allItems;if(approvalAdmin)inspectLanguageRecords(records,auditPointsBuffer,locale);});
+   },locale);
   }catch(e){console.warn("Map point review module unavailable",e?.code||e);}
  })();
  void (async()=>{
@@ -396,7 +394,6 @@ async function loadPrivateRecords(user,epoch){
  const snap=await getDocs(collection(db,"records"));
  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
  records=snap.docs.filter(d=>d.id!=="abelhas-org-30683").map(d=>({id:d.id,...d.data()}));
-  if(approvalAdmin)inspectLanguageRecords(records,auditPointsBuffer,locale);
  $("account-email").textContent=user.email||"";
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  void loadInternalReports();
@@ -449,7 +446,7 @@ async function loadAdminApplications(user,epoch){
  }catch(err){$("admin-requests-feedback").textContent=accessStrings[locale].error;}
 }
 async function evaluateUser(user,epoch){
- activeUser=user;records=[];reportGrants=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];auditPointsBuffer=[];
+ activeUser=user;records=[];reportGrants=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
  try{
