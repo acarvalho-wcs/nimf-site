@@ -349,7 +349,7 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=search49");
+   const mod=await import("./explorer.js?v=aurum-layer-20261029");
    if(!valid())return;
    explorerModule=mod;
    mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
@@ -367,7 +367,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./map-points.js?v=20261011k");
+   const mod=await import("./map-points.js?v=aurum-layer-20261029");
    if(!valid())return;
    mapModule=mod;
    mod.startMapPoints(db,user,approvalAdmin,items=>{

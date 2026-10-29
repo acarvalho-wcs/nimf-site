@@ -138,7 +138,7 @@
 
 /* Floating layer catalogue follows the Amazon environmental crimes Observatory:
    compact map toolbar, sliding panel, and X close control even in fullscreen. */
-.explorer-map-wrap{position:relative;isolation:isolate;--layer-advertisement:#80c995;--layer-platform:#5aa6ec;--layer-fair:#e9b457;--layer-physical-market:#df7c9a}
+.explorer-map-wrap{position:relative;isolation:isolate;--layer-advertisement:#80c995;--layer-platform:#5aa6ec;--layer-fair:#e9b457;--layer-physical-market:#df7c9a;--layer-aurum:#a991f6}
 .explorer-map-toolbar{position:absolute;top:12px;left:12px;right:auto;z-index:20;display:flex;gap:7px;align-items:flex-start;pointer-events:none}
 .explorer-map-toolbar>*{pointer-events:auto}
 .map-toolbar-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#0d2923ed!important;color:#f0faef!important;border:1px solid #74a68e!important;border-radius:9px!important;box-shadow:0 5px 18px #0005;padding:9px 12px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;min-height:38px}
@@ -161,6 +161,7 @@
 .explorer-map-wrap .layer-platform{background:var(--layer-platform)}
 .explorer-map-wrap .layer-fair{background:var(--layer-fair)}
 .explorer-map-wrap .layer-physical-market{background:var(--layer-physical-market)}
+.explorer-map-wrap .layer-aurum{background:var(--layer-aurum)}
 .layer-safety-note{font-size:10px;color:var(--muted);line-height:1.5;padding:0 17px 16px;margin:0}
 .explorer-map-wrap.is-fullscreen{position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100dvh!important;max-height:none!important;overflow:hidden!important;border-radius:0!important;background:#112923}
 .explorer-map-wrap.is-fullscreen #explorer-map{position:absolute;inset:0;width:100%;height:100%!important;min-height:100%!important;max-height:none!important}
@@ -177,6 +178,7 @@ body.nimf-map-fullscreen{overflow:hidden!important}
 .nimf-raster-pin[data-layer="platform"],.nimf-map-dot[data-layer="platform"]{background:var(--layer-platform)!important;border-color:#22567f!important}
 .nimf-raster-pin[data-layer="fair"],.nimf-map-dot[data-layer="fair"]{background:var(--layer-fair)!important;border-color:#7c5220!important}
 .nimf-raster-pin[data-layer="physical_market"],.nimf-map-dot[data-layer="physical_market"]{background:var(--layer-physical-market)!important;border-color:#823e5c!important}
+.nimf-raster-pin[data-layer="aurum"],.nimf-map-dot[data-layer="aurum"]{background:var(--layer-aurum)!important;border-color:#694aa1!important}
 .admin-map-panel{margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
 .admin-map-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 #admin-map-feedback{grid-column:1/-1;color:var(--muted);font-size:12px}
