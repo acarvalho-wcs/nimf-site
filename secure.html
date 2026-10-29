@@ -7,7 +7,7 @@
  <meta name="description" content="Investigação de Mercados de Fauna — seção de acesso autorizado do Observatório Global de Tráfico de Animais">
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
- <link rel="stylesheet" href="./secure.css?v=language48">
+ <link rel="stylesheet" href="./secure.css?v=aurum-layer-20261029">
  <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-expanded-20261018-1">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
@@ -30,7 +30,7 @@
   }
  },7000);
  </script>
- <script type="module" src="./secure.js?v=osint-expanded-20261018-1"></script>
+ <script type="module" src="./secure.js?v=aurum-layer-20261029"></script>
 
 
 <link rel="icon" type="image/png" sizes="32x32" href="./assets/observatory-icon-safari-32.png">
@@ -183,6 +183,7 @@
                 <label class="layer-row"><input type="checkbox" value="platform" checked><span class="layer-swatch layer-platform" aria-hidden="true"></span><span data-layer-title="platform">Plataformas</span><small data-layer-count="platform" aria-label="0">0</small></label>
                 <label class="layer-row"><input type="checkbox" value="fair" checked><span class="layer-swatch layer-fair" aria-hidden="true"></span><span data-layer-title="fair">Feiras</span><small data-layer-count="fair" aria-label="0">0</small></label>
                 <label class="layer-row"><input type="checkbox" value="physical_market" checked><span class="layer-swatch layer-physical-market" aria-hidden="true"></span><span data-layer-title="physical_market">Vendedores físicos</span><small data-layer-count="physical_market" aria-label="0">0</small></label>
+                 <label class="layer-row"><input type="checkbox" value="aurum" checked><span class="layer-swatch layer-aurum" aria-hidden="true"></span><span data-layer-title="aurum">Aurum</span><small data-layer-count="aurum" aria-label="0">0</small></label>
               </fieldset>
               <p id="layers-safety" class="layer-safety-note">Localização aproximada; informações revisadas, sem identificação pessoal.</p>
             </aside>
@@ -210,7 +211,7 @@
         <section id="admin-map-panel" class="admin-map-panel" hidden>
           <div class="explorer-head"><div><span class="secure-label" id="admin-map-kicker">INVESTIGAÇÃO DE MERCADOS DE FAUNA / MAPA REVISADO</span><h3 id="admin-map-title">Cadastro administrativo de camadas</h3><p id="admin-map-help">Publique apenas informações corroboradas. Não inclua nomes ou endereços particulares. Pontos publicados serão visíveis aos usuários autorizados.</p></div></div>
           <form id="admin-map-form" class="tip-form">
-           <label><span data-map-field="layer">Camada</span><select id="map-layer" required><option value="advertisement">Anúncios</option><option value="platform">Plataformas</option><option value="fair">Feiras livres</option><option value="physical_market">Comércio presencial sob investigação</option></select></label>
+           <label><span data-map-field="layer">Camada</span><select id="map-layer" required><option value="advertisement">Anúncios</option><option value="platform">Plataformas</option><option value="fair">Feiras livres</option><option value="physical_market">Comércio presencial sob investigação</option><option value="aurum">Aurum</option></select></label>
            <label><span data-map-field="title">Título genérico, sem identificar pessoas</span><input id="map-title" maxlength="180" required placeholder="Ex.: Ponto sob avaliação — Manaus"></label>
            <label><span data-map-field="title_en">Título em inglês</span><input id="map-title-en" maxlength="180"></label>
             <label><span data-map-field="title_es">Título em espanhol</span><input id="map-title-es" maxlength="180"></label>
