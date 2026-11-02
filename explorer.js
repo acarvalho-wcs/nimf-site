@@ -13,9 +13,48 @@ const trans={
 };
 const layerNames=["advertisement","platform","fair","physical_market","aurum"];
 const activeLayers=()=>new Set([...document.querySelectorAll("#explorer-layers input:checked")].map(e=>e.value));
+
+// Aurum coordinates in Firestore may predate the geographic audit.
+// Fail closed until the local Brazil municipality/UF reference has been loaded.
+let aurumGeography=null,aurumGeoRequested=false,aurumGeoEpoch=0;
+const aurumStateNames={"acre":"AC","alagoas":"AL","amapa":"AP","amazonas":"AM","bahia":"BA","ceara":"CE","distrito federal":"DF","espirito santo":"ES","goias":"GO","maranhao":"MA","mato grosso":"MT","mato grosso do sul":"MS","minas gerais":"MG","para":"PA","paraiba":"PB","parana":"PR","pernambuco":"PE","piaui":"PI","rio de janeiro":"RJ","rio grande do norte":"RN","rio grande do sul":"RS","rondonia":"RO","roraima":"RR","santa catarina":"SC","sao paulo":"SP","sergipe":"SE","tocantins":"TO"};
+const aurumNormalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/-/g," ").trim().replace(/\s+/g," ");
+const aurumUF=v=>{const s=String(v||"").trim().toUpperCase();return /^[A-Z]{2}$/.test(s)?s:aurumStateNames[aurumNormalize(v)]||"";};
+function aurumInsideRing(x,y,ring){let yes=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y) && x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])yes=!yes;}return yes;}
+function aurumInsideState(lon,lat,g){const polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;return polys.some(p=>aurumInsideRing(lon,lat,p[0])&&!p.slice(1).some(h=>aurumInsideRing(lon,lat,h)));}
+function aurumDistanceKm(lat,lon,clat,clon){const rad=Math.PI/180,p1=lat*rad,p2=clat*rad,dp=(clat-lat)*rad,dl=(clon-lon)*rad;const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 12742*Math.atan2(Math.sqrt(a),Math.sqrt(Math.max(0,1-a)));}
+async function loadAurumGeography(){
+ if(aurumGeoRequested)return;aurumGeoRequested=true;
+ try{
+  const [st,cm]=await Promise.all([fetch("./assets/geography/brazil_states.geojson"),fetch("./assets/geography/brazil_municipal_centers.csv")]);
+  if(!st.ok||!cm.ok)throw Error("Geographic reference unavailable");
+  const features=(await st.json()).features,lines=(await cm.text()).trim().split(/\r?\n/);
+  const polygons=new Map(features.map(f=>[f.properties.sigla,f.geometry])),centers=new Map();
+  for(const line of lines.slice(1)){const cols=line.split(",");if(cols.length!==5)continue;centers.set(cols[1]+":"+aurumNormalize(cols[2]),{lat:Number(cols[3]),lon:Number(cols[4]),ibge:cols[0]});}
+  if(polygons.size!==27||centers.size<5500)throw Error("Incomplete geographic reference");
+  aurumGeography={polygons,centers};
+ }catch(err){console.warn("Aurum points hidden until geography reference is available",err);}
+ finally{rebuildDataset();options();render(true);}
+}
+function validateAurumMapPoint(r){
+ if(r.layer_type!=="aurum")return r;
+ const country=aurumNormalize(r.country);
+ if(country!=="brazil"&&country!=="brasil")return r; // This reference covers Brazil only.
+ if(!aurumGeography)return null;
+ const uf=aurumUF(r.state),shape=aurumGeography.polygons.get(uf);
+ if(!shape)return null;
+ const city=aurumNormalize(r.municipality),center=city?aurumGeography.centers.get(uf+":"+city):null;
+ if(city&&!center)return null;
+ const lat=Number(r.latitude),lon=Number(r.longitude);
+ const inState=Number.isFinite(lat)&&Number.isFinite(lon)&&aurumInsideState(lon,lat,shape);
+ if(inState&&(!center||aurumDistanceKm(lat,lon,center.lat,center.lon)<=100))return r;
+ if(!center)return null;
+ return {...r,latitude:center.lat,longitude:center.lon,location_precision:"municipality",aurum_geolocation_display:"municipality_center",ibge_municipality_code:center.ibge};
+}
+
 function rebuildDataset(){
  const canonical=canonicalRecords.filter(r=>!/^mel_|^honey_|^bee_honey/.test(String(r.product_type||"").toLowerCase())).map(r=>({...r,layer_type:r.layer_type|| (r.record_kind==="platform"?"platform":"advertisement")}));
- const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(r=>({
+ const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(validateAurumMapPoint).filter(Boolean).map(r=>({
   ...r,id:"point-"+r.id,source:r.layer_type==="aurum"?"Registros Aurum":trans[language].sourceDraft,
   scientific_name:r.scientific_name||"",wildlife_group:r.wildlife_group||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
   product_type:r.layer_type,
@@ -623,6 +662,7 @@ export function initExplorer(rows,lang="pt"){
  setupSpeciesPicker();options();setExplorerLanguage(language);render(true);
 }
 export function setMapPoints(rows){
+ if((Array.isArray(rows)?rows:[]).some(r=>r.layer_type==="aurum"))void loadAurumGeography();
  reviewedPoints=(Array.isArray(rows)?rows:[]).filter(safe).filter(r=>r.published===true);
  rebuildDataset();options();render(true);
 }
