@@ -16,7 +16,7 @@ const activeLayers=()=>new Set([...document.querySelectorAll("#explorer-layers i
 
 // Aurum coordinates in Firestore may predate the geographic audit.
 // Fail closed until the local Brazil municipality/UF reference has been loaded.
-let aurumGeography=null,aurumGeoRequested=false,aurumGeoEpoch=0;
+let aurumGeography=null,aurumGeoRequested=false;
 const aurumStateNames={"acre":"AC","alagoas":"AL","amapa":"AP","amazonas":"AM","bahia":"BA","ceara":"CE","distrito federal":"DF","espirito santo":"ES","goias":"GO","maranhao":"MA","mato grosso":"MT","mato grosso do sul":"MS","minas gerais":"MG","para":"PA","paraiba":"PB","parana":"PR","pernambuco":"PE","piaui":"PI","rio de janeiro":"RJ","rio grande do norte":"RN","rio grande do sul":"RS","rondonia":"RO","roraima":"RR","santa catarina":"SC","sao paulo":"SP","sergipe":"SE","tocantins":"TO"};
 const aurumNormalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/-/g," ").trim().replace(/\s+/g," ");
 const aurumUF=v=>{const s=String(v||"").trim().toUpperCase();return /^[A-Z]{2}$/.test(s)?s:aurumStateNames[aurumNormalize(v)]||"";};
@@ -26,14 +26,14 @@ function aurumDistanceKm(lat,lon,clat,clon){const rad=Math.PI/180,p1=lat*rad,p2=
 async function loadAurumGeography(){
  if(aurumGeoRequested)return;aurumGeoRequested=true;
  try{
-  const [st,cm]=await Promise.all([fetch("./assets/geography/brazil_states.geojson"),fetch("./assets/geography/brazil_municipal_centers.csv")]);
+  const [st,cm]=await Promise.all([fetch(new URL("./assets/geography/brazil_states.geojson",import.meta.url)),fetch(new URL("./assets/geography/brazil_municipal_centers.csv",import.meta.url))]);
   if(!st.ok||!cm.ok)throw Error("Geographic reference unavailable");
   const features=(await st.json()).features,lines=(await cm.text()).trim().split(/\r?\n/);
   const polygons=new Map(features.map(f=>[f.properties.sigla,f.geometry])),centers=new Map();
   for(const line of lines.slice(1)){const cols=line.split(",");if(cols.length!==5)continue;centers.set(cols[1]+":"+aurumNormalize(cols[2]),{lat:Number(cols[3]),lon:Number(cols[4]),ibge:cols[0]});}
   if(polygons.size!==27||centers.size<5500)throw Error("Incomplete geographic reference");
   aurumGeography={polygons,centers};
- }catch(err){console.warn("Aurum points hidden until geography reference is available",err);}
+ }catch(err){console.warn("Aurum geography unavailable; retaining records and coordinates while keeping the two confirmed corrections",err);}
  finally{rebuildDataset();options();render(true);}
 }
 function validateAurumMapPoint(r){
@@ -43,21 +43,21 @@ function validateAurumMapPoint(r){
  if((caseId==="PMP2026_421"||caseId==="PMP2026_422")&&aurumNormalize(r.country)==="brazil"&&aurumUF(r.state)==="AC"&&aurumNormalize(r.municipality)==="cruzeiro do sul")return {...r,latitude:-7.6649,longitude:-72.6504,location_precision:"municipality",aurum_geolocation_display:"verified_override"};
  const country=aurumNormalize(r.country);
  if(country!=="brazil"&&country!=="brasil")return r; // This reference covers Brazil only.
- if(!aurumGeography)return null;
+ if(!aurumGeography)return r; // Loading or unavailable: never remove valid records from the explorer.
  const uf=aurumUF(r.state),shape=aurumGeography.polygons.get(uf);
- if(!shape)return null;
+ if(!shape)return {...r,latitude:null,longitude:null,location_precision:"unlocated",aurum_geolocation_display:"state_unresolved"};
  const city=aurumNormalize(r.municipality),center=city?aurumGeography.centers.get(uf+":"+city):null;
- if(city&&!center)return null;
+ if(city&&!center)return {...r,latitude:null,longitude:null,location_precision:"unlocated",aurum_geolocation_display:"municipality_unresolved"};
  const lat=Number(r.latitude),lon=Number(r.longitude);
  const inState=Number.isFinite(lat)&&Number.isFinite(lon)&&aurumInsideState(lon,lat,shape);
  if(inState&&(!center||aurumDistanceKm(lat,lon,center.lat,center.lon)<=100))return r;
- if(!center)return null;
+ if(!center)return {...r,latitude:null,longitude:null,location_precision:"unlocated",aurum_geolocation_display:"coordinates_unverified"};
  return {...r,latitude:center.lat,longitude:center.lon,location_precision:"municipality",aurum_geolocation_display:"municipality_center",ibge_municipality_code:center.ibge};
 }
 
 function rebuildDataset(){
  const canonical=canonicalRecords.filter(r=>!/^mel_|^honey_|^bee_honey/.test(String(r.product_type||"").toLowerCase())).map(r=>({...r,layer_type:r.layer_type|| (r.record_kind==="platform"?"platform":"advertisement")}));
- const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(validateAurumMapPoint).filter(Boolean).map(r=>({
+ const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(validateAurumMapPoint).map(r=>({
   ...r,id:"point-"+r.id,source:r.layer_type==="aurum"?"Registros Aurum":trans[language].sourceDraft,
   scientific_name:r.scientific_name||"",wildlife_group:r.wildlife_group||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
   product_type:r.layer_type,
