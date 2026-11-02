@@ -252,6 +252,28 @@ function appendLegalCard(d,r){
  }
  d.append(block);
 }
+function aurumQuantityForDisplay(r){
+ if(r.layer_type!=="aurum")return "";
+ // Corrections explicitly confirmed in the source Integration sheet.
+ const id=String(r.aurum_case_id||r.id||"").replace(/^(?:point-)?aurum-/,"");
+ if(id==="PMP2026_421")return "18kg";
+ if(id==="PMP2026_422")return "53kg";
+ if(typeof r.aurum_display_quantity==="string"&&r.aurum_display_quantity.trim())return r.aurum_display_quantity.trim();
+ const original=typeof r.aurum_n_seized_specimens==="string"?r.aurum_n_seized_specimens.trim():"";
+ if(!original)return "";
+ const numeric=original.match(/\d+(?:[.,]\d+)*/g)||[];
+ if(numeric.length>1)return original;
+ const kg=original.match(/^\s*(\d+(?:[.,]\d+)*)\s*(?:kg|kilograms?|quilogramas?)\b/i);
+ if(kg)return kg[1]+"kg";
+ const count=original.match(/^\s*(\d+(?:[.,]\d+)*)\b/);
+ return count?count[1]:"";
+}
+function aurumContextWithQuantity(r,context){
+ const quantity=aurumQuantityForDisplay(r);
+ if(!quantity)return context;
+ // Stop at the next structured field; decimal points within quantities are safe.
+ return context.replace(/(Quantidade\/peso: |Quantity\/weight: |Cantidad\/peso: )[\s\S]*?(?=\. (?:Produto|Product|Producto):)/,(_,label)=>label+quantity);
+}
 function showDetail(r){
  activeId=r.id;
  const d=el("explorer-map-card");d.replaceChildren();
@@ -286,7 +308,7 @@ function showDetail(r){
  if(context.text){
   d.append(textNode("h4",trans[language].observation));
   if(context.sourceLanguage!==language)d.append(textNode("small",trans[language].fallbackLabel+" ("+context.sourceLanguage.toUpperCase()+")"));
-  const displayedContext=r.layer_type==="aurum"?context.text.replace(/\s*(?:Dados históricos da planilha; não equivalem a verificação independente da ocorrência\.|Historical spreadsheet data; not independently verified\.|Datos históricos de la hoja; sin verificación independiente\.)\s*$/,""):context.text;
+  const displayedContext=r.layer_type==="aurum"?aurumContextWithQuantity(r,context.text.replace(/\s*(?:Dados históricos da planilha; não equivalem a verificação independente da ocorrência\.|Historical spreadsheet data; not independently verified\.|Datos históricos de la hoja; sin verificación independiente\.)\s*$/,"")):context.text;
    d.append(appendScientific(document.createElement("p"),displayedContext,r.layer_type==="aurum"?(r.wildlife_group||r.scientific_name):r.scientific_name));
  }
  if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
