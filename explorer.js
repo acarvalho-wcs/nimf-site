@@ -38,6 +38,9 @@ async function loadAurumGeography(){
 }
 function validateAurumMapPoint(r){
  if(r.layer_type!=="aurum")return r;
+ // Explicit corrections confirmed against Aurum Integration, rows 635-636.
+ const caseId=String(r.aurum_case_id||r.id||"").replace(/^aurum-/,"");
+ if((caseId==="PMP2026_421"||caseId==="PMP2026_422")&&aurumNormalize(r.country)==="brazil"&&aurumUF(r.state)==="AC"&&aurumNormalize(r.municipality)==="cruzeiro do sul")return {...r,latitude:-7.6649,longitude:-72.6504,location_precision:"municipality",aurum_geolocation_display:"verified_override"};
  const country=aurumNormalize(r.country);
  if(country!=="brazil"&&country!=="brasil")return r; // This reference covers Brazil only.
  if(!aurumGeography)return null;
