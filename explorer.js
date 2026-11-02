@@ -17,7 +17,7 @@ function rebuildDataset(){
  const canonical=canonicalRecords.filter(r=>!/^mel_|^honey_|^bee_honey/.test(String(r.product_type||"").toLowerCase())).map(r=>({...r,layer_type:r.layer_type|| (r.record_kind==="platform"?"platform":"advertisement")}));
  const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(r=>({
   ...r,id:"point-"+r.id,source:trans[language].sourceDraft,
-  scientific_name:r.scientific_name||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
+  scientific_name:r.scientific_name||"",wildlife_group:r.wildlife_group||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
   product_type:r.layer_type,
   description_pt:r.description_pt||r.notes||"", // Existing notes stay the original-language fallback.
   description_en:r.description_en||"",description_es:r.description_es||""
@@ -25,6 +25,7 @@ function rebuildDataset(){
  dataset=[...canonical,...points];
 }
 const controls={species:"scientific_name",state:"state",city:"municipality",source:"source",status:"status",product:"product_type"};
+const speciesValues=r=>r.layer_type==="aurum"?[r.wildlife_group||r.scientific_name].filter(Boolean):[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_additional)?r.species_additional:[])];
 const normalize=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase().trim();
 
 /* Search works across structured evidence, independent of the display language.
@@ -109,7 +110,7 @@ function coords(r){return Number.isFinite(r.latitude)&&Number.isFinite(r.longitu
 function options(filtered=dataset){
  for(const [id,key] of Object.entries(controls)){
   const element=el("explorer-"+id),old=element.value;
-  let values=[...new Set(filtered.flatMap(r=>id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_additional)?r.species_additional:[])]:[r[key]]).filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))].sort((a,b)=>a.localeCompare(b));
+  let values=[...new Set(filtered.flatMap(r=>id==="species"?speciesValues(r):[r[key]]).filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))].sort((a,b)=>a.localeCompare(b));
   element.replaceChildren(new Option(trans[language].all,""));
   for(const value of values){const caption=(id==="status"||id==="product")?localizedField({[key]:value},key,language):value.replaceAll("_"," ");element.add(new Option(caption,value));}
   element.value=values.includes(old)?old:"";
@@ -156,7 +157,7 @@ function setupSpeciesPicker(){
 }
 function matchesOtherFilters(r){
  if(!matchesFreeSearch(r,el("explorer-search").value))return false;
- return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_additional)?r.species_additional:[])].includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
+ return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?speciesValues(r).includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
 }
 function matches(r){
  return activeLayers().has(r.layer_type||"advertisement")&&matchesOtherFilters(r);
@@ -233,7 +234,7 @@ function showDetail(r){
    ["product_type",trans[language].product],
    ["status",trans[language].review],
    ["location_precision",trans[language].precision]
- ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,localizedField(r,key,language));}
+ ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,key==="scientific_name"&&r.layer_type==="aurum"?(r.wildlife_group||localizedField(r,key,language)):localizedField(r,key,language));}
  if(Number.isFinite(r.advertised_price)){
   try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency||"BRL"}).format(r.advertised_price));}catch{}
  }
