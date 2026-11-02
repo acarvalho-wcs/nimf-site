@@ -367,7 +367,7 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./map-points.js?v=aurum-layer-20261029");
+   const mod=await import("./map-points.js?v=aurum-json-20261102");
    if(!valid())return;
    mapModule=mod;
    mod.startMapPoints(db,user,approvalAdmin,items=>{
