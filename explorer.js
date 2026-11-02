@@ -16,7 +16,7 @@ const activeLayers=()=>new Set([...document.querySelectorAll("#explorer-layers i
 function rebuildDataset(){
  const canonical=canonicalRecords.filter(r=>!/^mel_|^honey_|^bee_honey/.test(String(r.product_type||"").toLowerCase())).map(r=>({...r,layer_type:r.layer_type|| (r.record_kind==="platform"?"platform":"advertisement")}));
  const points=reviewedPoints.filter(r=>r.published===true && layerNames.includes(r.layer_type)).map(r=>({
-  ...r,id:"point-"+r.id,source:trans[language].sourceDraft,
+  ...r,id:"point-"+r.id,source:r.layer_type==="aurum"?"Registros Aurum":trans[language].sourceDraft,
   scientific_name:r.scientific_name||"",wildlife_group:r.wildlife_group||"",status:r.evidence_status==="corroborated"?"Verificado":"Em revisão",
   product_type:r.layer_type,
   description_pt:r.description_pt||r.notes||"", // Existing notes stay the original-language fallback.
@@ -188,7 +188,7 @@ const faunaVocabulary={
 };
 function translatedFaunaGroup(group){const term=String(group).trim();return faunaVocabulary[term.toLowerCase()]?.[language]||term;}
 function keyAsScientific(label){return label===trans[language].species;}
-function addField(wrap,label,value){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");d.append(textNode("span",label),keyAsScientific(label)?appendScientific(document.createElement("strong"),String(value),String(value)):textNode("strong",String(value)));wrap.append(d);}
+function addField(wrap,label,value,url){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");const content=keyAsScientific(label)?appendScientific(document.createElement("strong"),String(value),String(value)):textNode("strong",String(value));if(url){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.append(content);d.append(textNode("span",label),a);}else d.append(textNode("span",label),content);wrap.append(d);}
 function closeMapCard(){
  activeId=null;
  const d=el("explorer-map-card");
@@ -232,9 +232,9 @@ function showDetail(r){
    ["municipality",trans[language].city],
    ["country",trans[language].country],
    ["product_type",trans[language].product],
-   ["status",trans[language].review],
+   ...(r.layer_type==="aurum"?[["event_date",{pt:"Data da ocorrência",en:"Event date",es:"Fecha de ocurrencia"}[language]]]:[["status",trans[language].review]]),
    ["location_precision",trans[language].precision]
- ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,key==="scientific_name"&&r.layer_type==="aurum"?(r.wildlife_group||localizedField(r,key,language)):localizedField(r,key,language));}
+ ]){if(key==="scientific_name" && r.record_kind==="platform" && associated.length){addField(info,trans[language].species,({pt:"24 táxons associados",en:"24 associated taxa",es:"24 taxones asociados"}[language]).replace("24",String(new Set(associated).size)));continue;}addField(info,label,key==="scientific_name"&&r.layer_type==="aurum"?(r.wildlife_group||localizedField(r,key,language)):key==="source"&&r.layer_type==="aurum"?"Registros Aurum":localizedField(r,key,language),key==="source"&&r.layer_type==="aurum"?"https://aurum-wcs.streamlit.app/":undefined);}
  if(Number.isFinite(r.advertised_price)){
   try{addField(info,trans[language].price,new Intl.NumberFormat(language==="en"?"en-US":language==="es"?"es-ES":"pt-BR",{style:"currency",currency:r.currency||"BRL"}).format(r.advertised_price));}catch{}
  }
@@ -244,7 +244,8 @@ function showDetail(r){
  if(context.text){
   d.append(textNode("h4",trans[language].observation));
   if(context.sourceLanguage!==language)d.append(textNode("small",trans[language].fallbackLabel+" ("+context.sourceLanguage.toUpperCase()+")"));
-  d.append(appendScientific(document.createElement("p"),context.text,r.layer_type==="aurum"?(r.wildlife_group||r.scientific_name):r.scientific_name));
+  const displayedContext=r.layer_type==="aurum"?context.text.replace(/\s*(?:Dados históricos da planilha; não equivalem a verificação independente da ocorrência\.|Historical spreadsheet data; not independently verified\.|Datos históricos de la hoja; sin verificación independiente\.)\s*$/,""):context.text;
+   d.append(appendScientific(document.createElement("p"),displayedContext,r.layer_type==="aurum"?(r.wildlife_group||r.scientific_name):r.scientific_name));
  }
  if(Array.isArray(r.species_observed)&&r.species_observed.length){const h={pt:"Espécies documentadas no perfil (não necessariamente oferecidas)",en:"Species documented on the profile (not necessarily offered)",es:"Especies documentadas en el perfil (no necesariamente ofrecidas)"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_observed.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
  if(Array.isArray(r.species_additional)&&r.species_additional.length){const h={pt:"Outros táxons registrados",en:"Other recorded taxa",es:"Otros taxones registrados"}[language];d.append(textNode("h4",h));const p=document.createElement("p");r.species_additional.forEach((name,i)=>{if(i)p.append(document.createTextNode(", "));p.append(appendScientificTerm(document.createElement("span"),name));});d.append(p);}
@@ -604,7 +605,7 @@ function render(fitMap=false){
  if(!f.length)list.append(textNode("p",T.empty,"secure-small"));
  for(const r of f){
    const card=document.createElement("button");card.type="button";card.className="explorer-card";
-   card.append(appendScientific(document.createElement("strong"),localizedTitle(r,language)||r.id,r.layer_type==="aurum"?(r.wildlife_group||r.scientific_name):r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[trans[language].layerNames[r.layer_type||"advertisement"],r.source,localizedField(r,"status",language)].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
+   card.append(appendScientific(document.createElement("strong"),localizedTitle(r,language)||r.id,r.layer_type==="aurum"?(r.wildlife_group||r.scientific_name):r.scientific_name),textNode("span",[r.municipality,r.state].filter(Boolean).join(", ")||r.country||""),textNode("small",[trans[language].layerNames[r.layer_type||"advertisement"],r.layer_type==="aurum"?"Registros Aurum":r.source,r.layer_type==="aurum"?r.event_date:localizedField(r,"status",language)].filter(Boolean).join(" · ")),textNode("em",T.more+" →"));
    card.addEventListener("click",()=>focusRecord(r));
    list.append(card);
  }
