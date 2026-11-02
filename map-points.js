@@ -37,7 +37,7 @@ export function promoteTip(item){
 function renderAdminList(){
  const list=$("admin-map-list");list.replaceChildren();
  if(!items.length)list.append(text("p",T().noItems));
- for(const item of items){
+ for(const item of items.filter(entry=>entry.layer_type!=="aurum")){
   const card=document.createElement("article");card.className="tip-item";
   card.append(text("strong",localizedTitle(item,language)),text("small",T().layerOptions[layers.indexOf(item.layer_type)]+" · "+[item.municipality,item.state].filter(Boolean).join(", ")));
   card.append(text("span",item.published?T().public:T().draft));
