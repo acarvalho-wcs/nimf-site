@@ -51,6 +51,7 @@ jobs:
           node --check explorer.js
           node --check explorer-viewport.js
           node --test tests/explorer-viewport.test.mjs
+          node --test tests/scientific-format.test.mjs
           node --check intake.js
           node --check map-points.js
           node --check record-locale.js
