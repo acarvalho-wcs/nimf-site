@@ -725,6 +725,7 @@ function render(fitMap=false){
  el("explorer-count").textContent=String(f.length);
  const counter=el("map-filter-results-count");if(counter)counter.textContent=f.length+" "+T.searchCount;
  el("explorer-map-count").textContent=m.length+" "+T.map;
+ el("explorer-export-csv").disabled=f.length===0;
  el("explorer-unmapped-count").textContent=(f.length-m.length)+" "+T.unmapped;
  const list=el("explorer-cards");list.replaceChildren();
  if(!f.length)list.append(textNode("p",T.empty,"secure-small"));
@@ -834,5 +835,39 @@ for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("chang
 el("explorer-search").addEventListener("input",()=>render(true));
 el("explorer-reset").addEventListener("click",()=>{el("explorer-search").value="";for(const id of Object.keys(controls))el("explorer-"+id).value="";el("explorer-period").value="all";el("explorer-date-from").value="";el("explorer-date-to").value="";showPeriodDetails();render(true);});
 
+function exportFilteredCsv(){
+ const rows=newestFirst(dataset.filter(matches));
+ if(!rows.length)return;
+ // Export only already-authorized visible records, never raw Firestore/admin objects.
+ const columns=[
+  {label:"ID",value:r=>r.aurum_case_id||r.id},
+  {label:"Camada",value:r=>r.layer_type||"advertisement"},
+  {label:"Título",value:r=>localizedTitle(r,language)||r.title||""},
+  {label:"Data da ocorrência",value:r=>r.event_date||r.occurrence_date||r.date_of_occurrence||r.seizure_date||r.incident_date||r.observation_date||r.date||r.event_year||""},
+  {label:"Ano da ocorrência",value:r=>occurrenceOf(r)?.year||""},
+  {label:"Espécie / grupo de fauna",value:r=>r.wildlife_group||r.scientific_name||""},
+  {label:"Quantidade/peso",value:r=>r.layer_type==="aurum"?aurumQuantityForDisplay(r):Number.isFinite(r.advertised_quantity)?r.advertised_quantity:""},
+  {label:"Produto",value:r=>r.layer_type==="aurum"?r.aurum_original_product||r.product_type||"":r.product_type||""},
+  {label:"País",value:r=>r.country},
+  {label:"Estado / região",value:r=>r.state},
+  {label:"Município",value:r=>r.municipality},
+  {label:"Latitude aproximada",value:r=>coords(r)?r.latitude:""},
+  {label:"Longitude aproximada",value:r=>coords(r)?r.longitude:""},
+  {label:"Precisão geográfica",value:r=>r.location_precision},
+  {label:"Fonte",value:r=>r.layer_type==="aurum"?"Registros Aurum":r.source||""},
+  {label:"Link de referência",value:r=>r.source_url||""},
+  {label:"Contexto PT",value:r=>r.layer_type==="aurum"?aurumContextWithQuantity(r,r.description_pt||""):r.description_pt||""},
+  {label:"Contexto EN",value:r=>r.layer_type==="aurum"?aurumContextWithQuantity(r,r.description_en||""):r.description_en||""},
+  {label:"Contexto ES",value:r=>r.layer_type==="aurum"?aurumContextWithQuantity(r,r.description_es||""):r.description_es||""}
+ ];
+ const csv=csvText(rows,columns);
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob),anchor=document.createElement("a");
+ const now=new Date(),day=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+ anchor.href=url;anchor.download="area-restrita-registros-filtrados-"+day+".csv";
+ anchor.style.display="none";document.body.append(anchor);anchor.click();anchor.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+el("explorer-export-csv").addEventListener("click",exportFilteredCsv);
 el("explorer-period").addEventListener("change",()=>{showPeriodDetails();render(true);});
 for(const id of ["explorer-year","explorer-date-from","explorer-date-to"])el(id).addEventListener("change",()=>render(true));
