@@ -124,9 +124,9 @@ Object.assign(osintStrings.en.categories,{"media":"Media and monitoring","cyber"
 Object.assign(osintStrings.es.tools,{"osiris":"Panel global de fuentes abiertas con capas de vuelos, buques, satélites y cámaras; verifique las fuentes y su actualización.","worldCam":"Localice cámaras públicas de ciudades, puertos y aeropuertos para contextualizar lugares.","radioGarden":"Encuentre emisoras de radio de distintas regiones y siga noticias e informes locales en audio.","flightradar24":"Consulte vuelos y rutas disponibles en el mapa; el historial detallado y la cobertura pueden depender del plan.","theHarvester":"Programa para recopilar información pública sobre dominios, subdominios e infraestructura digital; requiere instalación.","securityTrails":"Consulte historial DNS, direcciones IP y dominios por API; requiere clave y puede tener límites comerciales.","bgpView":"Explore información pública sobre ASN, direcciones IP y rutas BGP para contextualizar infraestructura de red.","rfVulnerabilities":"Consulte información de vulnerabilidades y CVE para evaluar riesgos de infraestructura y plataformas digitales.","triageSandbox":"Analice archivos y posibles amenazas digitales en un entorno controlado; no suba datos sensibles de investigaciones.","mitaka":"Extensión del navegador para consultar indicadores, dominios y otras entidades en varias fuentes OSINT.","rfExtension":"Extensión que contextualiza URL, dominios, IP e indicadores de riesgo; funciones según licencia.","haveIBeenPwned":"Compruebe si las direcciones de correo bajo su responsabilidad aparecen en filtraciones públicas conocidas.","builtWith":"Identifique tecnologías de sitios y tiendas en línea para comparar infraestructuras comerciales.","shodan":"Busque información indexada sobre dispositivos y servicios de internet; úsela solo con autorización.","spiderFoot":"Programa abierto para correlacionar fuentes OSINT sobre dominios e infraestructura; código en GitHub.","maltego":"Organice conexiones entre empresas, sitios, dominios y otras entidades mediante gráficos de vínculos.","nmap":"Herramienta instalable para inspección autorizada de redes y servicios; no es búsqueda pasiva por defecto."});
 Object.assign(osintStrings.es.categories,{"media":"Medios y monitoreo","cyber":"Ciberseguridad"});
 const accessStrings={
-pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuários no Firebase Console (nova aba)",checking:"Consultando solicitações...",nonePending:"Nenhuma solicitação pendente",onePending:"1 solicitação pendente",manyPending:"{count} solicitações pendentes",readError:"Não foi possível consultar as solicitações."},
-en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request",firebaseUsers:"Open Firebase",firebaseUsersAria:"Open users in Firebase Console (new tab)",checking:"Checking requests...",nonePending:"No pending requests",onePending:"1 pending request",manyPending:"{count} pending requests",readError:"Could not load access requests."},
-es:{institution:"Institución / organización",justification:"Motivo de la solicitud de acceso",privacy:"Esta información se utiliza únicamente para evaluar su solicitud.",retry:"Complete su solicitud para la evaluación administrativa.",send:"Enviar solicitud",adminTitle:"Solicitudes de nuevos usuarios",adminDescription:"Revise institución y justificación. El acceso a informes requiere autorización independiente.",approve:"Aprobar acceso",emailVerified:"Correo verificado",confirm:"¿Aprueba el acceso de este usuario al panel? Esto no autoriza informes de inteligencia.",pending:"Pendiente de aprobación",submitted:"Solicitud registrada. Espere la evaluación administrativa.",error:"No fue posible registrar la solicitud. Inténtelo nuevamente.",approved:"Acceso aprobado.",review:"Abrir solicitud",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuarios en Firebase Console (nueva pestaña)",checking:"Consultando solicitudes...",nonePending:"Ninguna solicitud pendiente",onePending:"1 solicitud pendiente",manyPending:"{count} solicitudes pendientes",readError:"No se pudieron consultar las solicitudes."}
+pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuários no Firebase Console (nova aba)",needsDetails:"Complete os dados da solicitação para enviá-la à administração.",checking:"Consultando solicitações...",nonePending:"Nenhuma solicitação pendente",onePending:"1 solicitação pendente",manyPending:"{count} solicitações pendentes",readError:"Não foi possível consultar as solicitações."},
+en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request",firebaseUsers:"Open Firebase",firebaseUsersAria:"Open users in Firebase Console (new tab)",needsDetails:"Complete your request details to submit them for administrative review.",checking:"Checking requests...",nonePending:"No pending requests",onePending:"1 pending request",manyPending:"{count} pending requests",readError:"Could not load access requests."},
+es:{institution:"Institución / organización",justification:"Motivo de la solicitud de acceso",privacy:"Esta información se utiliza únicamente para evaluar su solicitud.",retry:"Complete su solicitud para la evaluación administrativa.",send:"Enviar solicitud",adminTitle:"Solicitudes de nuevos usuarios",adminDescription:"Revise institución y justificación. El acceso a informes requiere autorización independiente.",approve:"Aprobar acceso",emailVerified:"Correo verificado",confirm:"¿Aprueba el acceso de este usuario al panel? Esto no autoriza informes de inteligencia.",pending:"Pendiente de aprobación",submitted:"Solicitud registrada. Espere la evaluación administrativa.",error:"No fue posible registrar la solicitud. Inténtelo nuevamente.",approved:"Acceso aprobado.",review:"Abrir solicitud",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuarios en Firebase Console (nueva pestaña)",needsDetails:"Complete los datos de la solicitud para enviarla a la administración.",checking:"Consultando solicitudes...",nonePending:"Ninguna solicitud pendiente",onePending:"1 solicitud pendiente",manyPending:"{count} solicitudes pendientes",readError:"No se pudieron consultar las solicitudes."}
 };
 const t=k=>txt[locale][k]||k;
 function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("internal-reports-nav").disabled=!allowed;$("osint-tools-nav").disabled=!allowed;$("dashboard-nav").disabled=!allowed;document.body.dataset.privateReady=allowed?"true":"false";if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("internal-reports-nav").classList.remove("active");$("osint-tools-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;$("internal-reports-view").hidden=true;$("osint-tools-view").hidden=true;}}
@@ -300,13 +300,15 @@ function switchMode(next){
  mode=next;$("login-tab").classList.toggle("active",next==="login");$("signup-tab").classList.toggle("active",next==="signup");
  $("login-tab").setAttribute("aria-selected",String(next==="login"));$("signup-tab").setAttribute("aria-selected",String(next==="signup"));
  $("password-confirm-wrap").hidden=next!=="signup";$("signup-details").hidden=next!=="signup";$("auth-confirm").required=next==="signup";
+ $("auth-institution").required=next==="signup";$("auth-justification").required=next==="signup";
  message("auth-error","");$("auth-password").value="";$("auth-confirm").value="";translate();
 }
 function displayWaiting(user,unverified,denied=false){
  show("waiting-panel");$("waiting-title").textContent=t(unverified?"unverifiedTitle":denied?"blockedTitle":"pendingTitle");
  $("waiting-text").textContent=t(unverified?"unverifiedText":denied?"blockedText":"pendingText");
  $("waiting-address").textContent=user?.email||"";
- $("resend-verification").hidden=!unverified;message("waiting-error","");
+ $("resend-verification").hidden=!unverified;message("waiting-error","");message("waiting-request-status","");
+ $("access-request-retry").hidden=true;
 }
 function docCell(row,field){
  if(["title","category","status"].includes(field))return localizedField(row,field,locale);
@@ -403,29 +405,73 @@ async function loadPrivateRecords(user,epoch){
  void loadInternalReports();
  $("record-search").value="";show("dashboard-panel");switchWorkspace("dashboard");message("records-error","");drawRecords();enablePrivateWidgets(user,epoch);void loadReportGrants(user,epoch);void loadAdminApplications(user,epoch);
 }
-async function ensureApplication(user){
+async function ensureApplication(user,epoch){
+ const current=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid
+  && user.emailVerified && !$("waiting-panel").hidden;
+ if(!current())return;
+ const key="nimf-pending-request-"+user.uid;
  try{
+  // Firestore application writes require the refreshed email_verified claim.
+  await user.getIdToken(true);
+  if(!current())return;
   const requestRef=doc(db,"access_requests",user.uid);
   const existing=await getDoc(requestRef);
-  if(existing.exists()){$("access-request-retry").hidden=true;sessionStorage.removeItem("nimf-pending-request-"+user.uid);return;}
-  const stored=sessionStorage.getItem("nimf-pending-request-"+user.uid);
-  if(stored){
-   const values=JSON.parse(stored);
-   await setDoc(requestRef,{email:user.email,institution:values.institution,justification:values.justification,status:"pending",created_at:serverTimestamp(),updated_at:serverTimestamp()});
-   sessionStorage.removeItem("nimf-pending-request-"+user.uid);
-   $("access-request-retry").hidden=true;return;
+  if(!current())return;
+  if(existing.exists()){
+   $("access-request-retry").hidden=true;
+   try{sessionStorage.removeItem(key);}catch(e){}
+   if(existing.data()?.status==="pending")message("waiting-request-status",accessStrings[locale].submitted);
+   return;
   }
+  let stored=null;
+  try{stored=sessionStorage.getItem(key);}catch(e){}
+  if(stored){
+   let values=null;
+   try{values=JSON.parse(stored);}catch(e){}
+   const institution=String(values?.institution||"").trim();
+   const justification=String(values?.justification||"").trim();
+   if(institution.length>=3&&institution.length<=160&&justification.length>=20&&justification.length<=1500){
+    if(!current())return;
+    await setDoc(requestRef,{email:user.email,institution,justification,status:"pending",created_at:serverTimestamp(),updated_at:serverTimestamp()});
+    if(!current())return;
+    try{sessionStorage.removeItem(key);}catch(e){}
+    $("access-request-retry").hidden=true;
+    message("waiting-request-status",accessStrings[locale].submitted);
+    return;
+   }
+  }
+  // A different browser session may not retain signup details; offer a secure retry.
   $("access-request-retry").hidden=false;
- }catch(e){console.warn("Application registration not yet available",e?.code||e);$("access-request-retry").hidden=false;}
+  message("waiting-request-status",accessStrings[locale].needsDetails);
+ }catch(e){
+  console.warn("Application registration failed",e?.code||e);
+  if(current()){
+   $("access-request-retry").hidden=false;
+   message("waiting-error",accessStrings[locale].error);
+  }
+ }
 }
 $("access-request-retry").addEventListener("submit",async e=>{
- e.preventDefault();const user=auth?.currentUser;if(!user||!user.emailVerified)return;
+ e.preventDefault();
+ const user=auth?.currentUser;
+ if(!user||!user.emailVerified)return;
  const institution=$("retry-institution").value.trim(),justification=$("retry-justification").value.trim();
- if(institution.length<3||justification.length<20){message("waiting-error",accessStrings[locale].error);return;}
+ if(institution.length<3||institution.length>160||justification.length<20||justification.length>1500){message("waiting-error",accessStrings[locale].error);return;}
+ const button=$("retry-request-button");button.disabled=true;
  try{
-  await setDoc(doc(db,"access_requests",user.uid),{email:user.email,institution,justification,status:"pending",created_at:serverTimestamp(),updated_at:serverTimestamp()});
-  $("access-request-retry").hidden=true;message("waiting-error",accessStrings[locale].submitted);
+  await user.getIdToken(true);
+  const requestRef=doc(db,"access_requests",user.uid);
+  const existing=await getDoc(requestRef);
+  if(!existing.exists()){
+   await setDoc(requestRef,{email:user.email,institution,justification,status:"pending",created_at:serverTimestamp(),updated_at:serverTimestamp()});
+  }
+  if(auth?.currentUser?.uid!==user.uid)return;
+  try{sessionStorage.removeItem("nimf-pending-request-"+user.uid);}catch(e){}
+  $("access-request-retry").hidden=true;
+  message("waiting-error","");
+  message("waiting-request-status",accessStrings[locale].submitted);
  }catch(err){message("waiting-error",accessStrings[locale].error);}
+ finally{button.disabled=false;}
 });
 function clearAdminApplications(){
  if(stopAccessRequests){const unsubscribe=stopAccessRequests;stopAccessRequests=null;unsubscribe();}
@@ -524,7 +570,10 @@ async function evaluateUser(user,epoch){
     approvalAdmin=approval.data().admin===true && user.email?.trim().toLowerCase()==="acarvalho@wcs.org";
    try{await loadPrivateRecords(user,epoch);}
    catch(e){if(epoch===authEpoch){displayWaiting(user,false,true);message("waiting-error",t("failedRead"));}}
-  }else{displayWaiting(user,false,!approval.exists());}
+  }else{
+   displayWaiting(user,false);
+   await ensureApplication(user,epoch);
+  }
  }catch(e){if(epoch===authEpoch){displayWaiting(user,false,true);message("waiting-error",t("genericError"));}}
 }
 function readyConfig(){
@@ -574,7 +623,15 @@ $("auth-form").addEventListener("submit",async e=>{
  },12000);
  try{
   if(mode==="signup"){
+   const institution=$("auth-institution").value.trim();
+   const justification=$("auth-justification").value.trim();
+   if(institution.length<3||institution.length>160||justification.length<20||justification.length>1500){
+    message("auth-error",accessStrings[locale].needsDetails);return;
+   }
    const credential=await createUserWithEmailAndPassword(auth,email,password);
+   // Keep information only for the current browser session until email verification.
+   try{sessionStorage.setItem("nimf-pending-request-"+credential.user.uid,JSON.stringify({institution,justification}));}
+   catch(error){console.warn("Session storage unavailable for access request",error?.name||error);}
    await sendEmailVerification(credential.user);
    $("auth-password").value="";$("auth-confirm").value="";
    displayWaiting(credential.user,true);
