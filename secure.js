@@ -1,7 +1,7 @@
 import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs, limit, query, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, limit, query, where, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js?v=internal-storage-20261016";
 import {localizedField, localizedTitle} from "./record-locale.js?v=login-recovery-20261015-2";
 // Load optional map and intake modules only after authentication and authorization.
@@ -16,6 +16,7 @@ const txt={
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false,reportGrants=[];
 let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[],aurumQuantityBuffer={};
 let workspaceView="dashboard";
+let stopAccessRequests=null,adminPendingRequests=null,adminRequestsError=false,adminRequestUserId=null,adminRequestEpoch=-1,adminDeepLinkFocused=false;
 /* Initialize OSINT filters before the first translate() call and Firebase startup. */
 const osintCategoryKeys=["all","wildlifeTrade","digital","transport","species","geospatial","companies","media","cyber"];
 let osintActiveCategory="all";
@@ -123,9 +124,9 @@ Object.assign(osintStrings.en.categories,{"media":"Media and monitoring","cyber"
 Object.assign(osintStrings.es.tools,{"osiris":"Panel global de fuentes abiertas con capas de vuelos, buques, satélites y cámaras; verifique las fuentes y su actualización.","worldCam":"Localice cámaras públicas de ciudades, puertos y aeropuertos para contextualizar lugares.","radioGarden":"Encuentre emisoras de radio de distintas regiones y siga noticias e informes locales en audio.","flightradar24":"Consulte vuelos y rutas disponibles en el mapa; el historial detallado y la cobertura pueden depender del plan.","theHarvester":"Programa para recopilar información pública sobre dominios, subdominios e infraestructura digital; requiere instalación.","securityTrails":"Consulte historial DNS, direcciones IP y dominios por API; requiere clave y puede tener límites comerciales.","bgpView":"Explore información pública sobre ASN, direcciones IP y rutas BGP para contextualizar infraestructura de red.","rfVulnerabilities":"Consulte información de vulnerabilidades y CVE para evaluar riesgos de infraestructura y plataformas digitales.","triageSandbox":"Analice archivos y posibles amenazas digitales en un entorno controlado; no suba datos sensibles de investigaciones.","mitaka":"Extensión del navegador para consultar indicadores, dominios y otras entidades en varias fuentes OSINT.","rfExtension":"Extensión que contextualiza URL, dominios, IP e indicadores de riesgo; funciones según licencia.","haveIBeenPwned":"Compruebe si las direcciones de correo bajo su responsabilidad aparecen en filtraciones públicas conocidas.","builtWith":"Identifique tecnologías de sitios y tiendas en línea para comparar infraestructuras comerciales.","shodan":"Busque información indexada sobre dispositivos y servicios de internet; úsela solo con autorización.","spiderFoot":"Programa abierto para correlacionar fuentes OSINT sobre dominios e infraestructura; código en GitHub.","maltego":"Organice conexiones entre empresas, sitios, dominios y otras entidades mediante gráficos de vínculos.","nmap":"Herramienta instalable para inspección autorizada de redes y servicios; no es búsqueda pasiva por defecto."});
 Object.assign(osintStrings.es.categories,{"media":"Medios y monitoreo","cyber":"Ciberseguridad"});
 const accessStrings={
-pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuários no Firebase Console (nova aba)"},
-en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request",firebaseUsers:"Open Firebase",firebaseUsersAria:"Open users in Firebase Console (new tab)"},
-es:{institution:"Institución / organización",justification:"Motivo de la solicitud de acceso",privacy:"Esta información se utiliza únicamente para evaluar su solicitud.",retry:"Complete su solicitud para la evaluación administrativa.",send:"Enviar solicitud",adminTitle:"Solicitudes de nuevos usuarios",adminDescription:"Revise institución y justificación. El acceso a informes requiere autorización independiente.",approve:"Aprobar acceso",emailVerified:"Correo verificado",confirm:"¿Aprueba el acceso de este usuario al panel? Esto no autoriza informes de inteligencia.",pending:"Pendiente de aprobación",submitted:"Solicitud registrada. Espere la evaluación administrativa.",error:"No fue posible registrar la solicitud. Inténtelo nuevamente.",approved:"Acceso aprobado.",review:"Abrir solicitud",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuarios en Firebase Console (nueva pestaña)"}
+pt:{institution:"Instituição / organização",justification:"Justificativa para solicitar acesso",privacy:"As informações serão utilizadas exclusivamente para avaliar sua solicitação.",retry:"Complete sua solicitação para avaliação administrativa.",send:"Enviar solicitação",adminTitle:"Solicitações de novos usuários",adminDescription:"Avalie instituição e justificativa. A autorização de relatórios é separada.",approve:"Aprovar acesso",emailVerified:"E-mail verificado",confirm:"Confirma a autorização de acesso ao painel para este usuário? Isso não libera relatórios de inteligência.",pending:"Aguardando aprovação",submitted:"Solicitação registrada. Aguarde avaliação administrativa.",error:"Não foi possível registrar sua solicitação. Tente novamente.",approved:"Acesso aprovado.",review:"Abrir solicitação",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuários no Firebase Console (nova aba)",checking:"Consultando solicitações...",nonePending:"Nenhuma solicitação pendente",onePending:"1 solicitação pendente",manyPending:"{count} solicitações pendentes",readError:"Não foi possível consultar as solicitações."},
+en:{institution:"Institution / organization",justification:"Reason for requesting access",privacy:"This information is used only to assess your access request.",retry:"Complete your request for administrative review.",send:"Submit request",adminTitle:"New user access requests",adminDescription:"Review institution and rationale. Intelligence report authorization is separate.",approve:"Approve access",emailVerified:"Email verified",confirm:"Approve this user's dashboard access? This does not grant intelligence report access.",pending:"Awaiting approval",submitted:"Your request was recorded. Await administrative review.",error:"Unable to submit your request. Please try again.",approved:"Access approved.",review:"Open request",firebaseUsers:"Open Firebase",firebaseUsersAria:"Open users in Firebase Console (new tab)",checking:"Checking requests...",nonePending:"No pending requests",onePending:"1 pending request",manyPending:"{count} pending requests",readError:"Could not load access requests."},
+es:{institution:"Institución / organización",justification:"Motivo de la solicitud de acceso",privacy:"Esta información se utiliza únicamente para evaluar su solicitud.",retry:"Complete su solicitud para la evaluación administrativa.",send:"Enviar solicitud",adminTitle:"Solicitudes de nuevos usuarios",adminDescription:"Revise institución y justificación. El acceso a informes requiere autorización independiente.",approve:"Aprobar acceso",emailVerified:"Correo verificado",confirm:"¿Aprueba el acceso de este usuario al panel? Esto no autoriza informes de inteligencia.",pending:"Pendiente de aprobación",submitted:"Solicitud registrada. Espere la evaluación administrativa.",error:"No fue posible registrar la solicitud. Inténtelo nuevamente.",approved:"Acceso aprobado.",review:"Abrir solicitud",firebaseUsers:"Abrir Firebase",firebaseUsersAria:"Abrir usuarios en Firebase Console (nueva pestaña)",checking:"Consultando solicitudes...",nonePending:"Ninguna solicitud pendiente",onePending:"1 solicitud pendiente",manyPending:"{count} solicitudes pendientes",readError:"No se pudieron consultar las solicitudes."}
 };
 const t=k=>txt[locale][k]||k;
 function show(id){for(const p of ["config-panel","auth-panel","waiting-panel","dashboard-panel"])$(p).hidden=p!==id;const allowed=id==="dashboard-panel";$("reports-nav").disabled=!allowed;$("internal-reports-nav").disabled=!allowed;$("osint-tools-nav").disabled=!allowed;$("dashboard-nav").disabled=!allowed;document.body.dataset.privateReady=allowed?"true":"false";if(!allowed){workspaceView="dashboard";$("reports-nav").classList.remove("active");$("internal-reports-nav").classList.remove("active");$("osint-tools-nav").classList.remove("active");$("dashboard-primary").hidden=false;$("intelligence-reports-view").hidden=true;$("internal-reports-view").hidden=true;$("osint-tools-view").hidden=true;}}
@@ -151,6 +152,7 @@ function translate(){
  $("auth-email").placeholder=t("authEmailPlaceholder");$("auth-institution").placeholder=t("institutionPlaceholder");$("auth-justification").placeholder=t("justificationPlaceholder");$("retry-request-title").textContent=t("retryTitle");
  for(const [id,key] of [["institution-label","institution"],["justification-label","justification"],["signup-privacy-note","privacy"],["retry-institution-label","institution"],["retry-justification-label","justification"],["retry-request-button","send"],["admin-requests-title","adminTitle"],["admin-requests-description","adminDescription"],["admin-firebase-users-link","firebaseUsers"]]){const target=$(id);if(target)target.textContent=accessStrings[locale][key];}
  $("admin-firebase-users-link").setAttribute("aria-label",accessStrings[locale].firebaseUsersAria);
+ if(approvalAdmin && adminRequestUserId)renderAdminApplications();
  document.querySelector(".secure-brand")?.setAttribute("aria-label",t("back"));document.querySelector(".secure-brand")?.setAttribute("title",t("back"));
  $("account-role").textContent=approvalAdmin?t("roleAdmin"):t("roleContributor");
  if(intakeModule){try{intakeModule.setIntakeLanguage(locale);}catch(e){console.warn("Intake locale update failed",e);}}
@@ -425,29 +427,93 @@ $("access-request-retry").addEventListener("submit",async e=>{
   $("access-request-retry").hidden=true;message("waiting-error",accessStrings[locale].submitted);
  }catch(err){message("waiting-error",accessStrings[locale].error);}
 });
-async function loadAdminApplications(user,epoch){
+function clearAdminApplications(){
+ if(stopAccessRequests){const unsubscribe=stopAccessRequests;stopAccessRequests=null;unsubscribe();}
+ adminPendingRequests=null;adminRequestsError=false;adminRequestUserId=null;adminRequestEpoch=-1;adminDeepLinkFocused=false;
+ $("admin-access-requests").hidden=true;
+ $("admin-requests-list").replaceChildren();
+ $("admin-requests-status").dataset.state="loading";
+ $("admin-requests-status").textContent="";
+ $("admin-requests-feedback").textContent="";
+}
+function adminRequestSessionValid(){
+ return approvalAdmin && adminRequestUserId!==null && auth?.currentUser?.uid===adminRequestUserId
+  && activeUser?.uid===adminRequestUserId && authEpoch===adminRequestEpoch
+  && !$("dashboard-panel").hidden;
+}
+function renderAdminApplications(){
+ if(!adminRequestSessionValid())return;
+ const labels=accessStrings[locale],indicator=$("admin-requests-status"),container=$("admin-requests-list");
+ if(adminRequestsError){
+  indicator.dataset.state="error";indicator.textContent=labels.readError;container.replaceChildren();return;
+ }
+ if(adminPendingRequests===null){
+  indicator.dataset.state="loading";indicator.textContent=labels.checking;container.replaceChildren();return;
+ }
+ const count=adminPendingRequests.length;
+ indicator.dataset.state=count?"pending":"empty";
+ indicator.textContent=count===0?labels.nonePending:count===1?labels.onePending:labels.manyPending.replace("{count}",String(count));
+ container.replaceChildren();
+ const deepLink=new URLSearchParams(location.search).get("request");
+ for(const request of adminPendingRequests){
+  const data=request.data,article=document.createElement("article");article.className="access-request-card";
+  if(request.id===deepLink)article.classList.add("access-request-highlight");
+  const heading=document.createElement("strong");heading.textContent=data.email||request.id;article.append(heading);
+  const organization=document.createElement("p");organization.textContent=labels.institution+": "+(data.institution||"");article.append(organization);
+  const purpose=document.createElement("p");purpose.textContent=labels.justification+": "+(data.justification||"");article.append(purpose);
+  const button=document.createElement("button");button.type="button";button.className="secure-button";button.textContent=labels.approve;
+  // Approval remains a separate, confirmed, backend-authorized operation.
+  button.onclick=async()=>{
+   if(!adminRequestSessionValid()||!window.confirm(accessStrings[locale].confirm))return;
+   button.disabled=true;
+   try{
+    const token=await auth.currentUser.getIdToken(true);
+    if(!adminRequestSessionValid())return;
+    const endpoint="https://us-central1-"+firebaseConfig.projectId+".cloudfunctions.net/approveAccessRequest";
+    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({requestId:request.id})});
+    if(!response.ok)throw Error("Approval failed");
+    if(adminRequestSessionValid())$("admin-requests-feedback").textContent=accessStrings[locale].approved;
+    // The Firestore listener removes the approved request automatically.
+   }catch(err){
+    if(adminRequestSessionValid())$("admin-requests-feedback").textContent=accessStrings[locale].error;
+   }finally{button.disabled=false;}
+  };
+  article.append(button);container.append(article);
+  if(request.id===deepLink&&!adminDeepLinkFocused){adminDeepLinkFocused=true;article.scrollIntoView({block:"center"});}
+ }
+}
+function loadAdminApplications(user,epoch){
  if(!approvalAdmin)return;
+ // Use a server-filtered listener without a 100-document cap; only admins can see this panel.
+ clearAdminApplications();
+ adminRequestUserId=user.uid;adminRequestEpoch=epoch;
  $("admin-access-requests").hidden=false;
- const container=$("admin-requests-list");container.replaceChildren();
+ renderAdminApplications();
  try{
-  const snap=await getDocs(query(collection(db,"access_requests"),limit(100)));
-  if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
-  const deepLink=new URLSearchParams(location.search).get("request");
-  for(const d of snap.docs.filter(x=>x.data().status==="pending")){
-   const data=d.data();const article=document.createElement("article");article.className="access-request-card";
-   if(d.id===deepLink)article.classList.add("access-request-highlight");
-   const heading=document.createElement("strong");heading.textContent=data.email||d.id;article.append(heading);
-   const organization=document.createElement("p");organization.textContent=accessStrings[locale].institution+": "+(data.institution||"");article.append(organization);
-   const purpose=document.createElement("p");purpose.textContent=accessStrings[locale].justification+": "+(data.justification||"");article.append(purpose);
-   const button=document.createElement("button");button.type="button";button.className="secure-button";button.textContent=accessStrings[locale].approve;
-   // A link never approves a user. Explicit administrator confirmation and a trusted backend are required.
-   button.onclick=async()=>{if(!window.confirm(accessStrings[locale].confirm))return;button.disabled=true;try{const token=await auth.currentUser.getIdToken(true);const endpoint="https://us-central1-"+firebaseConfig.projectId+".cloudfunctions.net/approveAccessRequest";if(!endpoint)throw Error("Approval service not deployed");const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({requestId:d.id})});if(!response.ok)throw Error("Approval failed");article.remove();$("admin-requests-feedback").textContent=accessStrings[locale].approved;}catch(err){$("admin-requests-feedback").textContent=accessStrings[locale].error;}finally{button.disabled=false;}};
-   article.append(button);container.append(article);
-   if(d.id===deepLink)article.scrollIntoView({block:"center"});
-  }
- }catch(err){$("admin-requests-feedback").textContent=accessStrings[locale].error;}
+  const pendingQuery=query(collection(db,"access_requests"),where("status","==","pending"));
+  stopAccessRequests=onSnapshot(pendingQuery,snapshot=>{
+   if(!adminRequestSessionValid())return;
+   adminRequestsError=false;
+   adminPendingRequests=snapshot.docs.map(d=>({id:d.id,data:d.data()}))
+    .sort((a,b)=>{
+     const stamp=r=>r.data.created_at?.toMillis?.()??r.data.created_at?.seconds*1000??0;
+     return stamp(b)-stamp(a);
+    });
+   renderAdminApplications();
+  },error=>{
+   if(!adminRequestSessionValid())return;
+   console.warn("Live access requests unavailable",error?.code||error);
+   adminRequestsError=true;adminPendingRequests=null;renderAdminApplications();
+  });
+ }catch(error){
+  if(!adminRequestSessionValid())return;
+  console.warn("Live access requests initialization failed",error?.code||error);
+  adminRequestsError=true;renderAdminApplications();
+ }
 }
 async function evaluateUser(user,epoch){
+ clearAdminApplications();
+ approvalAdmin=false;
  activeUser=user;records=[];reportGrants=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];aurumQuantityBuffer={};
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
