@@ -12,6 +12,7 @@ on:
       - 'secure.js'
       - 'explorer.js'
       - 'explorer-viewport.js'
+      - 'restricted-period-export.js'
       - 'intake.js'
       - 'map-points.js'
       - 'record-locale.js'
@@ -50,6 +51,8 @@ jobs:
           node --check secure.js
           node --check explorer.js
           node --check explorer-viewport.js
+          node --check restricted-period-export.js
+          node --test tests/restricted-period-export.test.mjs
           node --test tests/explorer-viewport.test.mjs
           node --test tests/scientific-format.test.mjs
           node --check intake.js
@@ -62,9 +65,11 @@ jobs:
           test -f secure.css
           test -f firestore.rules
           grep -q 'allow create, update, delete: if false;' firestore.rules
-          cp index.html styles.css app.js secure.html secure.css restricted-shell-v3.css secure.js explorer.js explorer-viewport.js intake.js map-points.js record-locale.js scientific-format.js firebase-config.js public/
+          cp index.html styles.css app.js secure.html secure.css restricted-shell-v3.css secure.js explorer.js explorer-viewport.js restricted-period-export.js intake.js map-points.js record-locale.js scientific-format.js firebase-config.js public/
           test -f assets/Logo_observat.png
           mkdir -p public/assets
+          mkdir -p public/assets/geography
+          cp assets/geography/brazil_states.geojson assets/geography/brazil_municipal_centers.csv public/assets/geography/
           cp assets/observatory-icon-*.png public/assets/
           cp assets/observatory-safari-20261018.svg public/assets/
           cp assets/Logo_observat.png public/assets/Logo_observat.png
