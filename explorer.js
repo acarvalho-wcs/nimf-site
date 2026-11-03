@@ -717,7 +717,7 @@ function drawMarkers(rows,fit=false){
 }
 function render(fitMap=false){
  const f=newestFirst(dataset.filter(matches)),m=f.filter(r=>coords(r)),T=trans[language];
- const viewKey=viewportSignature({search:el("explorer-search").value,filters:Object.keys(controls).map(id=>el("explorer-"+id).value),period:selectedPeriod(),year:el("explorer-year").value,from:el("explorer-date-from").value,to:el("explorer-date-to").value,layers:[...activeLayers()],locations:m});
+ const viewKey=viewportSignature({search:el("explorer-search").value,filters:[...Object.keys(controls).map(id=>el("explorer-"+id).value),selectedPeriod(),el("explorer-year").value,el("explorer-date-from").value,el("explorer-date-to").value],layers:[...activeLayers()],locations:m});
  const fitNow=needsViewportFit(fitMap,lastViewportSignature,viewKey);
  lastViewportSignature=viewKey;
  updateLayerCounts();
@@ -843,11 +843,11 @@ function exportFilteredCsv(){
   {label:"ID",value:r=>r.aurum_case_id||r.id},
   {label:"Camada",value:r=>r.layer_type||"advertisement"},
   {label:"Título",value:r=>localizedTitle(r,language)||r.title||""},
-  {label:"Data da ocorrência",value:r=>r.event_date||r.occurrence_date||r.date_of_occurrence||r.seizure_date||r.incident_date||r.observation_date||r.date||r.event_year||""},
+  {label:"Data da ocorrência",value:r=>r.event_date||r.occurrence_date||r.date_of_occurrence||r.seizure_date||r.incident_date||r.observation_date||r.date||r.event_year||r.aurum_original_year||""},
   {label:"Ano da ocorrência",value:r=>occurrenceOf(r)?.year||""},
   {label:"Espécie / grupo de fauna",value:r=>r.wildlife_group||r.scientific_name||""},
   {label:"Quantidade/peso",value:r=>r.layer_type==="aurum"?aurumQuantityForDisplay(r):Number.isFinite(r.advertised_quantity)?r.advertised_quantity:""},
-  {label:"Produto",value:r=>r.layer_type==="aurum"?r.aurum_original_product||r.product_type||"":r.product_type||""},
+  {label:"Produto",value:r=>r.layer_type==="aurum"?(r.aurum_original_product||String(r.description_pt||"").match(/(?:^|\. )Produto: (.*?)(?:\. Situação original:|$)/)?.[1]||""):r.product_type||""},
   {label:"País",value:r=>r.country},
   {label:"Estado / região",value:r=>r.state},
   {label:"Município",value:r=>r.municipality},
