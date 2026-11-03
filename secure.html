@@ -147,6 +147,7 @@
               <div class="map-toolbar-primary">
                 <div id="map-toolbar-projection" class="explorer-mode-switch map-toolbar-projection" role="group" aria-label="Projeção do mapa"><button id="map-toolbar-mode-map" type="button" aria-pressed="true">MAP</button><button id="map-toolbar-mode-globe" type="button" aria-pressed="false">GLOBE</button></div>
                 <button id="map-filters-toggle" type="button" class="secure-secondary map-toolbar-button map-filters-toggle" aria-controls="map-filters-panel" aria-expanded="false" aria-haspopup="true"><span aria-hidden="true">☷</span> <span id="map-filters-toggle-label">Filtros</span> <span class="map-filters-chevron" aria-hidden="true">▾</span></button>
+                 <button id="explorer-export-csv" type="button" class="secure-secondary map-toolbar-button" aria-label="Exportar registros filtrados em CSV">Exportar CSV</button>
                 <div id="map-color-switch" class="explorer-mode-switch map-color-switch" role="group" aria-label="Cor do mapa"><button id="map-color-dark" type="button" aria-pressed="true">Escuro</button><button id="map-color-light" type="button" aria-pressed="false">Claro</button></div>
                 <button id="map-toolbar-fullscreen" type="button" class="secure-secondary map-toolbar-button map-fullscreen-shortcut" aria-controls="explorer-map" aria-pressed="false"><span aria-hidden="true">⛶</span> <span id="map-toolbar-fullscreen-label">Tela cheia</span></button>
               </div>
@@ -163,6 +164,10 @@
           <label><span id="explorer-source-label">Fonte</span><select id="explorer-source"><option value="">Todas</option></select></label>
           <label><span id="explorer-status-label">Verificação</span><select id="explorer-status"><option value="">Todas</option></select></label>
           <label><span id="explorer-product-label">Produto</span><select id="explorer-product"><option value="">Todos</option></select></label>
+          <label class="explorer-period-field"><span id="explorer-period-label">Período da ocorrência</span><select id="explorer-period"><option value="all" selected>Todos os períodos</option><option value="7d">Últimos 7 dias</option><option value="30d">Últimos 30 dias</option><option value="90d">Últimos 90 dias</option><option value="365d">Últimos 12 meses</option><option value="year">Ano específico</option><option value="custom">Intervalo personalizado</option><option value="undated">Sem data de ocorrência</option></select></label>
+          <label id="explorer-year-wrap" class="explorer-time-detail" hidden><span id="explorer-year-label">Ano</span><select id="explorer-year"></select></label>
+          <label id="explorer-date-from-wrap" class="explorer-time-detail" hidden><span id="explorer-date-from-label">De</span><input type="date" id="explorer-date-from"></label>
+          <label id="explorer-date-to-wrap" class="explorer-time-detail" hidden><span id="explorer-date-to-label">Até</span><input type="date" id="explorer-date-to"></label>
         </div>
                 <div class="map-filters-reset-row"><button type="button" id="explorer-reset" class="secure-secondary">Limpar filtros</button></div>
                 <div class="map-filters-actions">
