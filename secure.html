@@ -8,7 +8,7 @@
  <title>IWT Global Observatory | Área restrita</title>
  <link rel="stylesheet" href="./styles.css">
  <link rel="stylesheet" href="./secure.css?v=restricted-period-csv-20261103">
- <link rel="stylesheet" href="./restricted-shell-v3.css?v=osint-expanded-20261018-1">
+ <link rel="stylesheet" href="./restricted-shell-v3.css?v=access-firebase-link-20261102">
  <style>
   /* Default deny: menu is shown only after Firebase authorization and private data load. */
   body:not([data-private-ready="true"]) #side-navigation{display:none!important}
@@ -128,9 +128,14 @@
        <button type="button" id="private-logout" class="secure-secondary">Sair</button>
       </div>
       <section id="admin-access-requests" class="private-panel admin-access-requests" hidden aria-labelledby="admin-requests-title">
-       <span class="secure-label" id="admin-requests-kicker">ADMINISTRAÇÃO DE ACESSOS</span>
-       <h3 id="admin-requests-title">Solicitações de novos usuários</h3>
-       <p id="admin-requests-description">Revise a instituição e a justificativa antes de autorizar um usuário. Acesso aos relatórios exige aprovação separada.</p>
+       <div class="admin-requests-header">
+        <div class="admin-requests-heading">
+         <span class="secure-label" id="admin-requests-kicker">ADMINISTRAÇÃO DE ACESSOS</span>
+         <h3 id="admin-requests-title">Solicitações de novos usuários</h3>
+         <p id="admin-requests-description">Revise a instituição e a justificativa antes de autorizar um usuário. Acesso aos relatórios exige aprovação separada.</p>
+        </div>
+        <a id="admin-firebase-users-link" class="secure-secondary admin-firebase-users-link" href="https://console.firebase.google.com/u/1/project/fir-console-61443/authentication/users" target="_blank" rel="noopener noreferrer" aria-label="Abrir usuários no Firebase Console (nova aba)">Abrir Firebase ↗</a>
+       </div>
        <div id="admin-requests-list" class="admin-requests-list"></div>
        <p id="admin-requests-feedback" role="status" class="secure-small" aria-live="polite"></p>
       </section>
