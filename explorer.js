@@ -1,4 +1,5 @@
 import {viewportSignature,needsViewportFit} from "./explorer-viewport.js";
+import {periodLabels,occurrenceOf,matchesPeriod,csvText} from "./restricted-period-export.js";
 import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
@@ -197,8 +198,12 @@ function setupSpeciesPicker(){
   if(!event.target.closest(".species-filter")){menu.hidden=true;trigger.setAttribute("aria-expanded","false");}
  });
 }
+function selectedPeriod(){return el("explorer-period")?.value||"all";}
+function periodMatches(r){return matchesPeriod(r,selectedPeriod(),el("explorer-year")?.value,el("explorer-date-from")?.value,el("explorer-date-to")?.value);}
+function showPeriodDetails(){const p=selectedPeriod();for(const [id,visible] of [["explorer-year-wrap",p==="year"],["explorer-date-from-wrap",p==="custom"],["explorer-date-to-wrap",p==="custom"]]){const node=el(id);if(node)node.hidden=!visible;}}
+function updatePeriodYears(){const select=el("explorer-year");if(!select)return;const old=select.value;const years=[...new Set(dataset.map(occurrenceOf).filter(Boolean).map(v=>v.year))].sort((a,b)=>b-a);select.replaceChildren(...years.map(y=>new Option(String(y),String(y))));if(years.length)select.value=years.includes(Number(old))?old:String(years[0]);}
 function matchesOtherFilters(r){
- if(!matchesFreeSearch(r,el("explorer-search").value))return false;
+ if(!matchesFreeSearch(r,el("explorer-search").value)||!periodMatches(r))return false;
  return Object.entries(controls).every(([id,key])=>!el("explorer-"+id).value||(id==="species"?speciesValues(r).includes(el("explorer-"+id).value):r[key]===el("explorer-"+id).value));
 }
 function matches(r){
@@ -712,7 +717,7 @@ function drawMarkers(rows,fit=false){
 }
 function render(fitMap=false){
  const f=newestFirst(dataset.filter(matches)),m=f.filter(r=>coords(r)),T=trans[language];
- const viewKey=viewportSignature({search:el("explorer-search").value,filters:Object.keys(controls).map(id=>el("explorer-"+id).value),layers:[...activeLayers()],locations:m});
+ const viewKey=viewportSignature({search:el("explorer-search").value,filters:Object.keys(controls).map(id=>el("explorer-"+id).value),period:selectedPeriod(),year:el("explorer-year").value,from:el("explorer-date-from").value,to:el("explorer-date-to").value,layers:[...activeLayers()],locations:m});
  const fitNow=needsViewportFit(fitMap,lastViewportSignature,viewKey);
  lastViewportSignature=viewKey;
  updateLayerCounts();
@@ -741,16 +746,26 @@ export function initExplorer(rows,lang="pt"){
  canonicalRecords=(Array.isArray(rows)?rows:[]).filter(safe).map((r,i)=>({...r,id:r.id||r.record_id||String(i)}));rebuildDataset();
  for(const id of Object.keys(controls))el("explorer-"+id).value="";
  el("explorer-search").value="";closeMapCard();
- setupSpeciesPicker();options();setExplorerLanguage(language);render(true);
+ setupSpeciesPicker();updatePeriodYears();showPeriodDetails();options();setExplorerLanguage(language);render(true);
 }
 export function setMapPoints(rows,quantityIndex){
  if(quantityIndex&&typeof quantityIndex==="object"&&!Array.isArray(quantityIndex))aurumQuantities=quantityIndex;
  if((Array.isArray(rows)?rows:[]).some(r=>r.layer_type==="aurum"))void loadAurumGeography();
  reviewedPoints=(Array.isArray(rows)?rows:[]).filter(safe).filter(r=>r.published===true);
- rebuildDataset();options();render(true);
+ rebuildDataset();updatePeriodYears();options();render(true);
 }
 export function setExplorerLanguage(lang){
  language=trans[lang]?lang:"pt";const t=trans[language];rebuildDataset();updateMapThemeButton();
+ const p=periodLabels[language],select=el("explorer-period");
+ if(select){
+  el("explorer-period-label").textContent=p.period;
+  [p.all,p.d7,p.d30,p.d90,p.d365,p.year,p.custom,p.undated].forEach((value,i)=>{if(select.options[i])select.options[i].textContent=value;});
+  el("explorer-year-label").textContent=p.yearLabel;
+  el("explorer-date-from-label").textContent=p.from;
+  el("explorer-date-to-label").textContent=p.to;
+ }
+ const exportButton=el("explorer-export-csv");
+ if(exportButton){exportButton.textContent=p.export;exportButton.title=p.title;exportButton.setAttribute("aria-label",p.title);}
  el("layers-title").textContent=t.layersHeading;
  el("layers-toggle-label").textContent=t.layers;
  el("layers-hint").textContent=t.layersHint;
@@ -771,7 +786,7 @@ export function setExplorerLanguage(lang){
  options();render();
 }
 export function clearExplorer(){
- dataset=[];canonicalRecords=[];reviewedPoints=[];lastViewportSignature=null;closeMapCard();setLayersPanel(false);if(document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
+ dataset=[];canonicalRecords=[];reviewedPoints=[];aurumQuantities=Object.create(null);lastViewportSignature=null;closeMapCard();setLayersPanel(false);if(document.querySelector(".explorer-map-wrap.is-fullscreen"))toggleFullScreen(false);el("explorer-cards").replaceChildren();for(const pin of pins)pin.remove();pins=[];if(fallbackPins)fallbackPins.replaceChildren();
 }
 function resizeDisplayedMap(){
  const visible=dataset.filter(matches).filter(r=>coords(r));
@@ -817,4 +832,7 @@ for(const input of document.querySelectorAll("#explorer-layers input"))input.add
 });
 for(const id of Object.keys(controls))el("explorer-"+id).addEventListener("change",()=>render(true));
 el("explorer-search").addEventListener("input",()=>render(true));
-el("explorer-reset").addEventListener("click",()=>{el("explorer-search").value="";for(const id of Object.keys(controls))el("explorer-"+id).value="";render(true);});
+el("explorer-reset").addEventListener("click",()=>{el("explorer-search").value="";for(const id of Object.keys(controls))el("explorer-"+id).value="";el("explorer-period").value="all";el("explorer-date-from").value="";el("explorer-date-to").value="";showPeriodDetails();render(true);});
+
+el("explorer-period").addEventListener("change",()=>{showPeriodDetails();render(true);});
+for(const id of ["explorer-year","explorer-date-from","explorer-date-to"])el(id).addEventListener("change",()=>render(true));
