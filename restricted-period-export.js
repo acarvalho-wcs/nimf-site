@@ -35,7 +35,7 @@ export function parseOccurrence(value){
 }
 export function occurrenceOf(record){
  for(const key of dateFields){const d=parseOccurrence(record[key]);if(d)return d;}
- for(const key of ["event_year","occurrence_year","seizure_year"]){const d=parseOccurrence(record[key]);if(d)return d;}
+ for(const key of ["event_year","occurrence_year","seizure_year","aurum_original_year"]){const d=parseOccurrence(record[key]);if(d)return d;}
  // created_at, updated_at and publication timestamps are not occurrence dates.
  return null;
 }
