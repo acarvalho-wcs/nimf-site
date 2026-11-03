@@ -66,6 +66,9 @@ function rebuildDataset(){
   description_en:r.description_en||"",description_es:r.description_es||""
  }));
  dataset=[...canonical,...points];
+ // The dashboard total must count the same unfiltered catalog as the explorer, including published Aurum points.
+ const total=document.getElementById("records-count");
+ if(total)total.textContent=String(dataset.length);
 }
 const controls={species:"scientific_name",state:"state",city:"municipality",source:"source",status:"status",product:"product_type"};
 const speciesValues=r=>r.layer_type==="aurum"?[r.wildlife_group||r.scientific_name].filter(Boolean):[r.scientific_name,...(Array.isArray(r.species_observed)?r.species_observed:[]),...(Array.isArray(r.species_offered)?r.species_offered:[]),...(Array.isArray(r.species_additional)?r.species_additional:[])];
