@@ -3,7 +3,7 @@ import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
 let projectionMode="map", mapColorMode="dark";
-let dataset=[], canonicalRecords=[],reviewedPoints=[],aurumQuantities=Object.create(null), language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
+let dataset=[], canonicalRecords=[],reviewedPoints=[],aurumQuantities=Object.create(null), language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, activeGroupKey=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null,lastViewportSignature=null;
 const el=id=>document.getElementById(id);
 const trans={
@@ -232,7 +232,7 @@ function translatedFaunaGroup(group){const term=String(group).trim();return faun
 function keyAsScientific(label){return label===trans[language].species;}
 function addField(wrap,label,value,url){if(value===null||value===undefined||value==="")return;const d=document.createElement("div");const content=keyAsScientific(label)?appendScientific(document.createElement("strong"),String(value),String(value)):textNode("strong",String(value));if(url){const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.append(content);d.append(textNode("span",label),a);}else d.append(textNode("span",label),content);wrap.append(d);}
 function closeMapCard(){
- activeId=null;
+ activeId=null;activeGroupKey=null;
  const d=el("explorer-map-card");
  if(d){d.hidden=true;d.replaceChildren();}
  const legacy=el("explorer-detail");if(legacy)legacy.hidden=true;
@@ -289,6 +289,11 @@ function showDetail(r){
  close.addEventListener("click",closeMapCard);header.append(close);d.append(header);
  const category=trans[language].layerNames[r.layer_type||"advertisement"];
  if(category)d.append(textNode("div",category,"explorer-map-card-category"));
+ if(activeGroupKey&&groupOfSelectedLocation().length>1){
+  const back=textNode("button",coincidentLabels[language].back,"explorer-coincident-back");
+  back.type="button";back.addEventListener("click",()=>showMarkerGroup(groupOfSelectedLocation()));
+  d.append(back);
+ }
  const info=document.createElement("div");info.className="explorer-detail-grid";
  const associated=[...(r.species_observed||[]),...(r.species_additional||[]),...(r.species_offered||[])];
  for(const [key,label] of [
@@ -329,7 +334,8 @@ function showDetail(r){
  if(externalLinks.childElementCount)d.append(externalLinks);
  d.hidden=false;
 }
-function focusRecord(r){
+function focusRecord(r,fromGroup=false){
+ if(!fromGroup)activeGroupKey=null;
  showDetail(r);
  const location=coords(r);
  if(!location)return; // A worldwide directory or location-free listing must not move the map.
@@ -458,12 +464,53 @@ function filteredExtent(rows,width,height){
  }
  return {center:[centreLongitude,centreLatitude],zoom};
 }
+function markerGroupKey(r){
+ const point=coords(r);
+ return point?point.map(v=>v.toFixed(5)).join(":"):null;
+}
 function markerGroups(rows){
  const groups=new Map();
- for(const r of rows){const c=coords(r);if(!c)continue;const key=c.map(v=>v.toFixed(5)).join(":");if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
+ for(const r of rows){
+  const key=markerGroupKey(r);
+  if(!key)continue;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(r);
+ }
  return [...groups.values()];
 }
-function selectMarkerGroup(items){if(items.length===1){focusRecord(items[0]);return;}const index=items.findIndex(r=>r.id===activeId);focusRecord(items[(index+1)%items.length]);}
+const coincidentLabels={
+ pt:{heading:"Casos nesta região",back:"Voltar à lista de casos",count:"casos neste ponto"},
+ en:{heading:"Cases at this location",back:"Back to case list",count:"cases at this point"},
+ es:{heading:"Casos en esta región",back:"Volver a la lista de casos",count:"casos en este punto"}
+};
+function showMarkerGroup(items){
+ if(!items.length)return;
+ if(items.length===1){focusRecord(items[0]);return;}
+ activeId=null;activeGroupKey=markerGroupKey(items[0]);
+ const d=el("explorer-map-card");
+ d.replaceChildren();delete d.dataset.recordId;
+ const header=document.createElement("div");header.className="explorer-detail-head";
+ const heading=textNode("h3",coincidentLabels[language].heading+" ("+items.length+")");
+ heading.id="explorer-map-card-title";
+ const close=textNode("button","×","explorer-map-card-close");close.type="button";
+ close.setAttribute("aria-label",trans[language].close);close.title=trans[language].close;
+ close.addEventListener("click",closeMapCard);
+ header.append(heading,close);d.append(header);
+ const list=document.createElement("div");list.className="explorer-coincident-list";
+ for(const record of items){
+  const item=document.createElement("button");item.type="button";item.className="explorer-coincident-item";
+  item.append(appendScientific(document.createElement("strong"),localizedTitle(record,language)||record.id,record.layer_type==="aurum"?(record.wildlife_group||record.scientific_name):record.scientific_name));
+  const detail=[trans[language].layerNames[record.layer_type||"advertisement"],record.municipality||record.state||record.country,record.layer_type==="aurum"?record.event_date:""].filter(Boolean).join(" · ");
+  if(detail)item.append(textNode("small",detail));
+  item.addEventListener("click",()=>focusRecord(record,true));
+  list.append(item);
+ }
+ d.append(list);d.hidden=false;
+}
+function groupOfSelectedLocation(){
+ if(!activeGroupKey)return [];
+ return markerGroups(dataset.filter(matches).filter(r=>coords(r))).find(items=>markerGroupKey(items[0])===activeGroupKey)||[];
+}
 function renderRasterMarkers(rows,fit=false){
  if(!fallbackLayer)return;
  const host=el("explorer-map"),width=Math.max(320,host.clientWidth),height=Math.max(420,host.clientHeight);
@@ -486,7 +533,8 @@ function renderRasterMarkers(rows,fit=false){
  rasterFrame={cells,width,height};
  drawRasterFrame();
  fallbackPins.replaceChildren();
- for(const r of rows){
+ for(const group of markerGroups(rows)){
+  const r=group[0],multiple=group.length>1;
   const [px,py]=projection(r.longitude,r.latitude,fallbackZoom);
   let sx=px-left;const dx=sx-width/2;
   if(dx>scale/2)sx-=scale;
@@ -495,9 +543,11 @@ function renderRasterMarkers(rows,fit=false){
   if(sx < -20 || sx>width+20 || sy< -20 || sy>height+20)continue;
   const pin=document.createElement("button");pin.type="button";pin.className="nimf-raster-pin";
   pin.style.left=sx+"px";pin.style.top=sy+"px";
-  pin.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
-  pin.setAttribute("aria-label",pin.title);pin.dataset.layer=r.layer_type||"advertisement";
-  pin.addEventListener("click",()=>focusRecord(r));fallbackPins.append(pin);
+  pin.title=multiple?group.length+" "+coincidentLabels[language].count:[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  pin.setAttribute("aria-label",pin.title);
+  pin.dataset.layer=multiple&&new Set(group.map(item=>item.layer_type)).size>1?"group":r.layer_type||"advertisement";
+  if(multiple){pin.dataset.groupSize=String(group.length);pin.textContent=String(group.length);}
+  pin.addEventListener("click",()=>multiple?showMarkerGroup(group):focusRecord(r));fallbackPins.append(pin);
  }
  fallbackLayer.querySelector(".nimf-raster-coordinates").textContent=fallbackCenter[1].toFixed(2)+"°, "+fallbackCenter[0].toFixed(2)+"° · Z"+fallbackZoom;
  host.dataset.centerLongitude=String(fallbackCenter[0]);host.dataset.centerLatitude=String(fallbackCenter[1]);
@@ -636,12 +686,16 @@ function drawMarkers(rows,fit=false){
  if(!mapReady||!mapLoaded)return;
  for(const p of pins)p.remove();pins=[];
  const bounds=new window.maplibregl.LngLatBounds();
- for(const r of rows){
+ for(const group of markerGroups(rows)){
+  const r=group[0],multiple=group.length>1;
   const [lat,lng]=coords(r);
   const dot=document.createElement("button");dot.type="button";dot.className="nimf-map-dot";
-  dot.title=[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");dot.dataset.layer=r.layer_type||"advertisement";
+  dot.title=multiple?group.length+" "+coincidentLabels[language].count:[r.scientific_name||localizedTitle(r,language),r.municipality||r.state].filter(Boolean).join(" · ");
+  dot.setAttribute("aria-label",dot.title);
+  dot.dataset.layer=multiple&&new Set(group.map(item=>item.layer_type)).size>1?"group":r.layer_type||"advertisement";
+  if(multiple){dot.dataset.groupSize=String(group.length);dot.textContent=String(group.length);}
   dot.style.cssText="border-radius:100%;width:12px;height:12px;cursor:pointer;box-shadow:0 1px 9px #0006";
-  dot.addEventListener("click",()=>focusRecord(r));
+  dot.addEventListener("click",()=>multiple?showMarkerGroup(group):focusRecord(r));
   pins.push(new window.maplibregl.Marker({element:dot}).setLngLat([lng,lat]).addTo(map));bounds.extend([lng,lat]);
  }
  if(fit && rows.length===1){map.stop();map.jumpTo({center:bounds.getCenter(),zoom:7});}
@@ -677,6 +731,7 @@ function render(fitMap=false){
  }
  if(activeId&&!f.some(r=>r.id===activeId)){closeMapCard();}
  if(activeId){const item=f.find(r=>r.id===activeId);if(item)showDetail(item);}
+ else if(activeGroupKey){const group=markerGroups(m).find(items=>markerGroupKey(items[0])===activeGroupKey);if(group&&group.length>1)showMarkerGroup(group);else closeMapCard();}
  setupMap();
  if(fallbackLayer)renderRasterMarkers(m,fitNow);
  if(mapReady)drawMarkers(m,fitNow);
