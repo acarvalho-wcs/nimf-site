@@ -3,7 +3,7 @@ import {appendScientific,appendScientificTerm} from "./scientific-format.js";
 import { localizedField, localizedTitle, localizedDescription } from "./record-locale.js";
 
 let projectionMode="map", mapColorMode="dark";
-let dataset=[], canonicalRecords=[],reviewedPoints=[], language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
+let dataset=[], canonicalRecords=[],reviewedPoints=[],aurumQuantities=Object.create(null), language="pt", map=null, pins=[], mapReady=false, mapLoaded=false, activeId=null, fallbackLayer=null, fallbackTiles=null, fallbackPins=null, fallbackCenter=[-53,-12], fallbackZoom=4, mapAttempted=false;
 const rasterCache=new Map();let rasterFrame=null,lastViewportSignature=null;
 const el=id=>document.getElementById(id);
 const trans={
@@ -256,6 +256,8 @@ function aurumQuantityForDisplay(r){
  if(r.layer_type!=="aurum")return "";
  // Corrections explicitly confirmed in the source Integration sheet.
  const id=String(r.aurum_case_id||r.id||"").replace(/^(?:point-)?aurum-/,"");
+ if(Object.prototype.hasOwnProperty.call(aurumQuantities,id)&&typeof aurumQuantities[id]==="string")return aurumQuantities[id];
+ if(id==="PMP2026_1177")return "218kg";
  if(id==="PMP2026_421")return "18kg";
  if(id==="PMP2026_422")return "53kg";
  if(typeof r.aurum_display_quantity==="string"&&r.aurum_display_quantity.trim())return r.aurum_display_quantity.trim();
@@ -686,7 +688,8 @@ export function initExplorer(rows,lang="pt"){
  el("explorer-search").value="";closeMapCard();
  setupSpeciesPicker();options();setExplorerLanguage(language);render(true);
 }
-export function setMapPoints(rows){
+export function setMapPoints(rows,quantityIndex){
+ if(quantityIndex&&typeof quantityIndex==="object"&&!Array.isArray(quantityIndex))aurumQuantities=quantityIndex;
  if((Array.isArray(rows)?rows:[]).some(r=>r.layer_type==="aurum"))void loadAurumGeography();
  reviewedPoints=(Array.isArray(rows)?rows:[]).filter(safe).filter(r=>r.published===true);
  rebuildDataset();options();render(true);
