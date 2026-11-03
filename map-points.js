@@ -67,12 +67,14 @@ export function startMapPoints(database,user,admin,whenUpdated,lang="pt"){
  unsubscribe=onSnapshot(q,snap=>{
   if(!currentUser||currentUser.uid!==uid)return;
   items=snap.docs.map(d=>({id:d.id,...d.data()}));
-  onPoints(items.filter(p=>p.published===true));
+  const index=items.find(p=>p.id==="aurum-quantity-index"&&p.layer_type==="aurum_quantity_index"&&p.published===true);
+  const quantities=index&&index.quantityByCaseId&&typeof index.quantityByCaseId==="object"&&!Array.isArray(index.quantityByCaseId)?index.quantityByCaseId:{};
+  onPoints(items.filter(p=>p.published===true&&p.layer_type!=="aurum_quantity_index"),quantities);
   if(isAdmin)renderAdminList();
  },err=>{
   console.warn("NIMF map points unavailable",err?.code||err);
   if(isAdmin)setMessage(T().error);
-  if(onPoints)onPoints([]);
+  if(onPoints)onPoints([],{});
  });
  if(installed)return;installed=true;
  $("map-cancel").addEventListener("click",resetForm);
