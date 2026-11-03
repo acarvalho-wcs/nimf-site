@@ -14,7 +14,7 @@ const txt={
  es:{sideTitle:"Inteligencia de mercados de fauna silvestre",sideCopy:"Acceso individual, correo verificado y aprobación administrativa antes de consultar datos privados.",sideFooter:"Solo usuarios autorizados",back:"Regrese al Observatorio Global de Tráfico de Animales",authTitle:"Ingresar a NIMF",authSubtitle:"El correo y la contraseña son administrados por el servicio de autenticación, nunca por GitHub Pages.",login:"Ingresar",signup:"Solicitar acceso",email:"Correo",password:"Contraseña",confirm:"Confirmar contraseña",forgot:"¿Olvidó su contraseña?",note:"Crear una cuenta no otorga acceso. Se requiere aprobación del administrador.",configTitle:"Área restringida sin configurar",configBody:"El administrador debe configurar Firebase y publicar las reglas de seguridad. No hay datos privados disponibles todavía.",unverifiedTitle:"Verifique su correo",unverifiedText:"Enviamos un enlace de confirmación. Verifique su dirección e inténtelo de nuevo.",pendingTitle:"Esperando aprobación",pendingText:"Su correo fue verificado, pero el administrador debe aprobar la cuenta.",blockedTitle:"Acceso no autorizado",blockedText:"Esta cuenta no tiene autorización válida para acceder a los datos.",refresh:"Verificar nuevamente",resend:"Reenviar confirmación",logout:"Salir",privateTitle:"Panel privado",privateDescription:"Los datos se cargan solamente tras autenticación, verificación del correo y autorización en Firestore.",recordsLabel:"Registros disponibles",account:"Cuenta",approved:"Autorizada",roleAdmin:"Administrador de revisión",roleContributor:"Usuario colaborador",recordsTitle:"Registros privados",recordsSubtitle:"Registros accesibles únicamente tras verificación en la base.",search:"Buscar",colTitle:"Título",colType:"Categoría",colSource:"Fuente",colStatus:"Verificación",empty:"No hay registros privados todavía.",footer:"Datos internos. No redistribuir sin autorización.",searchPlaceholder:"Buscar en los registros cargados",privateKicker:"PANEL RESTRINGIDO - SOLO USUARIOS AUTORIZADOS",mapError:"Una parte del servicio cartográfico no está disponible. Los filtros y registros siguen accesibles.",explorerError:"No fue posible abrir el explorador geográfico. Los registros siguen accesibles en la tabla.",intakeError:"Las contribuciones no están disponibles temporalmente. Los demás datos siguen accesibles.",genericError:"No se pudo completar la acción. Revise los datos o inténtelo nuevamente.",mismatch:"Las contraseñas no coinciden.",weak:"Utilice por lo menos 8 caracteres.",resetSent:"Si el correo está registrado, recibirá instrucciones para cambiar la contraseña.",resent:"Si es elegible, se enviará otra verificación.",created:"Cuenta creada. Verifique su correo y espere aprobación.",failedRead:"No fue posible consultar los registros. Revise las reglas de seguridad."}
 };
 let locale="pt",mode="login",auth=null,db=null,activeUser=null,records=[],authEpoch=0,approvalAdmin=false,reportGrants=[];
-let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[];
+let explorerModule=null,intakeModule=null,mapModule=null,pointsBuffer=[],aurumQuantityBuffer={};
 let workspaceView="dashboard";
 /* Initialize OSINT filters before the first translate() call and Firebase startup. */
 const osintCategoryKeys=["all","wildlifeTrade","digital","transport","species","geospatial","companies","media","cyber"];
@@ -349,10 +349,10 @@ function enablePrivateWidgets(user,epoch){
  const valid=()=>epoch===authEpoch&&auth?.currentUser?.uid===user.uid&&!$("dashboard-panel").hidden;
  void (async()=>{
   try{
-   const mod=await import("./explorer.js?v=aurum-kg-display-20261102");
+   const mod=await import("./explorer.js?v=aurum-source-column-h-20261102");
    if(!valid())return;
    explorerModule=mod;
-   mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer);
+   mod.initExplorer(records,locale);mod.setMapPoints(pointsBuffer,aurumQuantityBuffer);
    try{
     await loadMapEngine();
     if(valid())mod.setExplorerLanguage(locale);
@@ -367,13 +367,14 @@ function enablePrivateWidgets(user,epoch){
  })();
  void (async()=>{
   try{
-   const mod=await import("./map-points.js?v=aurum-json-20261102");
+   const mod=await import("./map-points.js?v=aurum-source-column-h-20261102");
    if(!valid())return;
    mapModule=mod;
-   mod.startMapPoints(db,user,approvalAdmin,items=>{
+   mod.startMapPoints(db,user,approvalAdmin,(items,quantities)=>{
     if(!valid())return;
     pointsBuffer=items;
-    if(explorerModule)explorerModule.setMapPoints(items);
+    aurumQuantityBuffer=quantities||{};
+    if(explorerModule)explorerModule.setMapPoints(items,aurumQuantityBuffer);
    },locale);
   }catch(e){console.warn("Map point review module unavailable",e?.code||e);}
  })();
@@ -446,7 +447,7 @@ async function loadAdminApplications(user,epoch){
  }catch(err){$("admin-requests-feedback").textContent=accessStrings[locale].error;}
 }
 async function evaluateUser(user,epoch){
- activeUser=user;records=[];reportGrants=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];
+ activeUser=user;records=[];reportGrants=[];if(explorerModule)explorerModule.clearExplorer();if(intakeModule)intakeModule.closeIntake();if(mapModule)mapModule.closeMapPoints();pointsBuffer=[];aurumQuantityBuffer={};
  if(!user){show("auth-panel");return;}
  if(!user.emailVerified){displayWaiting(user,true);return;}
  try{
