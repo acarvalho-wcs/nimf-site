@@ -429,3 +429,16 @@ body[data-private-ready="true"] .secure-top-right #secure-theme{display:none!imp
 body[data-theme="light"] .secure-top-right .secure-language-switch #secure-language{color:#e6f5eb}
 @media(max-width:640px){.secure-top-right .secure-language-switch{flex:0 1 auto;min-width:0}.secure-top-right .secure-language-switch #secure-language{min-width:108px;max-width:100%;font-size:11px;padding:6px}}
 @media(max-width:380px){.secure-top-right .secure-language-switch #secure-language{min-width:95px;font-size:10px}}
+
+
+/* Occurrence-date control and filtered CSV export, including full-screen mode. */
+.map-filters-panel .explorer-filters>label.explorer-time-detail[hidden],
+.explorer-filters>label.explorer-time-detail[hidden]{display:none!important}
+.map-filters-panel .explorer-filters>label.explorer-period-field{grid-column:1/-1}
+.map-filters-panel .explorer-filters input[type="date"]{color-scheme:light dark;min-width:0}
+#explorer-export-csv{flex:0 0 auto;white-space:nowrap}
+#explorer-export-csv:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:640px){
+ #explorer-export-csv{padding:6px 9px;font-size:11px}
+ .map-filters-panel .explorer-filters>label.explorer-time-detail{grid-column:auto}
+}
