@@ -1,0 +1,23 @@
+name: Validate restricted map period and CSV
+on:
+  push:
+    branches: [main]
+    paths:
+      - restricted-period-export.js
+      - explorer.js
+      - tests/restricted-period-export.test.mjs
+      - .github/workflows/test-restricted-period-export.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check explorer.js
+      - run: node --check restricted-period-export.js
+      - run: node --test tests/restricted-period-export.test.mjs
