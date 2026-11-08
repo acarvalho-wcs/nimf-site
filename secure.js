@@ -204,11 +204,19 @@ function renderInternalReport(){
   const meta=document.createElement("dl");meta.className="internal-document-meta";
   const dateFormat=lang==="en"?"en-GB":lang==="es"?"es-ES":"pt-BR";
   const start=item.period_start,end=item.period_end;
-  const file=item.files?.[lang]||item.files?.pt;
-  const fallbackPortuguese=lang!=="pt"&&!item.files?.[lang]&&!!item.files?.pt;
-  const valid=file?.available===true&&typeof file.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(file.path);
+  // Prefer the selected language, but always offer another verified PDF edition.
+  const validPdf=entry=>entry?.available===true&&typeof entry.path==="string"&&/^reports\/internal\/[a-zA-Z0-9._/-]+[.]pdf$/.test(entry.path)&&!entry.path.split("/").includes("..");
+  const availableFiles=item.files||{};
+  const originalKey=[...new Set([lang,"en","pt","es"])].find(key=>validPdf(availableFiles[key]));
+  const file=originalKey?availableFiles[originalKey]:null;
+  const valid=Boolean(file);
+  const originalLanguage=["pt","en","es"].includes(file?.language)?file.language:originalKey;
+  const fallbackLanguage=valid&&originalLanguage!==lang;
+  const originalPdfLabel=originalLanguage==="pt"?labels.pdfOriginal:originalLanguage==="en"?"Original PDF in English":"Original PDF in Spanish";
+  const languageLabel=valid?(fallbackLanguage?originalPdfLabel:lang==="pt"?"Português":lang==="en"?"English":"Español"):"";
+  const availableLabel=fallbackLanguage&&originalLanguage==="en"?"Available language":labels.available;
   const formatDate=value=>{if(typeof value!=="string"||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value))return "";const parts=value.split("-");return new Intl.DateTimeFormat(dateFormat,{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(Date.UTC(+parts[0],+parts[1]-1,+parts[2])));};
-  for(const [term,detail] of [[labels.period,[formatDate(start),formatDate(end)].filter(Boolean).join(" – ")],[labels.year,(item.date||"").slice(0,4)],[labels.available,valid?(fallbackPortuguese?labels.pdfOriginal:lang==="pt"?"Português":lang==="en"?"English":"Español"):""]]){
+  for(const [term,detail] of [[labels.period,[formatDate(start),formatDate(end)].filter(Boolean).join(" – ")],[labels.year,(item.date||"").slice(0,4)],[availableLabel,languageLabel]]){
    if(!detail)continue;const group=document.createElement("div"),dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=term;dd.textContent=detail;group.append(dt,dd);meta.append(group);
   }
   card.append(meta);
